@@ -1,0 +1,315 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="DXUT">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="main">
+      <UniqueIdentifier>{3db22302-25c2-4a2c-88c9-d544780a76fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Grass">
+      <UniqueIdentifier>{10e9993b-0484-4e33-bfe3-b6b68f4e2d3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Grass\Render">
+      <UniqueIdentifier>{95de80fd-1b7d-4a82-b050-44f7d30b0af2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Grass\Render\C++">
+      <UniqueIdentifier>{b7dfe049-3b0a-44ed-870a-815407fb7c27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Grass\Render\HLSL">
+      <UniqueIdentifier>{bb246ba9-f456-4e90-8e3a-fd7f15c7c914}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Grass\Render\CFG">
+      <UniqueIdentifier>{504fa3b4-b3d5-4b99-8486-3597cc1462d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Grass\Physics">
+      <UniqueIdentifier>{8d6e9a30-0c39-4b97-b281-f84f60823f03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Grass\System">
+      <UniqueIdentifier>{b4e78289-a7ac-4f8e-8d92-6bdc20e54f9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mesh">
+      <UniqueIdentifier>{ab48e5f1-d786-44ab-b70e-c9495880b28d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DXUT\Core\DXUT.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="DXUT\Optional\DXUTcamera.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="DXUT\Core\DXUTenum.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="DXUT\Optional\DXUTgui.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="DXUT\Core\DXUTmisc.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="DXUT\Optional\DXUTres.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="DXUT\Optional\DXUTsettingsdlg.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="DXUT\Optional\SDKmesh.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="DXUT\Optional\SDKmisc.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\Render\aabb.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\Render\ConvexVolume.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\Render\GrassCollideStatic.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\Render\GrassFieldManager.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\Render\GrassLod.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\Render\GrassManager.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\Render\GrassPatch.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\Render\GrassPool.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\Render\GrassProperties.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\Render\GrassTrack.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\Render\ShadowMapping.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\Render\Terrain.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\Render\Wind.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\Physics\PhysMath.cpp">
+      <Filter>Grass\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\Physics\PhysPatch.cpp">
+      <Filter>Grass\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\system\camera.cpp">
+      <Filter>Grass\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\system\maths.cpp">
+      <Filter>Grass\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass\system\StateManager.cpp">
+      <Filter>Grass\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh\Car.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh\Mesh.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh\MeshLoader10.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh\Plane.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DXUT\Core\DXUT.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="DXUT\Optional\DXUTcamera.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="DXUT\Core\DXUTenum.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="DXUT\Optional\DXUTgui.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="DXUT\Core\DXUTmisc.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="DXUT\Optional\DXUTres.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="DXUT\Optional\DXUTsettingsdlg.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="DXUT\Optional\SDKmesh.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="DXUT\Optional\SDKmisc.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h">
+      <Filter>main</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Render\aabb.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Render\ConvexVolume.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Render\fixedvector.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Render\GrassCollideStatic.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Render\GrassFieldManager.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Render\GrassLod.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Render\GrassManager.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Render\GrassPatch.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Render\GrassPool.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Render\GrassProperties.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Render\GrassTrack.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Render\ShadowMapping.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Render\Terrain.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Render\Wind.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Physics\PhysMath.h">
+      <Filter>Grass\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\Physics\PhysPatch.h">
+      <Filter>Grass\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\system\camera.h">
+      <Filter>Grass\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\system\common.h">
+      <Filter>Grass\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\system\maths.h">
+      <Filter>Grass\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\system\memdebug.h">
+      <Filter>Grass\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\system\mtxfrustum.h">
+      <Filter>Grass\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\system\ObjArray.h">
+      <Filter>Grass\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass\system\StateManager.h">
+      <Filter>Grass\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh\Car.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh\Mesh.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh\MeshLoader10.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh\Plane.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="includes.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\DisableSeating.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\DisableSubTypes.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\EnableSeating.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\EnableSubTypes.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\Fog.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\GrassType2.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\GrassType3.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\GSFunc.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\GST1.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\Lod.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\LowGrass.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\Samplers.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\SceneEffect.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\States.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\TrackEffect.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\VSIn.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="Shaders\WindEffect.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </None>
+    <None Include="config\T1SubTypes.cfg">
+      <Filter>Grass\Render\CFG</Filter>
+    </None>
+    <None Include="config\T2SubTypes.cfg">
+      <Filter>Grass\Render\CFG</Filter>
+    </None>
+    <None Include="config\T3SubTypes.cfg">
+      <Filter>Grass\Render\CFG</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuildStep Include="Shaders\GrassType1.fx">
+      <Filter>Grass\Render\HLSL</Filter>
+    </CustomBuildStep>
+  </ItemGroup>
+</Project>

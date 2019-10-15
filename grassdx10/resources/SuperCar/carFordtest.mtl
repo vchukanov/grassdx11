@@ -1,0 +1,38 @@
+newmtl phong3SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.17 0.17 0.17
+Tf 1.00 1.00 1.00
+map_Kd carFord_wheel.dds
+Ni 1.00
+Ks 0.00 0.00 0.00
+map_Ks carFord_wheel_spec.dds
+Ns 38.88
+newmtl phong4SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.17 0.17 0.17
+Tf 1.00 1.00 1.00
+map_Kd carFord_glass.dds
+Ni 1.00
+Ks 0.14 0.14 0.14
+Ns 98.00
+newmtl phong5SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.47 0.47 0.47
+Tf 1.00 1.00 1.00
+map_Kd carFord.dds
+Ni 1.00
+Ks 0.00 0.00 0.00
+map_Ks carFord_spec.dds
+newmtl phong6SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.36 0.36 0.36
+Tf 1.00 1.00 1.00
+map_Kd carFord.dds
+Ni 1.00
+Ks 0.00 0.00 0.00
+map_Ks carFord_spec.dds
+Ns 41.31
