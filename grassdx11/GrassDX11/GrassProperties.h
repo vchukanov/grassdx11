@@ -16,17 +16,12 @@ __declspec(align(16))
 struct GrassProps1
 {
 	float3 vHardnessSegment;
-	float    fPad01;
 	float3 vMassSegment;
-	float    fPad1;
 	float2 vSizes;
 
-	//
-	float2 vPad2;
 	float4 vColor;
-	UINT     uTexIndex;
-	float3 vPad3;
-
+	UINT   uTexIndex;
+	
 	void Read (std::ifstream& a_ifIn);
 
 	GrassPropsType GetType (void) { return GRASSPROPSTYPE1; }
@@ -37,12 +32,9 @@ __declspec(align(16))
 struct GrassProps3
 {
 	float3 vHardnessSegment;
-	float  fPad01;
 	float3 vMassSegment;
-	float  fPad1;
 	float2 vSizes;
 
-	//
 	UINT   uTexIndex;
 	UINT   uTopTexIndex;
 
@@ -55,9 +47,7 @@ struct GrassProps3
 struct GrassPropsUnified
 {
 	float3 vHardnessSegment;
-	float  fPad01;
 	float3 vMassSegment;
-	float  fPad1;
 	float2 vSizes;
 };
 

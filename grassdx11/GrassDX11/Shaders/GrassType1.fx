@@ -53,12 +53,14 @@ cbuffer cImmutable
 };
 
 struct GrassSubType
-{
-    float3 vHardnessSegment;
-    float3 vMassSegment; 
-    float2 vSizes; //x = segment width, y = segment height
-    float4 vColor;
-    uint   uTexIndex;
+{ 
+    float3 vHardnessSegment; //float3
+    float3 vMassSegment;  //float3
+    float2 vSizes; //x = segment width, y = segment height //float2
+    float4 vColor; //float4
+    uint uTexIndex; //uint
+    
+    float3 pad0;
 };
 
 cbuffer cGrassSubTypes
@@ -178,13 +180,10 @@ GSIn CalcWindAnimation( float3 a_vBladePos, float3 a_vRotAxe, float3 a_vYRotAxe 
     float3 vHardnessSeg     = SubTypes[uIndex].vHardnessSegment;
     float3 vMassSegment     = SubTypes[uIndex].vMassSegment;
     float4 vColorAndH       = g_txGrassColor.SampleLevel(g_samLinear, vUV, 0);
-//    float  fSegLength       = SubTypes[uIndex].vSizes.y;
     float  fSegLength       = 0.75;
     Output.vColor           = vColorAndH.xyz;
-//    Output.fNoise           = g_txNoise.SampleLevel(g_samPoint, 10000.0*vUV, 0).r;
     float3 vAxe             = float3(0.0, fSegLength * 0.5, 0.0);
-//  float3 vAxe             = float3(0.0, 0.75 * 0.5, 0.0);
-//    float3 vGrav            = float3(0.0, 0.0, 0.0);
+
     float3 vGrav            = float3(0.0, -9.8, 0.0);
     float3 vF, vLocalF, vAbsWind;
     float fH, fFL, fLenG, fSinBetha, fBetha, fPhi;
@@ -196,12 +195,9 @@ GSIn CalcWindAnimation( float3 a_vBladePos, float3 a_vRotAxe, float3 a_vYRotAxe 
     float3x3 mMYrot = MakeRotateMtx(a_vYRotAxe); 
     
     float3x3 mMStart = mul(mMYrot, MakeRotateMtx(a_vRotAxe));
-    //vAbsWind = CalcWind(a_vBladePos);
-	//vAbsWind.y = 0.0;
+
     
     float fDist = length(a_vBladePos - g_mInvCamView[3].xyz);
- //   float3 vTmp = (a_vBladePos - g_mInvCamView[3].xyz)/fDist;
- //   vAbsWind *= min(1.1+vTmp.x, 1.0);
     float fMass = g_fMass - 0.2*clamp((fDist - 7.0)/25.0, 0.0, 1.0); 
     
     /* Computing moments */
@@ -238,96 +234,8 @@ GSIn CalcWindAnimation( float3 a_vBladePos, float3 a_vRotAxe, float3 a_vYRotAxe 
 		G += w;
         mM_R[j] = MakeRotateMtx(G / vHardnessSeg[j - 1]);
         mM_T[j] = mul(mM_T[j-1], mM_R[j]);
-
-		//float3x3 transposed_t;
-  //      transposed_t = transpose(mM_T[j]);
-		//float3 pos_delta;
-  //      pos_delta = mul(axis, transposed_t);
-		//bp->position[j] = bp->position[j-1] + pos_delta;
-		//
 	}
 
-//    float3 vG;
-//    float3x3 mM[3];
-    
-//    /* First segment */
-//    float fCoef = 1;// + 0.2 * abs(sin(g_fTime + length(a_vYRotAxe)));
-//    vAbsWind = CalcWind(a_vBladePos, 0) * fCoef;
-//    vAbsWind = mul(vAbsWind, mMStart);
-//    //vF =  (vMassSegment.x * vGrav * mMStart[1].y) + vAbsWind;     
-//    vF =  (vMassSegment.x * vGrav);
-//    vLocalF = mul(vF, (mMStart));
-//    fH = vHardnessSeg.x;
-//    vG = cross(vAxe, vLocalF) + vAbsWind;
-//    fFL = (SubTypes[uIndex].vSizes.y * 0.5 * length(vLocalF) + length(vAbsWind));
-//	fLenG = length(vG);
-//	fSinBetha = clamp(fLenG / fFL, -1, 1);
-//	if (abs(fSinBetha) < 0.001)
-//		mM[0] = MatrixIdentity();
-//	else
-//	{
-//		fBetha = asin(fSinBetha);
-//		fPhi = fFL * fSinBetha / (1 - fFL * cos(fBetha));
-//		fPhi = fFL*sin(fBetha+fPhi) / fH;
-//		fPhi = fFL*sin(fBetha+fPhi) / fH;
-//		fPhi = fFL*sin(fBetha+fPhi) / fH;
-//		mM[0] = mul(mMStart, MakeRotateMtx(fPhi * vG / fLenG));
-//    };
-//    //vAbsWind = mul(vAbsWind, mMStart);
-//    //mM[0] = mul(mMStart, MakeRotateMtx(vAbsWind));
-//    /* Second segment */
-//    vAbsWind = CalcWind(a_vBladePos, 1) * fCoef;
-//    vAbsWind = mul(vAbsWind, mM[0]);
-////    vF = g_fMass * vMassSegment.y * vGrav; 
-//    //vF =  (vMassSegment.y * vGrav * (mM[0][1].y - 0.1)) + vAbsWind; 
-//    vF =  (vMassSegment.y * vGrav); 
-//    vLocalF = mul(vF, (mM[0]));
-////    fH = g_fHardness * vHardnessSeg.y;
-//    fH = vHardnessSeg.y;
-//    vG = cross(vAxe, vLocalF) + vAbsWind;
-//    fFL = (SubTypes[uIndex].vSizes.y * 0.5 * length(vLocalF) + length(vAbsWind));
-//	fLenG = length(vG);
-//	fSinBetha = clamp(fLenG / fFL, -1, 1);
-//	if (abs(fSinBetha) < 0.0001)
-//		mM[1] = MatrixIdentity();
-//	else
-//	{
-//		fBetha = asin(fSinBetha);
-//		fPhi = fFL * fSinBetha / (1 - fFL * cos(fBetha));
-//		fPhi = fFL*sin(fBetha+fPhi) / fH;
-//		fPhi = fFL*sin(fBetha+fPhi) / fH;
-//		fPhi = fFL*sin(fBetha+fPhi) / fH;
-//		mM[1] = mul(mM[0], MakeRotateMtx(fPhi * vG / fLenG));
-//	};
-//    //vAbsWind = mul(vAbsWind, mM[0]);
-//	//mM[1] = mul(mM[0], MakeRotateMtx(vAbsWind));
-//    /* Third segment */
-//    vAbsWind = CalcWind(a_vBladePos, 2) * fCoef;
-//    vAbsWind = mul(vAbsWind, mM[1]);
-////    vF = g_fMass * vMassSegment.z * vGrav + vAbsWind; 
-//    //vF = vMassSegment.z * vGrav * (mM[1][1].y - 0.2) + vAbsWind; 
-//    vF = vMassSegment.z * vGrav;
-//    vLocalF = mul(vF, (mM[1]));
-////    fH = g_fHardness * vHardnessSeg.z;
-//    fH = vHardnessSeg.z;
-//    vG = cross(vAxe, vLocalF) + vAbsWind;
-//    fFL = (SubTypes[uIndex].vSizes.y * 0.5 * length(vLocalF) + length(vAbsWind));
-//	fLenG = length(vG);
-//	fSinBetha = clamp(fLenG / fFL, -1, 1);
-//	if (abs(fSinBetha) < 0.001)
-//		mM[2] = MatrixIdentity();
-//	else
-//	{
-//		fBetha = asin(fSinBetha);
-//		fPhi = fFL * fSinBetha / (1 - fFL * cos(fBetha));
-//		fPhi = fFL*sin(fBetha+fPhi) / fH;
-//		fPhi = fFL*sin(fBetha+fPhi) / fH;
-//		fPhi = fFL*sin(fBetha+fPhi) / fH;
-//		mM[2] = mul(mM[1], MakeRotateMtx(fPhi * vG / fLenG));
-//	};
-//    //vAbsWind = mul(vAbsWind, mM[1]);
-//	//mM[2] = mul(mM[1], MakeRotateMtx(vAbsWind));
-//    //mMStart = MakeRotateMtx(a_vYRotAxe);
 
     Output.vOffs1 = Output.vOffs0 = SubTypes[uIndex].vSizes.x * mM_T[1][0];
     Output.vOffs2 = SubTypes[uIndex].vSizes.x * mM_T[2][0];
@@ -374,6 +282,7 @@ GSIn InstVSMain( InstVSIn Input )
     ScreenClip(float4(Output.vPos0, 1.0), float4(Output.vPos3, 1.0), Output.vPackedData.x);
     return Output;
 }
+
 
 GSIn AnimVSMain ( InstVSIn Input )
 {                               
@@ -455,7 +364,7 @@ void GSGrassMain( point GSIn Input[1], inout TriangleStream< PSIn > TriStream )
     if (Input[0].vPackedData.x <= 0.0)
 		return;
   
-    /*if (Input[0].uNumVertices == 7)
+    if (Input[0].uNumVertices == 7)
     {
 		Make7Pts(Input[0], TriStream);
 		return;    
@@ -471,7 +380,7 @@ void GSGrassMain( point GSIn Input[1], inout TriangleStream< PSIn > TriStream )
     {
 		Make3Pts(Input[0], TriStream);
 		return;    
-    }*/
+    }
   
     if (Input[0].uNumVertices == 2)
     {
@@ -490,58 +399,6 @@ void GSGrassMain( point GSIn Input[1], inout TriangleStream< PSIn > TriStream )
  * Input.fLightParam - Ny
  *
  */
-float4 InstPSMain( PSIn Input ) : SV_Target
-{
-    //FDebug
-	return float4(1.0, 0.0, 0.0, 1.0);
-	
-	float fNoise;
-	if (Input.fDissolve < 0.0) clip(-1);
-	/*
-	if ((Input.vTexCoord.w < 40.0) && (Input.fDissolve < 1.0))
-	{
-			fNoise = g_txNoise.Sample(g_samLinear, Input.vTexCoord.xy).r;
-			clip(Input.fDissolve - fNoise);
-	}
-*/
-    uint uTexIndex   = Input.uIndex;//0;//SubTypes[Input.uIndex].uTexIndex;
-    float fAlpha;
-    float fL = max(0.17, (1.0 + 5.0 * Input.vTerrSpec.y)*0.6);
-    fAlpha = Input.fDissolve;
-    float4 vDiffuseTexel = g_txGrassDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, uTexIndex));
-    if (Input.vTexCoord.w < 70.0)
-    {
-		float fTest = max((Input.vTexCoord.w - 40.0)/30.0, 0.0);
-		fAlpha = vDiffuseTexel.a;//g_txGrassDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, uTexIndex)).a;
-		fAlpha = (fTest + (1.0 - fTest)*fAlpha) * Input.fDissolve;
-//	    if (Input.vTexCoord.x < 0.5)fL *= 0.862;
-	    if (Input.vTexCoord.x < 0.5)fL *= 0.7862;
-	}	
-    float3 vColor1 = float3(0.5, 0.5, 1.0);
-    float3 vColor2 = float3(1.5, 1.5, 1.0);
-    float fNoiseScale = lerp(vColor1, vColor2, Input.fNoise);
-    float3 vA = Input.vBladeColor;
-    float3 vD = vDiffuseTexel.xyz;//g_vLowGrassDiffuse.xyz;
-    float3 vT = Input.vColor * max(0.8, (2.0 + 5.0f* Input.vTerrSpec.y)*0.5);
-	float fDot = Input.vTerrSpec.x;
-    float fT = 1.0 - abs(Input.fLightParam);
-	float fT2 = fT*fT;
-	fT2 = fT2*fT2;
-	float fY = Input.vTexCoord.y;
-	float fY2 = fY*fY;
-	fY2 = fY2*fY2;
-	fY2 = fY2*fY;
-	float3 vC = vT + fY*(vA + fY2*fT2*vD)*fL*fNoiseScale;
-	vC = fY2*fDot * g_vTerrSpec + (1.0 - fY2*fDot) * vC;
-	
-	float fDd = clamp((Input.vTexCoord.w - 90.0)*0.02, 0.0, 1.0);
-    float fDd2 = fDd*fDd;
-    fDd = 1.0 - 3.0*fDd2 +2.0*fDd2*fDd;
-	//vC = fDd*vC + (1.0-fDd)*vT;
-	return lerp(float4(vC, fAlpha) , g_vFogColor, Input.vTexCoord.z);
-}
- 
-/*
 float4 InstPSMain( PSIn Input ) : SV_Target
 {
 	float fNoise;
@@ -589,44 +446,7 @@ float4 InstPSMain( PSIn Input ) : SV_Target
 	vC = fDd*vC + (1.0-fDd)*vT;
 	return lerp(float4(vC, fAlpha) , g_vFogColor, Input.vTexCoord.z);
 }
-*/
-/*
-float4 InstPSMain( PSIn Input ) : SV_Target
-{
-    //return float4(2.0, 1.0, 1.0, 1.0);
-    uint uTexIndex   = Input.uIndex;//SubTypes[Input.uIndex].uTexIndex;
-    float fAlpha     = g_txGrassDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, uTexIndex)).a;
-    //float fLighting  = Input.vTexCoord.y * Input.vTexCoord.y * (1.0 + (1.0 - Input.fLightParam) * (1.0 - Input.fLightParam)) + g_fGrassAmbient;
-    //return float4(lerp(g_txTerrainLightMap.Sample(g_samLinear, Input.vWorldTC).rgb, g_vLowGrassDiffuse.xyz, clamp(fLighting, 0.0, 1.0)), fAlpha);
-//    float3 vA = float3(0.27, 0.53, 0.04);
-    float3 vA = float3(0.15, 0.3, 0.0);
-    float3 vD = g_vLowGrassDiffuse.xyz;
-//	float3 vS = float3(0.3, 0.4, 0.1);
-	
-    //float fDot = g_txTerrainLightMap.Sample(g_samLinear, Input.vWorldTC).r; 
-    float fDot = Input.vTerrSpec.x;
-//    float3 vG = fDot * g_vTerrSpec*0.5  + (1.0 - fDot) * g_vTerrRGB;
-    float3 vG = g_vTerrRGB;
-//    float3 vG = g_vTerrRGB;
-  	float fT = 1.0 - abs(Input.fLightParam);
-	float fT2 = fT*fT;
-	float fY = Input.vTexCoord.y;
-	float fY2 = fY*fY;
-	float3 vC = vG + fY*(vA + fY2*fT2*vD)*(1.0-Input.vTexCoord.z);
-	float fDd = clamp((Input.vTexCoord.w - 90.0)*0.02, 0.0, 1.0);
-	vC = (1.0-fDd)*vC + fDd*vG;
-	
-   return lerp(float4(vC, fAlpha), g_vFogColor, Input.vTexCoord.z);
-}
-*/
-//float4 ShadowPSMain( PSIn Input, out float fDepth: SV_Depth ) : SV_Target
-//{   
-//    uint uTexIndex = SubTypes[Input.uIndex].uTexIndex;
-//    float fAlpha = g_txGrassDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, uTexIndex)).a;
-//    clip(fAlpha - 0.001);
-//    fDepth = Input.vShadowPos.z / Input.vShadowPos.w * 0.5 + 0.5;
-//    return float4(0.0, 0.0, 0.0, 1.0);
-//}
+ 
 
 technique10 RenderGrass
 {
@@ -660,21 +480,6 @@ technique10 RenderGrass
         
         SetBlendState( AlphaBlendState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );
         SetDepthStencilState( EnableDepthTestWrite, 0 );
-        //SetRasterizerState( EnableMSAA );
     }
-    
-    /* Shadow passes */
-    /*pass ShadowPass
-    {        
-        SetVertexShader( CompileShader( vs_4_0, InstVSMain() ) );
-        SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
-        SetPixelShader( CompileShader( ps_4_0, ShadowPSMain() ) );
-    }  
-    
-    pass ShadowPhysicsPass
-    {
-        SetVertexShader( CompileShader( vs_4_0, PhysVSMain() ) );
-        SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
-        SetPixelShader( CompileShader( ps_4_0, ShadowPSMain() ) );
-    }*/
+
 }

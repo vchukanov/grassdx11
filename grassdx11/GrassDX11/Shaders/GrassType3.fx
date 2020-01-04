@@ -57,6 +57,8 @@ struct GrassSubType
     float2 vSizes; //x = segment width, y = segment height
     uint   uTexIndex;
     uint   uTopTexIndex;
+    
+    float2 pad0;
 };
 
 cbuffer cGrassSubTypes
@@ -78,8 +80,8 @@ Texture2D      g_txShadowMap;
 Texture2D      g_txTerrainLightMap;
 Texture2D      g_txGrassColor;
 
-#include "Shaders/Samplers.fx"
-#include "Shaders/States.fx"
+#include "Samplers.fx"
+#include "States.fx"
 
 
 //--------------------------------------------------------------------------------------
@@ -87,7 +89,7 @@ Texture2D      g_txGrassColor;
 //--------------------------------------------------------------------------------------
 
 /* Grass input structures */
-#include "Shaders/VSIn.fx"
+#include "VSIn.fx"
 
 /* Grass input structures */
 struct GSIn
@@ -117,9 +119,9 @@ struct PSIn
 };
 
 /* Grass shaders */
-#include "Shaders/EnableSeating.fx"
-#include "Shaders/EnableSubTypes.fx"
-#include "Shaders/Lod.fx"
+#include "EnableSeating.fx"
+#include "EnableSubTypes.fx"
+#include "Lod.fx"
 
 
 float3x3 MatrixIdentity()
@@ -387,7 +389,7 @@ GSIn PhysVSMain( PhysVSIn Input )
     return Output;
 }
 
-#include "Shaders/GSFunc.fx"
+#include "GSFunc.fx"
 //CreateVertex( float3 a_vPos, float2 a_vTexCoord, float a_fLightParam, uint a_uTexIndex, float a_fDissolve, float2 a_vWorldTC, inout PSIn Vertex)
 void MakeTop( float3 vCenter, float3 vX, float3 vY, float3 vZ, uint uTypeIndex, float a_fDissolve, inout TriangleStream< PSIn > TriStream )
 {
@@ -538,8 +540,6 @@ void GSGrassMain( point GSIn Input[1], inout TriangleStream< PSIn > TriStream )
 /*
 float4 InstPSMain( PSIn Input ) : SV_Target
 {        
-
-	return float4(2.0, 1.0, 1.0, 1.0);
   	//float fLimDist = (Input.vTexCoord.w - 75.f)/10.f;
 	float fNoise = g_txNoise.Sample(g_samLinear, Input.vTexCoord.xy).r;
 	
@@ -581,8 +581,6 @@ float4 InstPSMain( PSIn Input ) : SV_Target
 */
 float4 InstPSMain( PSIn Input ) : SV_Target
 {        
-
-	return float4(2.0, 1.0, 1.0, 1.0);
   if (Input.fDissolve < 0.0) clip(-1);
   /*	float fLimDist = (Input.vTexCoord.w - 75.f)/10.f;
     float fNoise = g_txNoise.Sample(g_samLinear, Input.vTexCoord.xy).r;

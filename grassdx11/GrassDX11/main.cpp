@@ -66,15 +66,6 @@ struct CB_VS_PER_FRAME
 ID3D11Buffer*                       g_pcbVSPerObject11 = nullptr;
 ID3D11Buffer*                       g_pcbVSPerFrame11 = nullptr;
 
-//--------------------------------------------------------------------------------------
-// UI control IDs
-//--------------------------------------------------------------------------------------
-#define IDC_TOGGLEFULLSCREEN    1
-#define IDC_TOGGLEREF           2
-#define IDC_CHANGEDEVICE        3
-#define IDC_TOGGLEWARP          4
-
-
 
 //--------------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
@@ -130,10 +121,13 @@ void InitApp()
     g_HUD.SetCallback( OnGUIEvent );
     int iY = 30;
     int iYo = 26;
-    g_HUD.AddButton( IDC_TOGGLEFULLSCREEN, L"Toggle full screen", 0, iY, 170, 22 );
-    g_HUD.AddButton( IDC_CHANGEDEVICE, L"Change device (F2)", 0, iY += iYo, 170, 22, VK_F2 );
-    g_HUD.AddButton( IDC_TOGGLEREF, L"Toggle REF (F3)", 0, iY += iYo, 170, 22, VK_F3 );
-    g_HUD.AddButton( IDC_TOGGLEWARP, L"Toggle WARP (F4)", 0, iY += iYo, 170, 22, VK_F4 );
+   
+	WCHAR sStr[MAX_PATH];
+	swprintf_s(sStr, MAX_PATH, L"Wind Strength: %.4f", g_fWindStrength);
+	g_HUD.AddStatic(IDC_GRASS_WIND_LABEL, sStr, 20, iY += iYo, 140, 22);
+	g_HUD.AddSlider(IDC_GRASS_WIND_FORCE_SLYDER, 20, iY += iYo, 135, 22, 0, 10000, (int)(g_fWindStrength * 10000));
+
+	g_HUD.AddButton(IDC_TOGGLE_WIREFRAME, L"Toggle wire-frame (F4)", 25, iY += iYo, 125, 22, VK_F4);
 
     g_SampleUI.SetCallback( OnGUIEvent ); iY = 10;
 }
@@ -333,8 +327,6 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	g_Camera->SetScalers(0.01f, g_fCameraSpeed /* g_fMeter*/);
 
 	
-    g_HUD.GetButton( IDC_TOGGLEWARP )->SetEnabled( true );
-
     return S_OK;
 }
 
@@ -537,19 +529,20 @@ void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserC
 //--------------------------------------------------------------------------------------
 void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, void* pUserContext )
 {
+	WCHAR sStr[MAX_PATH] = { 0 };
+
     switch( nControlID )
     {
-        case IDC_TOGGLEFULLSCREEN:
-            DXUTToggleFullScreen();
-            break;
-        case IDC_TOGGLEREF:
-            DXUTToggleREF();
-            break;
-        case IDC_TOGGLEWARP:
-            DXUTToggleWARP();
-            break;
-        case IDC_CHANGEDEVICE:
-            g_SettingsDlg.SetActive( !g_SettingsDlg.IsActive() );
-            break;
+		case IDC_TOGGLE_WIREFRAME:
+			GetGlobalStateManager().ToggleWireframe();
+		
+		case IDC_GRASS_WIND_FORCE_SLYDER:
+		{
+			g_fWindStrength = (float)g_HUD.GetSlider(IDC_GRASS_WIND_FORCE_SLYDER)->GetValue() / 10000.0f;
+			swprintf_s(sStr, MAX_PATH, L"Wind Strength: %.4f", g_fWindStrength);
+			g_HUD.GetStatic(IDC_GRASS_WIND_LABEL)->SetText(sStr);
+			g_pGrassField->SetWindStrength(g_fWindStrength);
+			break;
+		}
     }
 }

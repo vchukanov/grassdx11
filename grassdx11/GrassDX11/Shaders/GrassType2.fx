@@ -55,6 +55,8 @@ struct GrassSubType
     float2 vSizes; //x = segment width, y = segment height
     float4 vColor;
     uint   uTexIndex;
+    
+    float3 pad0;
 };
 
 cbuffer cGrassSubTypes
@@ -73,8 +75,8 @@ Texture2D      g_txNoise;
 Texture2D      g_txHeightMap;
 Texture2D      g_txShadowMap;
 
-#include "Shaders/Samplers.fx"
-#include "Shaders/States.fx"
+#include "Samplers.fx"
+#include "States.fx"
 
 
 //--------------------------------------------------------------------------------------
@@ -82,7 +84,7 @@ Texture2D      g_txShadowMap;
 //--------------------------------------------------------------------------------------
 
 /* Grass input structures */
-#include "Shaders/VSIn.fx"
+#include "VSIn.fx"
 
 /* Grass input structures */
 struct GSIn
@@ -208,7 +210,6 @@ GSIn CalcWindAnimation( float3 a_vBladePos, float3 a_vRotAxe, float3 a_vYRotAxe 
     float3x3 mMYrot  = MakeRotateMtx(a_vYRotAxe); 
     
     float3x3 mMStart = mul(mMYrot, MakeRotateMtx(a_vRotAxe));
-    //vAbsWind = CalcWind(a_vBladePos);
     
     /* Computing moments as in the paper */
     float3 vG;
@@ -224,15 +225,12 @@ GSIn CalcWindAnimation( float3 a_vBladePos, float3 a_vRotAxe, float3 a_vYRotAxe 
 	fLenG = length(vG);
 	fSinBetha = clamp(fLenG / fFL, -1, 1);
 	fBetha = asin(fSinBetha);
-	//fPhi = fFL*fSinBetha / fH;
+
 	fPhi = fFL * fSinBetha / (1 - fFL * cos(fBetha));
-	fPhi = fFL*sin(fBetha+fPhi) / fH;
-	fPhi = fFL*sin(fBetha+fPhi) / fH;
-	fPhi = fFL*sin(fBetha+fPhi) / fH;
-	//fPhi = fFL*sin(fBetha+fPhi) / fH;
-	//fPhi = fFL*sin(fBetha+fPhi) / fH;
-	//fPhi = fFL*sin(fBetha+fPhi) / fH;
-	//fPhi = fFL*sin(fBetha+fPhi) / fH;
+	fPhi = fFL * sin(fBetha+fPhi) / fH;
+	fPhi = fFL * sin(fBetha+fPhi) / fH;
+	fPhi = fFL * sin(fBetha+fPhi) / fH;
+
     mM[0] = mul(mMStart, MakeRotateMtx(fPhi * vG / fLenG));
     
     /* Second segment */
@@ -249,10 +247,7 @@ GSIn CalcWindAnimation( float3 a_vBladePos, float3 a_vRotAxe, float3 a_vYRotAxe 
 	fPhi = fFL*sin(fBetha+fPhi) / fH;
 	fPhi = fFL*sin(fBetha+fPhi) / fH;
 	fPhi = fFL*sin(fBetha+fPhi) / fH;
-	//fPhi = fFL*sin(fBetha+fPhi) / fH;
-	//fPhi = fFL*sin(fBetha+fPhi) / fH;
-	//fPhi = fFL*sin(fBetha+fPhi) / fH;
-	//fPhi = fFL*sin(fBetha+fPhi) / fH;
+
     mM[1] = mul(mM[0], MakeRotateMtx(fPhi * vG / fLenG));
 
     /* Third segment */
@@ -266,13 +261,10 @@ GSIn CalcWindAnimation( float3 a_vBladePos, float3 a_vRotAxe, float3 a_vYRotAxe 
 	fSinBetha = clamp(fLenG / fFL, -1, 1);
 	fBetha = asin(fSinBetha);
 	fPhi = fFL * fSinBetha / (1 - fFL * cos(fBetha));
-	fPhi = fFL*sin(fBetha+fPhi) / fH;
-	fPhi = fFL*sin(fBetha+fPhi) / fH;
-	fPhi = fFL*sin(fBetha+fPhi) / fH;
-	//fPhi = fFL*sin(fBetha+fPhi) / fH;
-	//fPhi = fFL*sin(fBetha+fPhi) / fH;
-	//fPhi = fFL*sin(fBetha+fPhi) / fH;
-	//fPhi = fFL*sin(fBetha+fPhi) / fH;
+	fPhi = fFL * sin(fBetha+fPhi) / fH;
+	fPhi = fFL * sin(fBetha+fPhi) / fH;
+	fPhi = fFL * sin(fBetha+fPhi) / fH;
+	
     mM[2] = mul(mM[1], MakeRotateMtx(fPhi * vG / fLenG));
 
     /* world coord of grass blade start pt */
@@ -382,7 +374,7 @@ GSIn PhysVSMain( PhysVSIn Input )
     return Output;
 }
 
-#include "Shaders/GSFunc.fx"
+#include "GSFunc.fx"
 
 void Make4Pts( GSIn In, inout TriangleStream< PSIn > TriStream )
 {
@@ -544,7 +536,7 @@ float4 ShadowPSMain( PSIn Input, out float fDepth: SV_Depth ) : SV_Target
     return float4(0.0, 0.0, 0.0, 1.0);
 }
 
-#include "Shaders/LowGrass.fx"
+#include "LowGrass.fx"
 
 technique10 RenderGrass
 {

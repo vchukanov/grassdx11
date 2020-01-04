@@ -431,6 +431,7 @@ void GrassFieldManager::Update (XMVECTOR a_vCamDir, XMVECTOR a_vCamPos, Mesh *a_
 	m_vCamDir = a_vCamDir; 
 	m_vCamPos = a_vCamPos;
    
+	m_pWind->Update(a_fElapsedTime, a_vCamDir);
 	m_pTerrain->UpdateLightMap( );
 	
 	m_pGrassTypes[0]->Update(*m_pViewProj, a_vCamPos, a_pMeshes, a_uNumMeshes, a_fElapsedTime);

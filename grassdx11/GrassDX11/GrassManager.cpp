@@ -94,9 +94,8 @@ GrassManager::GrassManager (GrassInitState& a_pInitState, GrassTracker* a_pGrass
 	m_pGrassTracker = a_pGrassTracker;
 	HRESULT hr;
 
-	//TODO: AddLater #load_texture_array
-	//D3DXLoadTextureArray(m_GrassState.pD3DDevice, m_GrassState.pD3DDeviceCtx, m_GrassState.sTexPaths, &m_pDiffuseTex, &m_pDiffuseTexSRV);
-	//D3DXLoadTextureArray(m_GrassState.pD3DDevice, m_GrassState.pD3DDeviceCtx, m_GrassState.sTopTexPaths, &m_pTopDiffuseTex, &m_pTopDiffuseTexSRV);
+	D3DXLoadTextureArray(m_GrassState.pD3DDevice, m_GrassState.pD3DDeviceCtx, m_GrassState.sTexPaths, &m_pDiffuseTex, &m_pDiffuseTexSRV);
+	D3DXLoadTextureArray(m_GrassState.pD3DDevice, m_GrassState.pD3DDeviceCtx, m_GrassState.sTopTexPaths, &m_pTopDiffuseTex, &m_pTopDiffuseTexSRV);
 
 	hr = CreateDDSTextureFromFile(m_GrassState.pD3DDevice, m_GrassState.sLowGrassTexPath.c_str(), NULL, &m_pLowGrassTexSRV);
 	m_bUseLowGrass = (hr == S_OK);

@@ -51,16 +51,16 @@ float                               g_fGrassAmbient = 0.15f;//0.23f;//0.05f
 float                               g_fGrassDiffuse = 10.0f;
 
 //phys
-float                               g_fMass = 0;//1.0;//0.2450f; //0.230f;
-float                               g_fHardness = 0;//1.0f;
-float                               g_fWindStrength = 0;//1.0f;//0.0616f;
-float                               g_fWindStrengthDefault = 0;//1.0f;
-float                               g_fWindBias = 0;//0.4370f;
-float                               g_fWindScale = 0;//4.96f;
+float                               g_fMass = 1.0;//0.2450f; //0.230f;
+float                               g_fHardness = 1.0f;
+float                               g_fWindStrength = 1.0f;//0.0616f;
+float                               g_fWindStrengthDefault = 1.0f;
+float                               g_fWindBias = 0.4370f;
+float                               g_fWindScale = 4.96f;
 //phys
 
-float                               g_fWindTexSpeed = 0;//2.5f;//3.78f;
-float                               g_fWindTexTile = 0;//4.f;//4.f;//5.2f;
+float                               g_fWindTexSpeed = 2.5f;//3.78f;
+float                               g_fWindTexTile = 4.f;//4.f;//5.2f;
 float                               g_fCameraSpeed = 30.0f;
 float                               g_fTime = 0.0f;
 float                               g_fHeightScale = 40.0f;
@@ -81,6 +81,19 @@ float                               g_fCameraHeightMin;
 XMFLOAT3                            g_vCameraEyeStart(9.8f, 9.5f, 7.8f);
 XMFLOAT3                            g_vCameraAtStart(10.8f, 9.0f, 8.8f);
 
+
+//--------------------------------------------------------------------------------------
+// UI control IDs
+//--------------------------------------------------------------------------------------
+enum IDC_HUD
+{
+	IDC_STATIC = -1,
+
+	IDC_GRASS_WIND_LABEL,
+	IDC_GRASS_WIND_FORCE_SLYDER,
+
+	IDC_TOGGLE_WIREFRAME
+};
 							 
 //--------------------------------------------------------------------------------------
 // Forward declarations 

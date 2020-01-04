@@ -68,8 +68,6 @@ inline float SignedfRand (float a_fMax)
 }
 
 
-
-//TODO: AddLater #load_texture_array
 inline HRESULT D3DXLoadTextureArray (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, std::vector< std::wstring > a_sTexNames,
 	ID3D11Texture2D** a_ppTex2D, ID3D11ShaderResourceView** a_ppSRV)
 {
@@ -89,8 +87,7 @@ inline HRESULT D3DXLoadTextureArray (ID3D11Device* a_pD3DDevice, ID3D11DeviceCon
 	for (i = 0; i < iNumTextures; i++)
 	{
 		ID3D11Resource* pRes = NULL;
-		V_RETURN(CreateDDSTextureFromFileEx(a_pD3DDevice, a_sTexNames[i].c_str(), 0, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, D3D10_CPU_ACCESS_READ, 0, 0, &pRes, nullptr));
-		//V_RETURN(CreateDDSTextureFromFile(a_pD3DDevice, a_sTexNames[i].c_str(), &pRes, nullptr));
+		V_RETURN(CreateDDSTextureFromFileEx(a_pD3DDevice, a_sTexNames[i].c_str(), 0, D3D11_USAGE_STAGING, 0, D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ, 0, 0, &pRes, nullptr));
 		if (pRes)
 		{
 			ID3D11Texture2D* pTemp;

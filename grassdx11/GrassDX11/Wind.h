@@ -102,7 +102,7 @@ public:
     void SetWindBias                   (float a_fBias);
     void SetWindScale                  (float a_fScale);
     void SetWindSpeed                  (float a_fWindSpeed);
-    void Update                        (float a_fElapsed, XMFLOAT3 a_vCamDir);
+    void Update                        (float a_fElapsed, XMVECTOR a_vCamDir);
     const WindData *WindDataPtr        (void);
     ID3D11ShaderResourceView *GetMap   (void);
 };

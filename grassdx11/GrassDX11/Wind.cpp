@@ -820,11 +820,11 @@ void Wind::MakeWindTex (float a_fElapsed, XMVECTOR a_vCamDir)
     m_WindData.WindCopy(m_pWindTex, m_pD3DDeviceCtx);
 }
 
-void Wind::Update (float a_fElapsed, XMFLOAT3 a_vCamDir)
+void Wind::Update (float a_fElapsed, XMVECTOR a_vCamDir)
 {
     m_fTime += a_fElapsed;
     m_pTimeESV->SetFloat(m_fTime);
-    MakeWindTex(a_fElapsed, XMLoadFloat3(&a_vCamDir));
+    MakeWindTex(a_fElapsed, a_vCamDir);
 }
 
 
