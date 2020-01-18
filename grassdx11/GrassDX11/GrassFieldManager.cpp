@@ -58,8 +58,9 @@ GrassFieldManager::GrassFieldManager (GrassFieldState &a_InitState)
     /* Shadow mapping unit */
        
 	CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.sNoiseMapPath.c_str(), nullptr, &m_pNoiseESV);
+	CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.sGrassOnTerrainTexturePath.c_str(), nullptr, &m_pTerrGrassESV);
 	CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.sColorMapPath.c_str(), nullptr, &m_pGrassColorESV);
-    
+
     /* ...and lots of variables... */
     ID3DX11EffectShaderResourceVariable *pESRV;
     ID3D11ShaderResourceView *pHeightMapSRV = m_pTerrain->HeightMapSRV();
@@ -134,16 +135,17 @@ GrassFieldManager::GrassFieldManager (GrassFieldState &a_InitState)
 	pESRV = m_pGrassTypes[2]->GetEffect()->GetVariableByName("g_txNoise")->AsShaderResource();
     if (pESRV) 
         pESRV->SetResource(m_pNoiseESV);
-    /*color maps...*/
+    /* Color maps...*/
     pESRV = m_pGrassTypes[0]->GetEffect()->GetVariableByName("g_txGrassColor")->AsShaderResource();
     if (pESRV) 
         pESRV->SetResource(m_pGrassColorESV);
     pESRV = m_pGrassTypes[2]->GetEffect()->GetVariableByName("g_txGrassColor")->AsShaderResource();
     if (pESRV) 
         pESRV->SetResource(m_pGrassColorESV);
-    pESRV = m_pSceneEffect->GetVariableByName("g_txGrassColor")->AsShaderResource();
+
+    pESRV = m_pSceneEffect->GetVariableByName("g_txTerrGrass")->AsShaderResource();
     if (pESRV) 
-        pESRV->SetResource(m_pGrassColorESV);
+        pESRV->SetResource(m_pTerrGrassESV);
 
     /* Loading subtypes info */
     m_pT1SubTypes = new GrassPropertiesT1(a_InitState.InitState[0].sSubTypesPath);
@@ -175,7 +177,8 @@ GrassFieldManager::~GrassFieldManager (void)
 {
     SAFE_RELEASE(m_pSceneEffect);
     SAFE_RELEASE(m_pNoiseESV);
-    SAFE_RELEASE(m_pGrassColorESV);
+	SAFE_RELEASE(m_pGrassColorESV);
+    SAFE_RELEASE(m_pTerrGrassESV);
     UINT i;
     for (i = 0; i < GrassTypeNum; i++)
     {
@@ -228,6 +231,13 @@ void GrassFieldManager::SetFogColor (float4&a_vColor)
     m_pFogColorEVV[1]->SetFloatVector((float*)&a_vColor);
 	m_pFogColorEVV[2]->SetFloatVector((float*)&a_vColor);
 }
+
+
+void GrassFieldManager::ToggleRenderingGrass ()
+{
+	isGrassRendering = !isGrassRendering;
+}
+
 
 void GrassFieldManager::SetQuality( float a_fQuality )
 {    
@@ -422,8 +432,10 @@ void GrassFieldManager::Render( )
     m_pInvView[2]->SetMatrix((float*)&m_mInvView);
 
 	m_pTerrain->Render();
-    m_pGrassTypes[0]->Render(false);
-	m_pGrassTypes[2]->Render(false);
+	if (isGrassRendering) {
+		m_pGrassTypes[0]->Render(false);
+		//m_pGrassTypes[2]->Render(false);
+	}
 }
 
 void GrassFieldManager::Update (XMVECTOR a_vCamDir, XMVECTOR a_vCamPos, Mesh *a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime)
@@ -432,8 +444,8 @@ void GrassFieldManager::Update (XMVECTOR a_vCamDir, XMVECTOR a_vCamPos, Mesh *a_
 	m_vCamPos = a_vCamPos;
    
 	m_pWind->Update(a_fElapsedTime, a_vCamDir);
-	m_pTerrain->UpdateLightMap( );
-	
+	m_pTerrain->UpdateLightMap();
+
 	m_pGrassTypes[0]->Update(*m_pViewProj, a_vCamPos, a_pMeshes, a_uNumMeshes, a_fElapsedTime);
 	m_pGrassTypes[2]->Update(*m_pViewProj, a_vCamPos, a_pMeshes, a_uNumMeshes, a_fElapsedTime);
 }

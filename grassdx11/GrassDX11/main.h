@@ -82,6 +82,15 @@ XMFLOAT3                            g_vCameraEyeStart(9.8f, 9.5f, 7.8f);
 XMFLOAT3                            g_vCameraAtStart(10.8f, 9.0f, 8.8f);
 
 
+ID3D11Texture2D*                    g_pRenderTarget = NULL;
+ID3D11RenderTargetView*             g_pRTRV = NULL;
+ID3D11Texture2D*                    g_pDSTarget = NULL;
+ID3D11DepthStencilView*             g_pDSRV = NULL;
+
+UINT                                g_MSAASampleCount = 4;
+UINT                                g_BackBufferWidth;
+UINT                                g_BackBufferHeight;
+
 //--------------------------------------------------------------------------------------
 // UI control IDs
 //--------------------------------------------------------------------------------------
@@ -91,8 +100,16 @@ enum IDC_HUD
 
 	IDC_GRASS_WIND_LABEL,
 	IDC_GRASS_WIND_FORCE_SLYDER,
+	
+	IDC_TERR_RGB_LABEL,
+	IDC_TERR_R_SLYDER,
+	IDC_TERR_G_SLYDER,
+	IDC_TERR_B_SLYDER,
 
-	IDC_TOGGLE_WIREFRAME
+	IDC_TOGGLE_WIREFRAME,
+	IDC_TOGGLE_RENDERING_GRASS,
+
+	IDC_SAMPLE_COUNT
 };
 							 
 //--------------------------------------------------------------------------------------

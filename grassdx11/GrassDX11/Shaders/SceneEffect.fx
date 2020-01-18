@@ -51,7 +51,7 @@ Texture2D g_txSeatingT3;
 Texture2D g_txHeightMap;
 Texture2D g_txLightMap;
 Texture2D g_txSkyBox;
-Texture2D g_txGrassColor;
+Texture2D g_txTerrGrass;
 
 // Mesh textures
 Texture2D g_txMeshMapKd;
@@ -214,12 +214,12 @@ float4 MeshPSMain( TerrPSIn Input ): SV_Target
 TerrPSIn TerrainVSMain( TerrVSIn Input )
 {
     TerrPSIn Output;
-    float fY			= g_txHeightMap.SampleLevel(g_samLinear, Input.vTexCoord, 0).a * g_fHeightScale;
-    float4 vWorldPos	= float4(Input.vPos + float3(0.0, fY, 0.0), 1.0);
-    Output.vPos         = mul(vWorldPos, g_mViewProj);
-    Output.vTexCoord.xy = Input.vTexCoord;
-    Output.vTexCoord.z  = FogValue(length(vWorldPos - g_mInvCamView[3].xyz));
-    Output.vTexCoord.w  = length(vWorldPos - g_mInvCamView[3].xyz);
+    float fY			 = g_txHeightMap.SampleLevel(g_samLinear, Input.vTexCoord, 0).a * g_fHeightScale;
+    float4 vWorldPos	 = float4(Input.vPos + float3(0.0, fY, 0.0), 1.0);
+    Output.vPos          = mul(vWorldPos, g_mViewProj);
+    Output.vTexCoord.xy  = Input.vTexCoord;
+    Output.vTexCoord.z   = FogValue(length(vWorldPos - g_mInvCamView[3].xyz));
+    Output.vTexCoord.w   = length(vWorldPos - g_mInvCamView[3].xyz);
     
     return Output;
 }
@@ -235,19 +235,17 @@ float GetAlphaCoef(float2 vTexCoord)
 float4 TerrainPSMain( TerrPSIn Input ): SV_Target
 {
     float2 fDot = g_txLightMap.Sample(g_samLinear, Input.vTexCoord.xy).rg;
-    float3 vTexel = g_txGrassDiffuse.Sample(g_samLinear, Input.vTexCoord.xy * 0.5*g_fTerrTile).xyz;
+    float3 vTexel = g_txGrassDiffuse.Sample(g_samLinear, Input.vTexCoord.xy * 0.5 * g_fTerrTile).xyz;
     vTexel *=  g_vTerrRGB;
-    float3 vGrassColor = g_txGrassColor.Sample(g_samLinear, Input.vTexCoord.xy).xyz;
+    float3 vGrassColor = g_txTerrGrass.Sample(g_samAniso, Input.vTexCoord.xy * 64).xyz;
 
-	float fTexDist = min(Input.vTexCoord.w/140.f, 1.0);
+	float fTexDist = min(Input.vTexCoord.w / 140.f, 1.0);
 	
-	//float3(0.04, 0.1, 0.01) - previous color	
     float3 vL = lerp(vGrassColor, vTexel, fTexDist) * max(0.8, (2.0 + 5.0 * fDot.y) * 0.5);
 
 	float fLimDist = clamp((Input.vTexCoord.w - 140.0) / 20.0, 0.0, 1.0);
-//    return lerp(float4(fDot.x * g_vTerrSpec, 1.0), g_vFogColor, Input.vTexCoord.z);
-    return lerp(float4(fDot.x * fLimDist* g_vTerrSpec + (1.0 - fDot.x * fLimDist) * vL, 1.0), g_vFogColor, Input.vTexCoord.z);
 
+    return lerp(float4(fDot.x * fLimDist* g_vTerrSpec + (1.0 - fDot.x * fLimDist) * vL, 1.0), g_vFogColor, Input.vTexCoord.z);
 }
 
 /* Light Map Shaders */

@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+*.tlog
+*.log
+*.idb
+*.pdb
+*.db
+grassdx11/GrassDX11/.vs/GrassDX11/v16/.suo
+*.opendb
+*.ipch
+*.db-shm
+*.db-wal
+*.ilk
+*.cso

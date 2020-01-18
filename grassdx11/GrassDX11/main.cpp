@@ -101,7 +101,7 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
     // Only require 10-level hardware, change to D3D_FEATURE_LEVEL_11_0 to require 11-class hardware
     // Switch to D3D_FEATURE_LEVEL_9_x for 10level9 hardware
-    DXUTCreateDevice( D3D_FEATURE_LEVEL_10_0, true, 1000, 800 );
+    DXUTCreateDevice( D3D_FEATURE_LEVEL_10_0, true, 1280, 983 );
 
     DXUTMainLoop(); // Enter into the DXUT render loop
 
@@ -128,6 +128,13 @@ void InitApp()
 	g_HUD.AddSlider(IDC_GRASS_WIND_FORCE_SLYDER, 20, iY += iYo, 135, 22, 0, 10000, (int)(g_fWindStrength * 10000));
 
 	g_HUD.AddButton(IDC_TOGGLE_WIREFRAME, L"Toggle wire-frame (F4)", 25, iY += iYo, 125, 22, VK_F4);
+	g_HUD.AddButton(IDC_TOGGLE_RENDERING_GRASS, L"Toggle rendering-grass (F5)", 25, iY += iYo, 125, 22, VK_F5);
+
+	swprintf_s(sStr, MAX_PATH, L"Diffuse: (%.2f,%.2f,%.2f)", g_vTerrRGB.x, g_vTerrRGB.y, g_vTerrRGB.z);
+	g_HUD.AddStatic(IDC_TERR_RGB_LABEL, sStr, 20, iY += iYo, 140, 22);
+	g_HUD.AddSlider(IDC_TERR_R_SLYDER, 20, iY += iYo, 135, 22, 0, 100, (int)(g_vTerrRGB.x * 100));
+	g_HUD.AddSlider(IDC_TERR_G_SLYDER, 20, iY += iYo, 135, 22, 0, 100, (int)(g_vTerrRGB.y * 100));
+	g_HUD.AddSlider(IDC_TERR_B_SLYDER, 20, iY += iYo, 135, 22, 0, 100, (int)(g_vTerrRGB.z * 100));
 
     g_SampleUI.SetCallback( OnGUIEvent ); iY = 10;
 }
@@ -278,7 +285,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	g_GrassInitState.InitState[2].fCameraMeshDist = g_fCameraMeshDistMax;
 	g_GrassInitState.sSceneEffectPath = L"Shaders/SceneEffect.fx";
 	g_GrassInitState.sNoiseMapPath = L"resources/Noise.dds";
-	g_GrassInitState.sColorMapPath = L"resources/GrassColor.dds";
+	g_GrassInitState.sGrassOnTerrainTexturePath = L"resources/grass512.dds";
 	g_GrassInitState.fHeightScale = g_fHeightScale;
 	g_GrassInitState.fTerrRadius = 400.0f;
 	g_pGrassField = new GrassFieldManager(g_GrassInitState);
@@ -332,6 +339,110 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 
 
 //--------------------------------------------------------------------------------------
+// Update the MSAA sample count combo box for this format
+//--------------------------------------------------------------------------------------
+void UpdateMSAASampleCounts(ID3D11Device* pd3dDevice, DXGI_FORMAT fmt)
+{
+	CDXUTComboBox* pComboBox = NULL;
+	bool bResetSampleCount = false;
+	UINT iHighestSampleCount = 0;
+
+	pComboBox = g_HUD.GetComboBox(IDC_SAMPLE_COUNT);
+	if (!pComboBox)
+		return;
+
+	pComboBox->RemoveAllItems();
+
+	WCHAR val[10];
+	for (UINT i = 1; i <= D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT; i++)
+	{
+		UINT Quality;
+		if (SUCCEEDED(pd3dDevice->CheckMultisampleQualityLevels(fmt, i, &Quality)) &&
+			Quality > 0)
+		{
+			swprintf_s(val, 10, L"%d", i);
+			pComboBox->AddItem(val, IntToPtr(i));
+			iHighestSampleCount = i;
+		}
+		else if (g_MSAASampleCount == i)
+		{
+			bResetSampleCount = true;
+		}
+	}
+
+	if (bResetSampleCount)
+		g_MSAASampleCount = iHighestSampleCount;
+
+	pComboBox->SetSelectedByData(IntToPtr(g_MSAASampleCount));
+}
+
+
+
+HRESULT CreateRenderTarget(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dDeviceCtx, UINT uiWidth, UINT uiHeight, UINT uiSampleCount,
+	UINT uiSampleQuality)
+{
+	HRESULT hr = S_OK;
+
+	SAFE_RELEASE(g_pRenderTarget);
+	SAFE_RELEASE(g_pRTRV);
+	SAFE_RELEASE(g_pDSTarget);
+	SAFE_RELEASE(g_pDSRV);
+
+	ID3D11RenderTargetView* pOrigRT = NULL;
+	ID3D11DepthStencilView* pOrigDS = NULL;
+	pd3dDeviceCtx->OMGetRenderTargets(1, &pOrigRT, &pOrigDS);
+
+	D3D11_RENDER_TARGET_VIEW_DESC DescRTV;
+	pOrigRT->GetDesc(&DescRTV);
+	SAFE_RELEASE(pOrigRT);
+	SAFE_RELEASE(pOrigDS);
+
+	D3D11_TEXTURE2D_DESC dstex;
+	dstex.Width = uiWidth;
+	dstex.Height = uiHeight;
+	dstex.MipLevels = 1;
+	dstex.Format = DescRTV.Format;
+	dstex.SampleDesc.Count = uiSampleCount;
+	dstex.SampleDesc.Quality = uiSampleQuality;
+	dstex.Usage = D3D11_USAGE_DEFAULT;
+	dstex.BindFlags = D3D11_BIND_RENDER_TARGET;
+	dstex.CPUAccessFlags = 0;
+	dstex.MiscFlags = 0;
+	dstex.ArraySize = 1;
+	V_RETURN(pd3dDevice->CreateTexture2D(&dstex, NULL, &g_pRenderTarget));
+
+	// Create the render target view
+	D3D11_RENDER_TARGET_VIEW_DESC DescRT;
+	DescRT.Format = dstex.Format;
+	DescRT.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
+	V_RETURN(pd3dDevice->CreateRenderTargetView(g_pRenderTarget, &DescRT, &g_pRTRV));
+
+	// Create depth stencil texture.
+	dstex.Width = uiWidth;
+	dstex.Height = uiHeight;
+	dstex.MipLevels = 1;
+	dstex.Format = DXGI_FORMAT_D32_FLOAT;
+	dstex.SampleDesc.Count = uiSampleCount;
+	dstex.SampleDesc.Quality = uiSampleQuality;
+	dstex.Usage = D3D11_USAGE_DEFAULT;
+	dstex.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	dstex.CPUAccessFlags = 0;
+	dstex.MiscFlags = 0;
+	V_RETURN(pd3dDevice->CreateTexture2D(&dstex, NULL, &g_pDSTarget));
+
+	// Create the depth stencil view
+	D3D11_DEPTH_STENCIL_VIEW_DESC DescDS;
+	DescDS.Format = DXGI_FORMAT_D32_FLOAT;
+	DescDS.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+	DescDS.Flags = 0;
+	V_RETURN(pd3dDevice->CreateDepthStencilView(g_pDSTarget, &DescDS, &g_pDSRV));
+
+	return hr;
+}
+
+
+
+//--------------------------------------------------------------------------------------
 // Create any D3D11 resources that depend on the back buffer
 //--------------------------------------------------------------------------------------
 HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapChain* pSwapChain,
@@ -344,7 +455,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
 
     // Setup the camera's projection parameters
     float fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
-    g_Camera->SetProjParams( XM_PI / 4, fAspectRatio, 0.1f, 1000.0f );
+    g_Camera->SetProjParams( 70.4f * ( 3.14159f / 180.0f ), fAspectRatio, 0.1f, 1000.0f );
     
 
 	//g_Camera->SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
@@ -354,6 +465,15 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     g_HUD.SetSize( 170, 170 );
     g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 300 );
     g_SampleUI.SetSize( 170, 300 );
+
+	// Update the sample count
+    UpdateMSAASampleCounts( pd3dDevice, pBackBufferSurfaceDesc->Format );
+
+	// Create a multi-sample render target
+	auto pd3dImmediateContext = DXUTGetD3D11DeviceContext();
+	g_BackBufferWidth = pBackBufferSurfaceDesc->Width;
+	g_BackBufferHeight = pBackBufferSurfaceDesc->Height;
+	V_RETURN(CreateRenderTarget(pd3dDevice, pd3dImmediateContext, g_BackBufferWidth, g_BackBufferHeight, g_MSAASampleCount, 0));
 
     return S_OK;
 }
@@ -375,7 +495,7 @@ void RenderGrass(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dDeviceCtx, X
 	XMVECTOR vCamDir = g_Camera->GetLookAtPt() - g_Camera->GetEyePt();
 	
 	g_pGrassField->Update(vCamDir, g_Camera->GetEyePt(), g_pMeshes, 0/*g_fNumOfMeshes*/, a_fElapsedTime);
-	g_pGrassField->Render();
+    g_pGrassField->Render();
 	
 	
 	if (GetGlobalStateManager().UseWireframe())
@@ -399,22 +519,46 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
         return;
     }       
 
-    auto pRTV = DXUTGetD3D11RenderTargetView();
-    pd3dImmediateContext->ClearRenderTargetView( pRTV, Colors::MidnightBlue );
+    float ClearColor[4] = { 0.0, 0.3f, 0.8f, 0.0 };
+	ID3D11DepthStencilView* pDSV = DXUTGetD3D11DepthStencilView();
+	pd3dImmediateContext->ClearDepthStencilView(pDSV, D3D10_CLEAR_DEPTH, 1.0, 0);
 
-    // Clear the depth stencil
-    auto pDSV = DXUTGetD3D11DepthStencilView();
-    pd3dImmediateContext->ClearDepthStencilView( pDSV, D3D11_CLEAR_DEPTH, 1.0, 0 );
+	// Set our render target since we can't present multisampled ref
+	ID3D11RenderTargetView* pOrigRT;
+	ID3D11DepthStencilView* pOrigDS;
+	pd3dImmediateContext->OMGetRenderTargets(1, &pOrigRT, &pOrigDS);
 
+	ID3D11RenderTargetView* aRTViews[1] = { g_pRTRV };
+	pd3dImmediateContext->OMSetRenderTargets(1, aRTViews, g_pDSRV);
+
+	// Clear the render target and DSV
+	pd3dImmediateContext->ClearRenderTargetView(g_pRTRV, ClearColor);
+	pd3dImmediateContext->ClearDepthStencilView(g_pDSRV, D3D11_CLEAR_DEPTH, 1.0, 0);
+
+	g_fTime += fElapsedTime;
 	// Get the projection & view matrix from the camera class
     XMMATRIX mView = g_Camera->GetViewMatrix();
     XMMATRIX mProj = g_Camera->GetProjMatrix();
-
-	g_fTime += fElapsedTime;
-
+	
 	// Render grass
 	RenderGrass(pd3dDevice, pd3dImmediateContext, mView, mProj, fElapsedTime);
 	
+	// Copy it over because we can't resolve on present at the moment
+	ID3D11Resource* pRT;
+	pOrigRT->GetResource(&pRT);
+	D3D11_RENDER_TARGET_VIEW_DESC rtDesc;
+	pOrigRT->GetDesc(&rtDesc);
+	pd3dImmediateContext->ResolveSubresource(pRT, D3D10CalcSubresource(0, 0, 1), g_pRenderTarget, D3D10CalcSubresource(0, 0,
+		1),
+		rtDesc.Format);
+	SAFE_RELEASE(pRT);
+
+	// Use our Old RT again
+	aRTViews[0] = pOrigRT;
+	pd3dImmediateContext->OMSetRenderTargets(1, aRTViews, pOrigDS);
+	SAFE_RELEASE(pOrigRT);
+	SAFE_RELEASE(pOrigDS);
+
     DXUT_BeginPerfEvent( DXUT_PERFEVENTCOLOR, L"HUD / Stats" );
     g_HUD.OnRender( fElapsedTime );
     g_SampleUI.OnRender( fElapsedTime );
@@ -437,6 +581,10 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 void CALLBACK OnD3D11ReleasingSwapChain( void* pUserContext )
 {
     g_DialogResourceManager.OnD3D11ReleasingSwapChain();
+	
+	SAFE_RELEASE(g_pRTRV);
+	SAFE_RELEASE(g_pDSRV);
+	SAFE_RELEASE(g_pDSTarget);
 }
 
 
@@ -454,6 +602,11 @@ void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
     SAFE_RELEASE( g_pPixelShader11 );
     SAFE_RELEASE( g_pLayout11 );
     SAFE_RELEASE( g_pSamLinear );
+
+	SAFE_RELEASE(g_pRenderTarget);
+	SAFE_RELEASE(g_pRTRV);
+	SAFE_RELEASE(g_pDSTarget);
+	SAFE_RELEASE(g_pDSRV);
 
     // Delete additional render resources here...
 
@@ -535,13 +688,31 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
     {
 		case IDC_TOGGLE_WIREFRAME:
 			GetGlobalStateManager().ToggleWireframe();
+			break;
 		
+		case IDC_TOGGLE_RENDERING_GRASS:
+			g_pGrassField->ToggleRenderingGrass();
+			break;
+
 		case IDC_GRASS_WIND_FORCE_SLYDER:
 		{
 			g_fWindStrength = (float)g_HUD.GetSlider(IDC_GRASS_WIND_FORCE_SLYDER)->GetValue() / 10000.0f;
 			swprintf_s(sStr, MAX_PATH, L"Wind Strength: %.4f", g_fWindStrength);
 			g_HUD.GetStatic(IDC_GRASS_WIND_LABEL)->SetText(sStr);
 			g_pGrassField->SetWindStrength(g_fWindStrength);
+			break;
+		}
+		case IDC_TERR_R_SLYDER:
+		case IDC_TERR_G_SLYDER:
+		case IDC_TERR_B_SLYDER:
+		{
+			g_vTerrRGB.x = (float)g_HUD.GetSlider(IDC_TERR_R_SLYDER)->GetValue() / 100.0f;
+			g_vTerrRGB.y = (float)g_HUD.GetSlider(IDC_TERR_G_SLYDER)->GetValue() / 100.0f;
+			g_vTerrRGB.z = (float)g_HUD.GetSlider(IDC_TERR_B_SLYDER)->GetValue() / 100.0f;
+			swprintf_s(sStr, MAX_PATH, L"Diffuse: (%.2f,%.2f,%.2f)", g_vTerrRGB.x, g_vTerrRGB.y, g_vTerrRGB.z);
+			g_HUD.GetStatic(IDC_TERR_RGB_LABEL)->SetText(sStr);
+			XM_TO_V(g_vTerrRGB, vTerrRGB, 3);
+			g_pGrassField->SetTerrRGB(vTerrRGB);
 			break;
 		}
     }

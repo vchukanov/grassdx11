@@ -420,8 +420,8 @@ float4 InstPSMain( PSIn Input ) : SV_Target
 //	    if (Input.vTexCoord.x < 0.5)fL *= 0.862;
 	    if (Input.vTexCoord.x < 0.5)fL *= 0.7862;
 	}	
-	else
-		fAlpha = 1.0;
+	//else
+	//	fAlpha = 1.0;
 
     float3 vColor1 = float3(0.5, 0.5, 1.0);
     float3 vColor2 = float3(1.5, 1.5, 1.0);

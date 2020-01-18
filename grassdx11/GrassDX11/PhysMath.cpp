@@ -1,4 +1,5 @@
 #include "PhysMath.h"
+
 using namespace DirectX;
 
 #define my_abs(a) ((a) > 0 ? (a) : (-a))

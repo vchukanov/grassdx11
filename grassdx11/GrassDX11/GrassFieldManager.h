@@ -25,6 +25,7 @@ struct GrassFieldState
     std::wstring   sSceneEffectPath;
     std::wstring   sNoiseMapPath;
     std::wstring   sColorMapPath;
+	std::wstring   sGrassOnTerrainTexturePath;
     float          fHeightScale;
     float          fTerrRadius;
 };
@@ -32,6 +33,8 @@ struct GrassFieldState
 class GrassFieldManager
 {
 private:
+	bool					    isGrassRendering = true;
+
     Terrain                    *m_pTerrain;
 	float					    m_fHeightScale;
 	float						m_fTerrRadius;
@@ -59,9 +62,10 @@ private:
     ID3DX11EffectVectorVariable *m_pFogColorEVV[3];
     
                                 
-    ID3D11ShaderResourceView   *m_pNoiseESV;
-    ID3D11ShaderResourceView   *m_pGrassColorESV;
-    ID3D11ShaderResourceView   *m_pSeatingMapESV[GrassTypeNum];
+    ID3D11ShaderResourceView    *m_pNoiseESV;
+	ID3D11ShaderResourceView    *m_pGrassColorESV;
+    ID3D11ShaderResourceView    *m_pTerrGrassESV;
+	ID3D11ShaderResourceView    *m_pSeatingMapESV[GrassTypeNum];
     ID3DX11EffectVectorVariable *m_pMeshesEVV[GrassTypeNum];
     ID3DX11EffectScalarVariable *m_pSegMass[GrassTypeNum];
     ID3DX11EffectScalarVariable *m_pHardness[GrassTypeNum];
@@ -76,7 +80,7 @@ private:
     float3	                     m_vCamPos;
     GrassTracker                *m_pGrassTracker;
 
-    void SetHeightScale       ( float a_fHeightScale );
+    void SetHeightScale       (float a_fHeightScale);
 
 public:
     GrassFieldManager         (GrassFieldState& a_InitState);
@@ -101,6 +105,7 @@ public:
     void SetWindBias          (float a_fBias);
 	void SetTerrRGB			  (float3 &a_vValue);
     void SetFogColor          (float4 &a_vColor);
+	void ToggleRenderingGrass ();
 
     void ClearGrassPools      (void);
 

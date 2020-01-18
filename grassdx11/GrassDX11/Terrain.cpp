@@ -193,13 +193,12 @@ Terrain::Terrain (ID3D11Device *a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceC
     /* just one technique in effect */
     ID3DX11EffectTechnique *pTechnique = a_pEffect->GetTechniqueByIndex(0);
     m_pPass = pTechnique->GetPassByName("RenderTerrainPass");
-
 	m_pLightMapPass = pTechnique->GetPassByName("RenderLightMapPass");
     m_pLightMapESRV = a_pEffect->GetVariableByName("g_txLightMap")->AsShaderResource();
     
 	ID3DX11EffectShaderResourceVariable *pESRV;
     pESRV = a_pEffect->GetVariableByName("g_txGrassDiffuse")->AsShaderResource();
-	CreateDDSTextureFromFile(m_pD3DDevice, L"resources/test.dds", nullptr, &m_pGrassSRV);
+	CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Grass.dds", nullptr, &m_pGrassSRV);
 	pESRV->SetResource(m_pGrassSRV);
 
     m_fCellSize = 0.0f;
@@ -403,7 +402,7 @@ void Terrain::CreateBuffers (float a_fSize)
 			XMStoreFloat3(&pVertices[i * uSideCount + j].vPos, res);
 
             pVertices[i * uSideCount + j].vTexCoord = XMFLOAT2((float)i / (float)(uSideCount - 1), (float)j / (float)(uSideCount - 1));
-        }
+	    }
 
     for (i = 0; i < uSideCount - 1; i++)
         for (j = 0; j < uSideCount - 1; j++)
