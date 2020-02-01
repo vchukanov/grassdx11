@@ -88,6 +88,12 @@
     <ClCompile Include="StateManager.cpp">
       <Filter>Grass\Render\System</Filter>
     </ClCompile>
+    <ClCompile Include="AxesFanFlow.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugWindow.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="includes.h" />
@@ -159,6 +165,12 @@
     </ClInclude>
     <ClInclude Include="StateManager.h">
       <Filter>Grass\Render\System</Filter>
+    </ClInclude>
+    <ClInclude Include="AxesFanFlow.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugWindow.h">
+      <Filter>Grass\Render\C++</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

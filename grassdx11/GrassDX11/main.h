@@ -15,6 +15,8 @@
 #include "plane.h"
 #include "Terrain.h"
 #include "GrassFieldManager.h"
+#include "AxesFanFlow.h"
+#include "DebugWindow.h"
 
 
 #pragma comment(lib, "Effects11d.lib")
@@ -25,6 +27,10 @@
 //--------------------------------------------------------------------------------------
 // Global variables
 //--------------------------------------------------------------------------------------
+int g_windowHeight = 980;
+int g_windowWidth = 1280;
+
+
 ID3DX11Effect			    *g_pSceneEffect;
 //Mesh						*g_pMeshes[MAX_NUM_MESHES];
 Terrain                     *g_pTerrain;
@@ -41,6 +47,11 @@ ID3DX11EffectScalarVariable		    *g_pGrassDiffuse = NULL;
 GrassFieldState                      g_GrassInitState;
 GrassFieldManager                   *g_pGrassField;
 Mesh							    *g_pMeshes[MAX_NUM_MESHES];
+
+// Output textures to screen
+DebugWindow g_dbgWin;
+//
+
 
 XMFLOAT3	                         g_MeshVels[MAX_NUM_MESHES];
 

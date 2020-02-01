@@ -49,7 +49,9 @@ GrassFieldManager::GrassFieldManager (GrassFieldState &a_InitState)
 	m_fTerrRadius = a_InitState.fTerrRadius;
     
 	m_pWind = new Wind(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx);
-    
+	m_pAxesFanFlow = new AxesFanFlow();
+	m_pAxesFanFlow->Initialize(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx, 32, 32, a_InitState.fTerrRadius);
+
     m_pGrassTypes[0]->SetHeightDataPtr(m_pTerrain->HeightDataPtr());
     m_pGrassTypes[0]->SetWindDataPtr(m_pWind->WindDataPtr());
     m_pGrassTypes[2]->SetHeightDataPtr(m_pTerrain->HeightDataPtr());
@@ -84,7 +86,10 @@ GrassFieldManager::GrassFieldManager (GrassFieldState &a_InitState)
         m_pLightViewProjEMV[i] = m_pGrassTypes[i]->GetEffect()->GetVariableByName( "g_mLightViewProj" )->AsMatrix();
         pESRV = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_txWindTex")->AsShaderResource();
         pESRV->SetResource(m_pWind->GetMap());
-        /* Seating maps */
+		pESRV = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_txAxesFanFlow")->AsShaderResource();
+		pESRV->SetResource(m_pAxesFanFlow->GetShaderResourceView());
+		
+		/* Seating maps */
 		CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[i].sSeatingTexPath.c_str(), nullptr, &m_pSeatingMapESV[i]);
 
         pESRV = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_txSeatingMap")->AsShaderResource();
@@ -187,6 +192,9 @@ GrassFieldManager::~GrassFieldManager (void)
         delete m_pGrassTypes[i];
         SAFE_RELEASE(m_pSeatingMapESV[i]);
     }
+	m_pAxesFanFlow->ShutDown();
+	delete m_pAxesFanFlow;
+
     delete m_pTerrain;
     delete m_pWind;
     delete m_pGrassTracker;
@@ -333,6 +341,7 @@ void GrassFieldManager::SetViewProjMtx (float4x4& a_mViewProj)
 
 void GrassFieldManager::SetTime (float a_fTime)
 {          
+	m_pAxesFanFlow->SetTime(a_fTime);
     m_pTime->SetFloat(a_fTime);
     for (int i = 0; i < GrassTypeNum; i++)
     {
@@ -438,13 +447,16 @@ void GrassFieldManager::Render( )
 	}
 }
 
-void GrassFieldManager::Update (XMVECTOR a_vCamDir, XMVECTOR a_vCamPos, Mesh *a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime)
+void GrassFieldManager::Update (float3 a_vCamDir, float3 a_vCamPos, Mesh *a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime)
 {
 	m_vCamDir = a_vCamDir; 
 	m_vCamPos = a_vCamPos;
    
 	m_pWind->Update(a_fElapsedTime, a_vCamDir);
 	m_pTerrain->UpdateLightMap();
+
+	m_pAxesFanFlow->SetPosition(a_vCamPos);
+	m_pAxesFanFlow->Update();
 
 	m_pGrassTypes[0]->Update(*m_pViewProj, a_vCamPos, a_pMeshes, a_uNumMeshes, a_fElapsedTime);
 	m_pGrassTypes[2]->Update(*m_pViewProj, a_vCamPos, a_pMeshes, a_uNumMeshes, a_fElapsedTime);

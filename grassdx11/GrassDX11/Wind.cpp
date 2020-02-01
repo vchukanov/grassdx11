@@ -3,6 +3,7 @@
 
 #include <DDSTextureLoader.h>
 
+// TODO: move to other place to share (if axes fan need this)
 #define NUM_SEGMENTS 4
 
 #define TEX_W 32
@@ -346,7 +347,6 @@ static float3 GetVel (float3x3 &T, float3 &w, float segmentHeight)
 }
 
 
-static int   uCount      = 0;
 static int   State       = 0;
 static float maxW        = 0.0f;
 static float TimeCont[4] = { 4.0f, 1.0f, 5.0f, 1.0f };
@@ -357,12 +357,9 @@ static float Bound		 = TimeCont[0];
 void WindData::UpdateWindTex (D3D11_MAPPED_SUBRESOURCE &a_MappedTex, float a_fElapsed, XMVECTOR a_vCamDir)
 {
 //    const GrassPropsUnified &props = grassProps[0];
-		if (a_fElapsed >= 0.1f)
+	if (a_fElapsed >= 0.1f)
 		a_fElapsed = 0.1f;
 
-	uCount++;
-	if (uCount>1500)
-		uCount=0;
 
 	CurTime += a_fElapsed;
 	if (CurTime > Bound)

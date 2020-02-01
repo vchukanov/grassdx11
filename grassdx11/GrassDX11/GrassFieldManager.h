@@ -7,6 +7,7 @@
 #include "GrassProperties.h"
 #include "Terrain.h"
 #include "PhysMath.h"
+#include "AxesFanFlow.h"
 
 //TODO:
 #include "Wind.h"
@@ -42,7 +43,9 @@ private:
 	//TODO: Add wind and shadow mapping
     Wind                       *m_pWind;
     //LiSPSM                     *m_pShadowMapping;
-    
+    AxesFanFlow                *m_pAxesFanFlow;
+	
+
 	GrassManager               *m_pGrassTypes[GrassTypeNum];
     GrassPropertiesT1          *m_pT1SubTypes;
     GrassPropertiesT2          *m_pT2SubTypes;
@@ -109,7 +112,9 @@ public:
 
     void ClearGrassPools      (void);
 
-	Terrain * const GetTerrain (float *a_fHeightScale, float *a_fGrassRadius);
+	Terrain *    const GetTerrain (float *a_fHeightScale, float *a_fGrassRadius);
+	Wind*        const GetWind () { return m_pWind; }
+	AxesFanFlow* const GetAxesFanFlow () { return m_pAxesFanFlow; }
 
     void Render  (void);
     void Update  (float3 a_vCamDir, float3 a_vCamPos, Mesh *a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime);

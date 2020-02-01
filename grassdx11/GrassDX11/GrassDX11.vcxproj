@@ -386,8 +386,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="aabb.cpp" />
+    <ClCompile Include="AxesFanFlow.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="ConvexVolume.cpp" />
+    <ClCompile Include="DebugWindow.cpp" />
     <ClCompile Include="GrassFieldManager.cpp" />
     <ClCompile Include="GrassLod.cpp" />
     <ClCompile Include="GrassManager.cpp" />
@@ -422,9 +424,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aabb.h" />
+    <ClInclude Include="AxesFanFlow.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="ConvexVolume.h" />
+    <ClInclude Include="DebugWindow.h" />
     <ClInclude Include="fixedvector.h" />
     <ClInclude Include="GrassFieldManager.h" />
     <ClInclude Include="GrassLod.h" />

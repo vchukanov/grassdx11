@@ -101,7 +101,7 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
     // Only require 10-level hardware, change to D3D_FEATURE_LEVEL_11_0 to require 11-class hardware
     // Switch to D3D_FEATURE_LEVEL_9_x for 10level9 hardware
-    DXUTCreateDevice( D3D_FEATURE_LEVEL_10_0, true, 1280, 983 );
+    DXUTCreateDevice( D3D_FEATURE_LEVEL_10_0, true, g_windowWidth, g_windowHeight );
 
     DXUTMainLoop(); // Enter into the DXUT render loop
 
@@ -186,12 +186,81 @@ bool CALLBACK IsD3D11DeviceAcceptable( const CD3D11EnumAdapterInfo *AdapterInfo,
 //--------------------------------------------------------------------------------------
 // Create any D3D11 resources that aren't dependant on the back buffer
 //--------------------------------------------------------------------------------------
+
+ID3D11DepthStencilState* m_depthDisabledStencilState;
+ID3D11DepthStencilState* m_depthEnabledStencilState;
+XMMATRIX m_orthoMatrix;
+
 HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc,
                                      void* pUserContext )
 {
-    HRESULT hr;
+	HRESULT hr;
+	auto pd3dImmediateContext = DXUTGetD3D11DeviceContext();
 
-    auto pd3dImmediateContext = DXUTGetD3D11DeviceContext();
+	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
+	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+	
+	// Create an orthographic projection matrix for 2D rendering.
+	m_orthoMatrix = DirectX::XMMatrixOrthographicLH((float)g_windowWidth, (float)g_windowHeight, 0.1, 1000.0);
+	
+	// Now create a second depth stencil state which turns off the Z buffer for 2D rendering.  The only difference is 
+	// that DepthEnable is set to false, all other parameters are the same as the other depth stencil state.
+	depthDisabledStencilDesc.DepthEnable = false;
+	depthDisabledStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthDisabledStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthDisabledStencilDesc.StencilEnable = true;
+	depthDisabledStencilDesc.StencilReadMask = 0xFF;
+	depthDisabledStencilDesc.StencilWriteMask = 0xFF;
+	depthDisabledStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	depthDisabledStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	depthDisabledStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	depthDisabledStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	// Create the state using the device.
+	hr = pd3dDevice->CreateDepthStencilState(&depthDisabledStencilDesc, &m_depthDisabledStencilState);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+	
+	// Clear the second depth stencil state before setting the parameters.
+	ZeroMemory(&depthDisabledStencilDesc, sizeof(depthDisabledStencilDesc));
+	
+	// Set up the description of the stencil state.
+	depthStencilDesc.DepthEnable = true;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	
+	depthStencilDesc.StencilEnable = true;
+	depthStencilDesc.StencilReadMask = 0xFF;
+	depthStencilDesc.StencilWriteMask = 0xFF;
+	
+	// Stencil operations if pixel is front-facing.
+	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	
+	// Stencil operations if pixel is back-facing.
+	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	
+	// Create the depth stencil state.
+	hr = pd3dDevice->CreateDepthStencilState(&depthStencilDesc, &m_depthEnabledStencilState);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+	
+	// Set the depth stencil state.
+	pd3dImmediateContext->OMSetDepthStencilState(m_depthEnabledStencilState, 1);
+
+
     V_RETURN( g_DialogResourceManager.OnD3D11CreateDevice( pd3dDevice, pd3dImmediateContext ) );
     V_RETURN( g_SettingsDlg.OnD3D11CreateDevice( pd3dDevice ) );
     g_pTxtHelper = new CDXUTTextHelper( pd3dDevice, pd3dImmediateContext, &g_DialogResourceManager, 15 );
@@ -323,7 +392,6 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	
 	//InitMeshes(pd3dDevice);
 	
-	
 	// Setup the camera's view parameters
 	float height_scale, grass_radius;
 	Terrain* const terr = g_pGrassField->GetTerrain(&height_scale, &grass_radius);
@@ -332,7 +400,11 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	
 	g_Camera->SetViewParams(XMLoadFloat3(&g_vCameraEyeStart), XMLoadFloat3(&g_vCameraAtStart));
 	g_Camera->SetScalers(0.01f, g_fCameraSpeed /* g_fMeter*/);
-
+	
+	g_dbgWin.Initialize(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetAxesFanFlow()->GetShaderResourceView(), 10);
+	//g_dbgWin.Initialize(pd3dDevice, g_windowWidth, g_windowHeight, terr->HeightMapSRV(), 2);
+	//g_dbgWin.Initialize(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetWind()->GetMap(), 10);
+	//
 	
     return S_OK;
 }
@@ -486,7 +558,7 @@ void RenderGrass(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dDeviceCtx, X
 	mViewProj = mul(mView, mProj);
 	
 	g_pGrassField->SetTime(g_fTime);
-
+	
 	g_pGrassField->SetViewProjMtx(mViewProj);
 	g_pGrassField->SetViewMtx(mView);
 	g_pGrassField->SetProjMtx(mProj);
@@ -508,6 +580,21 @@ void RenderGrass(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dDeviceCtx, X
 //--------------------------------------------------------------------------------------
 // Render the scene using the D3D11 device
 //--------------------------------------------------------------------------------------
+
+void TurnZBufferOn(ID3D11DeviceContext* pd3dImmediateContext)
+{
+	pd3dImmediateContext->OMSetDepthStencilState(m_depthEnabledStencilState, 1);
+	return;
+}
+
+
+void TurnZBufferOff(ID3D11DeviceContext* pd3dImmediateContext)
+{
+	pd3dImmediateContext->OMSetDepthStencilState(m_depthDisabledStencilState, 1);
+	return;
+}
+
+
 void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dImmediateContext, double fTime,
                                  float fElapsedTime, void* pUserContext )
 {	
@@ -539,10 +626,21 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 	// Get the projection & view matrix from the camera class
     XMMATRIX mView = g_Camera->GetViewMatrix();
     XMMATRIX mProj = g_Camera->GetProjMatrix();
+	XMMATRIX mWorld = g_Camera->GetWorldMatrix();
 	
 	// Render grass
 	RenderGrass(pd3dDevice, pd3dImmediateContext, mView, mProj, fElapsedTime);
+	TurnZBufferOff(pd3dImmediateContext);
 	
+	XMMATRIX mViewProj;
+	mViewProj = mul(mView, mProj);
+	XMMATRIX mOrtho = XMMatrixTranspose(m_orthoMatrix);
+	g_dbgWin.SetOrthoMtx(mOrtho);
+	g_dbgWin.SetWorldMtx(mWorld);
+	
+	g_dbgWin.Render(pd3dImmediateContext, 100, 100);
+	TurnZBufferOn(pd3dImmediateContext);
+
 	// Copy it over because we can't resolve on present at the moment
 	ID3D11Resource* pRT;
 	pOrigRT->GetResource(&pRT);
@@ -596,6 +694,9 @@ void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
     g_DialogResourceManager.OnD3D11DestroyDevice();
     g_SettingsDlg.OnD3D11DestroyDevice();
     DXUTGetGlobalResourceCache().OnDestroyDevice();
+
+	g_dbgWin.Shutdown();
+
     SAFE_DELETE( g_pTxtHelper );
 
     SAFE_RELEASE( g_pVertexShader11 );
