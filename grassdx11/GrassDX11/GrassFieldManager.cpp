@@ -443,7 +443,7 @@ void GrassFieldManager::Render( )
 	m_pTerrain->Render();
 	if (isGrassRendering) {
 		m_pGrassTypes[0]->Render(false);
-		//m_pGrassTypes[2]->Render(false);
+		m_pGrassTypes[2]->Render(false);
 	}
 }
 

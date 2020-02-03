@@ -12,19 +12,19 @@ private:
 	};
 
 public:
-	bool Initialize (ID3D11Device*, int, int, ID3D11ShaderResourceView*, float);
+	bool Initialize (ID3D11Device* device, int screenWidth, int screenHeight, ID3D11ShaderResourceView* pSRV, float scale = 1.0);
 	void Shutdown   (void);
-	bool Render     (ID3D11DeviceContext*, int, int);
+	bool Render     (ID3D11DeviceContext* deviceContext, int positionX, int positionY);
 
 	int  GetIndexCount  (void);
 	void SetOrthoMtx    (float4x4& a_mViewProj);
 	void SetWorldMtx    (float4x4& a_mWorld);
 
 private:
-	bool InitializeBuffers (ID3D11Device*);
+	bool InitializeBuffers (ID3D11Device* ctx);
 	void ShutdownBuffers   ();
-	bool UpdateBuffers     (ID3D11DeviceContext*, int, int);
-	void RenderBuffers     (ID3D11DeviceContext*);
+	bool UpdateBuffers     (ID3D11DeviceContext* deviceContext, int positionX, int positionY);
+	void RenderBuffers     (ID3D11DeviceContext* deviceContext);
 
 	void CreateInputLayout (void);
 

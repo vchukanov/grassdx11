@@ -710,6 +710,8 @@ void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
 	SAFE_RELEASE(g_pDSRV);
 
     // Delete additional render resources here...
+	SAFE_DELETE(g_Camera);
+	SAFE_DELETE(g_pGrassField);
 
     SAFE_RELEASE( g_pcbVSPerObject11 );
     SAFE_RELEASE( g_pcbVSPerFrame11 );

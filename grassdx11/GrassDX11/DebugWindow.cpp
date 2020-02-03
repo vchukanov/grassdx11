@@ -1,7 +1,7 @@
 #include "DebugWindow.h"
 
 
-bool DebugWindow::Initialize (ID3D11Device* device, int screenWidth, int screenHeight, ID3D11ShaderResourceView *pSRV, float scale = 1.0)
+bool DebugWindow::Initialize (ID3D11Device* device, int screenWidth, int screenHeight, ID3D11ShaderResourceView *pSRV, float scale)
 {
 	bool result;
 
@@ -21,8 +21,8 @@ bool DebugWindow::Initialize (ID3D11Device* device, int screenWidth, int screenH
 	pTextureInterface->GetDesc(&desc);
 
 	// Store the size in pixels that this bitmap should be rendered at.
-	m_bitmapWidth = desc.Width * scale;
-	m_bitmapHeight = desc.Height * scale;
+	m_bitmapWidth = desc.Width * (int)floor(scale);
+	m_bitmapHeight = desc.Height * (int)floor(scale);
 
 	// Initialize the previous rendering position to negative one.
 	m_previousPosX = -1;
@@ -225,7 +225,7 @@ void DebugWindow::ShutdownBuffers()
 }
 
 
-bool DebugWindow::UpdateBuffers(ID3D11DeviceContext* deviceContext, int positionX, int positionY)
+bool DebugWindow::UpdateBuffers (ID3D11DeviceContext* deviceContext, int positionX, int positionY)
 {
 	float left, right, top, bottom;
 	VertexType* vertices;

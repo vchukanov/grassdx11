@@ -39,7 +39,7 @@ float4 PS( AxesFanFlowPSIn In ): SV_Target
    float3 vFlowDirection = normalize(In.vsPos - float3(g_vAxesFanPosOnTex.x, 0, g_vAxesFanPosOnTex.z));
    float fDist = length(In.vsPos - float3(g_vAxesFanPosOnTex.x, 0, g_vAxesFanPosOnTex.z));
    float3 vFlow = vFlowDirection * (1 / (fDist + 1));
-   vFlow *= 0.04 * abs(sin(g_fTime * 2));
+   vFlow *= 0.04; //* abs(sin(g_fTime * 2));
    // z, y, -x
    //return float4(vFlowDirection.z, vFlowDirection.y, -vFlowDirection.x, 1);
    return float4(vFlow.z, vFlow.y, vFlow.x, 1);
