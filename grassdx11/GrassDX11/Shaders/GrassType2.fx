@@ -69,7 +69,6 @@ cbuffer cGrassSubTypes
 //--------------------------------------------------------------------------------------
 Texture2DArray g_txGrassDiffuseArray;
 Texture2DArray g_txWindTex;
-Texture2D      g_txAxesFanFlow;
 Texture2D      g_txSeatingMap;
 Texture2D      g_txIndexMap;
 Texture2D      g_txNoise;

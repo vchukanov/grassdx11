@@ -30,7 +30,6 @@ DebugWindowPSIn VS( DebugWindowVSIn In )
     DebugWindowPSIn Out;
     float4 vWorldPos = float4(In.vPos, 1.0);
     Out.vPos  = mul(vWorldPos, g_mOrtho);
-   
     Out.vTexCoord = In.vTexCoord;
     return Out;
 }

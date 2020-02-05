@@ -31,8 +31,8 @@ int g_windowHeight = 980;
 int g_windowWidth = 1280;
 
 
-ID3DX11Effect			    *g_pSceneEffect;
-//Mesh						*g_pMeshes[MAX_NUM_MESHES];
+ID3DX11Effect             *g_pSceneEffect;
+//Mesh                  *g_pMeshes[MAX_NUM_MESHES];
 Terrain                     *g_pTerrain;
 
 ID3DX11EffectScalarVariable *g_pEffectHeightScale;
@@ -41,19 +41,19 @@ ID3DX11EffectScalarVariable *g_pEffectHeightScale;
 //XMFLOAT3                     g_vCameraAtStart(10.8f, 9.0f, 8.8f);
 
 // Effect handles
-ID3DX11EffectScalarVariable		   *g_pTerrTile = NULL;
+ID3DX11EffectScalarVariable         *g_pTerrTile = NULL;
 
-ID3DX11EffectScalarVariable		    *g_pGrassDiffuse = NULL;
+ID3DX11EffectScalarVariable         *g_pGrassDiffuse = NULL;
 GrassFieldState                      g_GrassInitState;
 GrassFieldManager                   *g_pGrassField;
-Mesh							    *g_pMeshes[MAX_NUM_MESHES];
+Mesh                                *g_pMeshes[MAX_NUM_MESHES];
 
 // Output textures to screen
 DebugWindow g_dbgWin;
 //
 
 
-XMFLOAT3	                         g_MeshVels[MAX_NUM_MESHES];
+XMFLOAT3                            g_MeshVels[MAX_NUM_MESHES];
 
 /* Grass global variables */
 float                               g_fGrassLodBias = 0.0f;//0.02f;//0.35f;//0.1f;
@@ -76,9 +76,9 @@ float                               g_fCameraSpeed = 30.0f;
 float                               g_fTime = 0.0f;
 float                               g_fHeightScale = 40.0f;
 float                               g_fQuality = 1.0f;
-XMFLOAT4							g_vFogColor = XMFLOAT4(0.2f, 0.3f, 0.25f, 1.0f);
-XMFLOAT3							g_vTerrRGB = XMFLOAT3(0.16f, 0.28f, 0.09f);
-XMFLOAT4							g_vGrassSpecular = XMFLOAT4(0.64f, 0.8f, 0.24f, 1.0f);
+XMFLOAT4                            g_vFogColor = XMFLOAT4(0.2f, 0.3f, 0.25f, 1.0f);
+XMFLOAT3                            g_vTerrRGB = XMFLOAT3(0.16f, 0.28f, 0.09f);
+XMFLOAT4                            g_vGrassSpecular = XMFLOAT4(0.64f, 0.8f, 0.24f, 1.0f);
 
 float                               g_fTerrTile = 45.0f;
 
@@ -107,22 +107,22 @@ UINT                                g_BackBufferHeight;
 //--------------------------------------------------------------------------------------
 enum IDC_HUD
 {
-	IDC_STATIC = -1,
+   IDC_STATIC = -1,
 
-	IDC_GRASS_WIND_LABEL,
-	IDC_GRASS_WIND_FORCE_SLYDER,
-	
-	IDC_TERR_RGB_LABEL,
-	IDC_TERR_R_SLYDER,
-	IDC_TERR_G_SLYDER,
-	IDC_TERR_B_SLYDER,
+   IDC_GRASS_WIND_LABEL,
+   IDC_GRASS_WIND_FORCE_SLYDER,
+   
+   IDC_TERR_RGB_LABEL,
+   IDC_TERR_R_SLYDER,
+   IDC_TERR_G_SLYDER,
+   IDC_TERR_B_SLYDER,
 
-	IDC_TOGGLE_WIREFRAME,
-	IDC_TOGGLE_RENDERING_GRASS,
+   IDC_TOGGLE_WIREFRAME,
+   IDC_TOGGLE_RENDERING_GRASS,
 
-	IDC_SAMPLE_COUNT
+   IDC_SAMPLE_COUNT
 };
-							 
+                      
 //--------------------------------------------------------------------------------------
 // Forward declarations 
 //--------------------------------------------------------------------------------------
@@ -131,7 +131,7 @@ void CALLBACK    OnKeyboard  (UINT nChar, bool bKeyDown, bool bAltDown, void* pU
 void CALLBACK    OnGUIEvent  (UINT nEvent, int nControlID, CDXUTControl* pControl, void* pUserContext);
 void CALLBACK    OnFrameMove (double fTime, float fElapsedTime, void* pUserContext);
 
-bool CALLBACK ModifyDeviceSettings	  (DXUTDeviceSettings* pDeviceSettings, void* pUserContext);
+bool CALLBACK ModifyDeviceSettings     (DXUTDeviceSettings* pDeviceSettings, void* pUserContext);
 
 bool CALLBACK IsD3D11DeviceAcceptable (const CD3D11EnumAdapterInfo* AdapterInfo, UINT Output,
                                        const CD3D11EnumDeviceInfo* DeviceInfo,
@@ -139,7 +139,7 @@ bool CALLBACK IsD3D11DeviceAcceptable (const CD3D11EnumAdapterInfo* AdapterInfo,
 
 HRESULT CALLBACK OnD3D11CreateDevice (ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext);
 HRESULT CALLBACK OnD3D11ResizedSwapChain (ID3D11Device* pd3dDevice, IDXGISwapChain* pSwapChain,
-										  const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext);
+                                const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext);
 
 void CALLBACK OnD3D11ReleasingSwapChain (void* pUserContext);
 void CALLBACK OnD3D11DestroyDevice      (void* pUserContext);

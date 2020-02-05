@@ -63,22 +63,22 @@ XMFLOAT3 TerrainHeightData::GetNormal (float a_fX, float a_fY) const
     if (uHY > uHeight - 1)
         uHY = uHeight - 1;
     XMFLOAT3 xmf_fLL = pNormals[uWidth * uLY + uLX];
-	XMFLOAT3 xmf_fHL = pNormals[uWidth * uHY + uLX];
-	XMFLOAT3 xmf_fLR = pNormals[uWidth * uLY + uHX];
-	XMFLOAT3 xmf_fHR = pNormals[uWidth * uHY + uHX];
+   XMFLOAT3 xmf_fHL = pNormals[uWidth * uHY + uLX];
+   XMFLOAT3 xmf_fLR = pNormals[uWidth * uLY + uHX];
+   XMFLOAT3 xmf_fHR = pNormals[uWidth * uHY + uHX];
 
-	XMVECTOR fLL, fHL, fLR, fHR;
-	fLL = XMLoadFloat3(&xmf_fLL);
-	fHL = XMLoadFloat3(&xmf_fHL);
-	fLR = XMLoadFloat3(&xmf_fLR);
-	fHR = XMLoadFloat3(&xmf_fHR);
+   XMVECTOR fLL, fHL, fLR, fHR;
+   fLL = XMLoadFloat3(&xmf_fLL);
+   fHL = XMLoadFloat3(&xmf_fHL);
+   fLR = XMLoadFloat3(&xmf_fLR);
+   fHR = XMLoadFloat3(&xmf_fHR);
 
     XMVECTOR normal = ( (1.0f - fFracX) * fLL + fFracX * fLR ) * (1.0f - fFracY) + 
         fFracY * ( (1.0f - fFracX) * fHL + fFracX * fHR );
-	
-	XMFLOAT3 xmN;
-	XMStoreFloat3(&xmN, normal);
-	return xmN;
+   
+   XMFLOAT3 xmN;
+   XMStoreFloat3(&xmN, normal);
+   return xmN;
 }
 
 float TerrainHeightData::GetHeight3x3 (float a_fX, float a_fY) const
@@ -100,17 +100,17 @@ void TerrainHeightData::ConvertFrom (const ScratchImage* a_image, const TexMetad
         return;
     pData    = new float[a_info->height * a_info->width];
     pNormals = new XMFLOAT3[a_info->height * a_info->width];
-	uHeight = a_info->height;
-	uWidth  = a_info->width;
-	fHeight = (float)uHeight;
-	fWidth  = (float)uWidth;
+   uHeight = a_info->height;
+   uWidth  = a_info->width;
+   fHeight = (float)uHeight;
+   fWidth  = (float)uWidth;
     for( UINT row = 0; row < a_info->height; row++ )
     {
-		UINT rowStart = row * a_image->GetImage(0, 0, 0)->rowPitch;
+      UINT rowStart = row * a_image->GetImage(0, 0, 0)->rowPitch;
         for( UINT col = 0; col < a_info->width; col++ )
         {
             UINT colStart = col;// * 4;//RGBA
-			pData[row * a_info->width + col] = ((float)pTexels[rowStart + colStart + 0]) / 255.0f;
+         pData[row * a_info->width + col] = ((float)pTexels[rowStart + colStart + 0]) / 255.0f;
         }
     }    
 }
@@ -155,28 +155,28 @@ void TerrainHeightData::CalcNormals (float a_fHeightScale, float a_fDistBtwVerti
             pNormals[row * uWidth + col].y = 
             pNormals[row * uWidth + col].z = 0.0f;
             
-			XMVECTOR down = XMLoadFloat3(&vToVertex[DOWN]);
-			XMVECTOR up = XMLoadFloat3(&vToVertex[UP]);
-			XMVECTOR left = XMLoadFloat3(&vToVertex[LEFT]);
-			XMVECTOR right = XMLoadFloat3(&vToVertex[RIGHT]);
+         XMVECTOR down = XMLoadFloat3(&vToVertex[DOWN]);
+         XMVECTOR up = XMLoadFloat3(&vToVertex[UP]);
+         XMVECTOR left = XMLoadFloat3(&vToVertex[LEFT]);
+         XMVECTOR right = XMLoadFloat3(&vToVertex[RIGHT]);
 
-			auto normalCalc = [](XMVECTOR& vec1, XMVECTOR& vec2, XMFLOAT3* xmf3Normal)
-			{
-				XMVECTOR vCrossProduct = XMVector3Cross(vec1, vec2);
-				vCrossProduct = XMVector3Normalize(vCrossProduct);
-				XMVECTOR normal = XMLoadFloat3(xmf3Normal);
-				normal += vCrossProduct;
-				XMStoreFloat3(xmf3Normal, normal);
-			};
-			
-			normalCalc(down, left, &pNormals[row * uWidth + col]);
-			normalCalc(right, down, &pNormals[row * uWidth + col]);
-			normalCalc(up, right, &pNormals[row * uWidth + col]);
-			normalCalc(left, up, &pNormals[row * uWidth + col]);
+         auto normalCalc = [](XMVECTOR& vec1, XMVECTOR& vec2, XMFLOAT3* xmf3Normal)
+         {
+            XMVECTOR vCrossProduct = XMVector3Cross(vec1, vec2);
+            vCrossProduct = XMVector3Normalize(vCrossProduct);
+            XMVECTOR normal = XMLoadFloat3(xmf3Normal);
+            normal += vCrossProduct;
+            XMStoreFloat3(xmf3Normal, normal);
+         };
+         
+         normalCalc(down, left, &pNormals[row * uWidth + col]);
+         normalCalc(right, down, &pNormals[row * uWidth + col]);
+         normalCalc(up, right, &pNormals[row * uWidth + col]);
+         normalCalc(left, up, &pNormals[row * uWidth + col]);
 
-			XMVECTOR normal = XMLoadFloat3(&pNormals[row * uWidth + col]);
-			normal = XMVector3Normalize(normal);
-			XMStoreFloat3(&pNormals[row * uWidth + col], normal);
+         XMVECTOR normal = XMLoadFloat3(&pNormals[row * uWidth + col]);
+         normal = XMVector3Normalize(normal);
+         XMStoreFloat3(&pNormals[row * uWidth + col], normal);
         }
     }
 
@@ -186,20 +186,20 @@ void TerrainHeightData::CalcNormals (float a_fHeightScale, float a_fDistBtwVerti
 Terrain::Terrain (ID3D11Device *a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3DX11Effect *a_pEffect, float a_fSize)
 {
     m_pD3DDevice    = a_pD3DDevice;
-	m_pD3DDeviceCtx = a_pD3DDeviceCtx;
+   m_pD3DDeviceCtx = a_pD3DDeviceCtx;
     m_uVertexStride = sizeof(TerrainVertex);
     m_uVertexOffset = 0;
 
     /* just one technique in effect */
     ID3DX11EffectTechnique *pTechnique = a_pEffect->GetTechniqueByIndex(0);
     m_pPass = pTechnique->GetPassByName("RenderTerrainPass");
-	m_pLightMapPass = pTechnique->GetPassByName("RenderLightMapPass");
+   m_pLightMapPass = pTechnique->GetPassByName("RenderLightMapPass");
     m_pLightMapESRV = a_pEffect->GetVariableByName("g_txLightMap")->AsShaderResource();
     
-	ID3DX11EffectShaderResourceVariable *pESRV;
+   ID3DX11EffectShaderResourceVariable *pESRV;
     pESRV = a_pEffect->GetVariableByName("g_txGrassDiffuse")->AsShaderResource();
-	CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Grass.dds", nullptr, &m_pGrassSRV);
-	pESRV->SetResource(m_pGrassSRV);
+   CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Grass.dds", nullptr, &m_pGrassSRV);
+   pESRV->SetResource(m_pGrassSRV);
 
     m_fCellSize = 0.0f;
     CreateInputLayout();
@@ -218,7 +218,7 @@ Terrain::~Terrain (void)
     SAFE_RELEASE(m_pHeightMapSRV);
     SAFE_RELEASE(m_pLightMapSRV);
     SAFE_RELEASE(m_pLightMapRTV);
-	SAFE_RELEASE(m_pLightMap);  
+   SAFE_RELEASE(m_pLightMap);  
     SAFE_RELEASE(m_pQuadVertexBuffer);
 }
 
@@ -230,39 +230,38 @@ TerrainHeightData *Terrain::HeightDataPtr (void)
 
 void Terrain::BuildHeightMap (float a_fHeightScale)
 {
-    
     /* Loading height map for future processing... */
-	TexMetadata info;
-	ScratchImage image;
+   TexMetadata info;
+   ScratchImage image;
 
-	HRESULT hr = LoadFromDDSFile(L"resources/HeightMap.dds", DDS_FLAGS_NONE, &info, image);
-	if (hr != S_OK)
-		return;
+   HRESULT hr = LoadFromDDSFile(L"resources/HeightMap.dds", DDS_FLAGS_NONE, &info, image);
+   if (hr != S_OK)
+      return;
 
     /* Calculating terrain heights */
     m_HeightData.ConvertFrom(&image, &info);
-	
-	/* Calculating normals with respect to HeightScale. 
+   
+   /* Calculating normals with respect to HeightScale. 
      * Note, that the m_fCellSize was precomputed in CreateBuffers(). 
      */
     m_HeightData.CalcNormals(a_fHeightScale, m_fCellSize);
 
     /* Now we need to create a texture to write heights and normals into */
-	CD3D11_TEXTURE2D_DESC dstTexDesc;
-	ID3D11Texture2D *pDstTexRes;
-	D3D11_MAPPED_SUBRESOURCE MappedTexture;
+   CD3D11_TEXTURE2D_DESC dstTexDesc;
+   ID3D11Texture2D *pDstTexRes;
+   D3D11_MAPPED_SUBRESOURCE MappedTexture;
 
-	dstTexDesc.Width              = info.width;
-	dstTexDesc.Height             = info.height;
-	dstTexDesc.Format             = DXGI_FORMAT_R32G32B32A32_FLOAT;//DXGI_FORMAT_R8G8B8A8_UNORM;//
+   dstTexDesc.Width              = info.width;
+   dstTexDesc.Height             = info.height;
+   dstTexDesc.Format             = DXGI_FORMAT_R32G32B32A32_FLOAT;//DXGI_FORMAT_R8G8B8A8_UNORM;//
     dstTexDesc.BindFlags          = D3D11_BIND_SHADER_RESOURCE;
     dstTexDesc.CPUAccessFlags     = D3D11_CPU_ACCESS_WRITE;
     dstTexDesc.Usage              = D3D11_USAGE_DYNAMIC;
     dstTexDesc.MipLevels          = 1;
     dstTexDesc.ArraySize          = 1;
-	dstTexDesc.MiscFlags          = 0;
-	dstTexDesc.SampleDesc.Count   = 1;
-	dstTexDesc.SampleDesc.Quality = 0;
+   dstTexDesc.MiscFlags          = 0;
+   dstTexDesc.SampleDesc.Count   = 1;
+   dstTexDesc.SampleDesc.Quality = 0;
 
     V(m_pD3DDevice->CreateTexture2D(&dstTexDesc, 0, &pDstTexRes));
 
@@ -270,7 +269,7 @@ void Terrain::BuildHeightMap (float a_fHeightScale)
 
     float* pTexels = (float*)MappedTexture.pData;
     
-	for( UINT row = 0; row < dstTexDesc.Height; row++ )
+   for( UINT row = 0; row < dstTexDesc.Height; row++ )
     {
         UINT rowStart = row * MappedTexture.RowPitch / sizeof(float);
         for( UINT col = 0; col < dstTexDesc.Width; col++ )
@@ -285,11 +284,11 @@ void Terrain::BuildHeightMap (float a_fHeightScale)
     }
     m_pD3DDeviceCtx->Unmap(pDstTexRes, D3D11CalcSubresource(0, 0, 1));
     
-	/* Ok, creating HeightMap texture finally */
-	ID3D11Texture2D* pHeightMap;
+   /* Ok, creating HeightMap texture finally */
+   ID3D11Texture2D* pHeightMap;
 
-	dstTexDesc.CPUAccessFlags = 0;
-	dstTexDesc.Usage          = D3D11_USAGE_DEFAULT;
+   dstTexDesc.CPUAccessFlags = 0;
+   dstTexDesc.Usage          = D3D11_USAGE_DEFAULT;
 
     V(m_pD3DDevice->CreateTexture2D(&dstTexDesc, 0, &pHeightMap));
 
@@ -348,8 +347,8 @@ void Terrain::BuildHeightMap (float a_fHeightScale)
 
 void Terrain::UpdateLightMap (void)
 {
-	GetGlobalStateManager().SetRasterizerState("EnableMSAA");
-	
+   GetGlobalStateManager().SetRasterizerState("EnableMSAA");
+   
     m_pLightMapESRV->SetResource(NULL);
     ///* Saving render targets */
     ID3D11RenderTargetView* pOrigRT;
@@ -357,24 +356,24 @@ void Terrain::UpdateLightMap (void)
     D3D11_VIEWPORT         OrigViewPort[1];
     UINT                   NumV = 1;
     m_pD3DDeviceCtx->RSGetViewports(&NumV, OrigViewPort);    
-	m_pD3DDeviceCtx->RSSetViewports(1, &m_ViewPort);
-	
-	m_pD3DDeviceCtx->OMGetRenderTargets( 1, &pOrigRT, &pOrigDS );
+   m_pD3DDeviceCtx->RSSetViewports(1, &m_ViewPort);
+   
+   m_pD3DDeviceCtx->OMGetRenderTargets( 1, &pOrigRT, &pOrigDS );
     /* Setting up WindTex and NULL as depth stencil */
-	m_pD3DDeviceCtx->OMSetRenderTargets(1, &m_pLightMapRTV, NULL);
-	m_pD3DDeviceCtx->ClearRenderTargetView( m_pLightMapRTV, ClearColor );
+   m_pD3DDeviceCtx->OMSetRenderTargets(1, &m_pLightMapRTV, NULL);
+   m_pD3DDeviceCtx->ClearRenderTargetView( m_pLightMapRTV, ClearColor );
     
-	/* Executing rendering */
-	m_pD3DDeviceCtx->IASetInputLayout(m_pInputLayout);
-	m_pD3DDeviceCtx->IASetVertexBuffers(0, 1, &m_pQuadVertexBuffer, &m_uVertexStride, &m_uVertexOffset);
-	m_pD3DDeviceCtx->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+   /* Executing rendering */
+   m_pD3DDeviceCtx->IASetInputLayout(m_pInputLayout);
+   m_pD3DDeviceCtx->IASetVertexBuffers(0, 1, &m_pQuadVertexBuffer, &m_uVertexStride, &m_uVertexOffset);
+   m_pD3DDeviceCtx->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
     m_pLightMapPass->Apply(0, m_pD3DDeviceCtx);
-	m_pD3DDeviceCtx->Draw(4, 0);
-	
+   m_pD3DDeviceCtx->Draw(4, 0);
+   
     /* Reverting changes */
-	m_pD3DDeviceCtx->OMSetRenderTargets(1, &pOrigRT, pOrigDS);
-	m_pD3DDeviceCtx->RSSetViewports(NumV, OrigViewPort);
-	
+   m_pD3DDeviceCtx->OMSetRenderTargets(1, &pOrigRT, pOrigDS);
+   m_pD3DDeviceCtx->RSSetViewports(NumV, OrigViewPort);
+   
     SAFE_RELEASE( pOrigRT );
     SAFE_RELEASE( pOrigDS );
     m_pLightMapESRV->SetResource(m_pLightMapSRV);
@@ -390,7 +389,7 @@ void Terrain::CreateBuffers (float a_fSize)
     m_fCellSize = 2.0f * a_fSize / (float)(uSideCount - 1);
     UINT i, j;
 
-	XMVECTOR vStartPos = create(-a_fSize, 0.0f, -a_fSize);;
+   XMVECTOR vStartPos = create(-a_fSize, 0.0f, -a_fSize);;
 
     TerrainVertex *pVertices = new TerrainVertex[uVerticesCount];
     UINT *pIndices = new UINT[m_uIndicesCount];
@@ -398,11 +397,11 @@ void Terrain::CreateBuffers (float a_fSize)
     for (i = 0; i < uSideCount; i++)
         for (j = 0; j < uSideCount; j++)
         {      
-			XMVECTOR res = vStartPos + create(m_fCellSize * i, 0.0f, m_fCellSize * j);
-			XMStoreFloat3(&pVertices[i * uSideCount + j].vPos, res);
+         XMVECTOR res = vStartPos + create(m_fCellSize * i, 0.0f, m_fCellSize * j);
+         XMStoreFloat3(&pVertices[i * uSideCount + j].vPos, res);
 
             pVertices[i * uSideCount + j].vTexCoord = XMFLOAT2((float)i / (float)(uSideCount - 1), (float)j / (float)(uSideCount - 1));
-	    }
+       }
 
     for (i = 0; i < uSideCount - 1; i++)
         for (j = 0; j < uSideCount - 1; j++)
@@ -476,12 +475,12 @@ void Terrain::CreateBuffers (float a_fSize)
 
 void Terrain::CreateInputLayout (void)
 {
-	D3D11_INPUT_ELEMENT_DESC InputDesc[] =
+   D3D11_INPUT_ELEMENT_DESC InputDesc[] =
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0 , D3D11_INPUT_PER_VERTEX_DATA, 0},
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
     };
-	D3DX11_PASS_DESC PassDesc;
+   D3DX11_PASS_DESC PassDesc;
     m_pPass->GetDesc(&PassDesc);
     int InputElementsCount = sizeof(InputDesc) / sizeof(D3D10_INPUT_ELEMENT_DESC);
     m_pD3DDevice->CreateInputLayout(InputDesc, InputElementsCount, 

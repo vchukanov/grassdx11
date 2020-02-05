@@ -8,6 +8,7 @@
 #include "mesh.h"
 #include "ConvexVolume.h"
 #include <fstream>
+#include "AxesFanFlow.h"
 
 using std::ifstream;
 
@@ -17,22 +18,22 @@ class GrassTracker;
 
 struct GrassInitState
 {
-    ID3D11Device	    *pD3DDevice;
-	ID3D11DeviceContext *pD3DDeviceCtx;
-    float				 fGrassRadius;
-    float				 fTerrRadius;
-    float				 fMostDetailedDist;
-    float				 fLastDetailedDist;
-    float				 fMaxQuality;
-    DWORD				 dwPatchesPerSide;
-    DWORD				 dwBladesPerPatchSide;
-    UINT				 uNumCollidedPatchesPerMesh;
-    UINT				 uMaxColliders;
-    float				 fCameraMeshDist;
+    ID3D11Device       *pD3DDevice;
+   ID3D11DeviceContext *pD3DDeviceCtx;
+    float             fGrassRadius;
+    float             fTerrRadius;
+    float             fMostDetailedDist;
+    float             fLastDetailedDist;
+    float             fMaxQuality;
+    DWORD             dwPatchesPerSide;
+    DWORD             dwBladesPerPatchSide;
+    UINT             uNumCollidedPatchesPerMesh;
+    UINT             uMaxColliders;
+    float             fCameraMeshDist;
     
-	std::vector<std::wstring> sTexPaths;
+   std::vector<std::wstring> sTexPaths;
     
-	/* Textures for flowers "tops" */
+   /* Textures for flowers "tops" */
     std::vector<std::wstring>   sTopTexPaths;
     std::wstring                sLowGrassTexPath;
     std::wstring                sEffectPath;
@@ -109,7 +110,9 @@ private:
     GrassTracker                        *m_pGrassTracker;
     ID3DX11EffectMatrixVariable         *m_pTrackViewProjEMV;
     ID3DX11EffectShaderResourceVariable *m_pTrackMapSRV;
-	UINT								 m_uNumPatchesPerTerrSide;
+   AxesFanFlow                         *m_pAxesFanFlow;
+   ID3DX11EffectShaderResourceVariable *m_pAxesFanFlowSRV;
+   UINT                         m_uNumPatchesPerTerrSide;
     //DWORD                                m_dwLodTransformsIndex[GrassLodsCount];
     
     //void UpdateEven         ( ConvexVolume &a_cvFrustum, XMFLOAT4X4 &a_mViewProj, XMFLOAT3 a_vCamPos, Mesh *a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime );
@@ -119,13 +122,13 @@ private:
     void Init               (void);
     void GenerateTransforms (float a_fMaxDist, float a_fPatchSize);
     void LoadIndexData      (void);
-	bool IsPatchVisible		(ConvexVolume& a_cvFrustum, XMVECTOR& a_vPatchPos);
+   bool IsPatchVisible      (ConvexVolume& a_cvFrustum, XMVECTOR& a_vPatchPos);
     float GetPatchHeight    (UINT a_uX, UINT a_uY );
     //void  GetPatchNormal   ( UINT a_uX, UINT a_uY, XMFLOAT3 *a_vNormal );
-	float LodAlphaOffset    (const XMVECTOR &a_vCamPos, const XMVECTOR&a_vPatchPos, const float a_fDist, const float a_fIsCorner );
+   float LodAlphaOffset    (const XMVECTOR &a_vCamPos, const XMVECTOR&a_vPatchPos, const float a_fDist, const float a_fIsCorner );
 
 public:
-    GrassManager  (GrassInitState &a_pInitState, GrassTracker *a_pGrassTracker );
+    GrassManager  (GrassInitState &a_pInitState, GrassTracker *a_pGrassTracker, AxesFanFlow *a_pAxesFanFlow);
     ~GrassManager (void);
 
     void Reinit             (GrassInitState &a_pInitState);
@@ -145,7 +148,7 @@ public:
     void AddSubType         (const GrassPropsUnified &a_SubTypeData);
     void ClearSubTypes      (void);
 
-	ID3DX11Effect* GetEffect (void);
+   ID3DX11Effect* GetEffect (void);
     void Render              (bool a_bShadowPass);
-    void Update              (float4x4 &a_mViewProj, float3 a_vCamPos, Mesh *a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime);
+   void Update              (float4x4 &a_mViewProj, float3 a_vCamPos, Mesh *a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime);
 };

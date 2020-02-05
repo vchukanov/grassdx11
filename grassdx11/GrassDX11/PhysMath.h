@@ -14,8 +14,8 @@ using namespace DirectX;
 #define float4x4 XMMATRIX
 
 float2   create    (float x, float y);
-float3   create	   (float x, float y, float z);
-float4   create	   (float x, float y, float z, float w);
+float3   create    (float x, float y, float z);
+float4   create    (float x, float y, float z, float w);
 
 float    getx      (const float4& v);
 float    gety      (const float4& v);
@@ -27,10 +27,10 @@ float    getcoord  (const float4& v, int idx);
 void     setx      (float4& v, float x);
 void     sety      (float4& v, float y);
 void     setz      (float4& v, float z);
-void	 setw	   (float4& v, float w);
-void	 setcoord   (float4& v, int idx, float val);
+void     setw      (float4& v, float w);
+void     setcoord  (float4& v, int idx, float val);
 
-float3   scale	   (const float s, const float3& m);
+float3   scale     (const float s, const float3& m);
 float3   mul       (const float3 &n, const float3 &m);
 float3   mul       (const float3 &v, const float3x3 &m);
 //float4   mul       (const float4 &v, const float3x3 &m);
@@ -44,7 +44,7 @@ float    dot       (const float3 &a, const float3 &b);
 float3   cross     (const float3 &a, const float3 &b);
 float    length    (const float3 &v);
 float3   normalize (const float3 &v);
-float    clamp	   (float v, float a, float b);
+float    clamp     (float v, float a, float b);
 float3   oneOver   (const float3 &v);
 
 float3x3 MakeRotationMatrix (const float3 &axis);
