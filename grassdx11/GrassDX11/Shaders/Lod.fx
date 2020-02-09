@@ -98,12 +98,14 @@ inline float4 CalcTransparency( float a_fBaseAlpha, float4 a_vFirstPt, out float
 inline float3 CalcWind( float3 a_vPos, int a_iSegmentIndex )
 {
     float2 vTexCoord = ((a_vPos.xz / g_fTerrRadius) * 0.5 + 0.5 )*g_fWindTexTile;
+    float2 vTexCoordForFlow = ((a_vPos.xz / g_fTerrRadius) * 0.5 + 0.5);
 	float3 vValue = g_txWindTex.SampleLevel(g_samLinear, float3(vTexCoord, a_iSegmentIndex), 0).rgb;// - 1.0).xyz; 
-    float3 vAxesFlow = g_txAxesFanFlow.SampleLevel(g_samLinear, vTexCoord, 0).rgb;
-    //float3 vWind = (vValue);
+    
     float3 vWind = (vValue) * g_fWindStrength;
-//    float3 vWind = float3(0.0, 0.0, 0.0);
-
+    //float3 vWind = float3(0.0, 0.0, 0.0);
+    //return vWind;
+    
+    float3 vAxesFlow = g_txAxesFanFlow.SampleLevel(g_samLinear, vTexCoordForFlow, 0).rgb;
     return vAxesFlow;
 }
 

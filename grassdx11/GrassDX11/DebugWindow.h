@@ -19,6 +19,7 @@ public:
    int  GetIndexCount  (void);
    void SetOrthoMtx    (float4x4& a_mViewProj);
    void SetWorldMtx    (float4x4& a_mWorld);
+   void ToggleRender   (void) { m_bNeedRender = ! m_bNeedRender; }
 
 private:
    bool InitializeBuffers (ID3D11Device* ctx);
@@ -30,12 +31,12 @@ private:
 
 private:
    ID3D11Device                        *m_pDevice;
+   ID3D11DeviceContext                 *m_pDeviceCtx;
    ID3DX11EffectMatrixVariable         *m_pOrthoEMV;
    ID3DX11EffectMatrixVariable         *m_pTransformEMV;
    ID3DX11EffectShaderResourceVariable *m_pTexESRV;
 
    ID3D11InputLayout        *m_pInputLayout;
-   ID3D11ShaderResourceView *m_shaderResourceView;
 
    ID3DX11Effect     *m_pEffect;
    ID3DX11EffectPass *m_pPass;
@@ -47,6 +48,8 @@ private:
    int m_previousPosX, m_previousPosY;
 
    float m_fScale;
+ 
+   bool m_bNeedRender = false;
 
    ID3DX11EffectScalarVariable* m_fScaleESV;
 };

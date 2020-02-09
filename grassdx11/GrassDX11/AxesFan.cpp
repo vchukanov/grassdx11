@@ -1,0 +1,130 @@
+#include "AxesFan.h"
+
+#include <DDSTextureLoader.h>
+#include <DirectXMath.h>
+
+AxesFan::AxesFan (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3DX11Effect* a_pEffect,
+   const float4x4& a_vTransform, int a_iBladesNum, float a_fBladeSize, float a_fAngleVel)
+{
+   m_pD3DDevice = a_pD3DDevice;
+   m_pD3DDeviceCtx = a_pD3DDeviceCtx;
+   XMStoreFloat4x4(&m_mTransform, a_vTransform);
+   m_uVertexStride = sizeof(VertexType);
+   m_uVertexOffset = 0;
+   m_uVertexCount = 2 * 3;
+   m_iBladesNum = a_iBladesNum;
+   m_fBladeSize = a_fBladeSize;
+   m_fAngleVel = a_fAngleVel;
+
+   /* Loading effect */
+   /*ID3DBlob* pErrorBlob = nullptr;
+   D3DX11CompileEffectFromFile(L"Shaders/AxesFan.fx",
+      0,
+      D3D_COMPILE_STANDARD_FILE_INCLUDE,
+      0,
+      0,
+      m_pD3DDevice,
+      &m_pEffect,
+      &pErrorBlob);
+   */
+  /* ID3DBlob* pErrorBlob = nullptr;
+   HRESULT hr = D3DX11CompileEffectFromFile(L"Shaders/AxesFan.fx", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+      D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_SKIP_OPTIMIZATION, 0, m_pD3DDevice, &m_pEffect, &pErrorBlob);
+
+   if (pErrorBlob)
+   {
+      OutputDebugStringA(reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()));
+      pErrorBlob->Release();
+   }*/
+
+   ID3DX11EffectTechnique* pTechnique = a_pEffect->GetTechniqueByIndex(0);
+   m_pPass = pTechnique->GetPassByName("RenderMeshPass");
+   //m_pPass = pTechnique->GetPassByName("RenderAxesFan");
+
+   CreateVertexBuffer();
+
+   m_pTransformEMV = a_pEffect->GetVariableByName("g_mWorld")->AsMatrix();
+   m_pViewProjEMV = a_pEffect->GetVariableByName("g_mViewProj")->AsMatrix();
+   CreateInputLayout();
+
+   XMStoreFloat4x4(&m_mRotation, XMMatrixIdentity());
+   m_mRot = XMMatrixRotationY(0);
+}
+
+AxesFan::~AxesFan()
+{
+   SAFE_RELEASE(m_pInputLayout);
+   SAFE_RELEASE(m_pVertexBuffer);
+}
+
+
+void AxesFan::CreateVertexBuffer (void)
+{
+   VertexType* Vertices = new VertexType[m_uVertexCount];
+   
+   Vertices[0].vPos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+   Vertices[1].vPos = XMFLOAT3(m_fBladeSize, -0.5f, 0.5f);
+   Vertices[2].vPos = XMFLOAT3(m_fBladeSize, 0.5f, -0.5f);
+
+   Vertices[5].vPos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+   Vertices[4].vPos = XMFLOAT3(-m_fBladeSize, -0.5f, -0.5f);
+   Vertices[3].vPos = XMFLOAT3(-m_fBladeSize, 0.5f, 0.5f);
+
+   D3D11_BUFFER_DESC VBufferDesc =
+   {
+      m_uVertexCount * sizeof(VertexType),
+      D3D11_USAGE_DEFAULT,
+      D3D11_BIND_VERTEX_BUFFER,
+      0, 0
+   };
+   D3D11_SUBRESOURCE_DATA VBufferInitData;
+   VBufferInitData.pSysMem = Vertices;
+   m_pD3DDevice->CreateBuffer(&VBufferDesc, &VBufferInitData, &m_pVertexBuffer);
+
+   delete[] Vertices;
+}
+
+void AxesFan::CreateInputLayout (void)
+{
+   D3D11_INPUT_ELEMENT_DESC InputDesc[] =
+   {
+      { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0 , D3D11_INPUT_PER_VERTEX_DATA, 0},
+      { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+   };
+   D3DX11_PASS_DESC PassDesc;
+   m_pPass->GetDesc(&PassDesc);
+   int InputElementsCount = sizeof(InputDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC);
+   m_pD3DDevice->CreateInputLayout(InputDesc, InputElementsCount,
+      PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize,
+      &m_pInputLayout);
+}
+
+
+void AxesFan::Render()
+{
+   for (int i = 0; i < m_iBladesNum; i++) {
+      XM_TO_M(m_mTransform, transform);
+      float delta = PI / m_iBladesNum;
+
+      XMMATRIX rot = XMMatrixRotationY(delta * i);
+      rot = XMMatrixMultiply(m_mRot, rot);
+      transform = XMMatrixMultiply(transform, rot);
+
+      M_TO_XM(transform, bladeTr);
+
+      m_pTransformEMV->SetMatrix((float*)& bladeTr);
+      m_pD3DDeviceCtx->IASetInputLayout(m_pInputLayout);
+      m_pD3DDeviceCtx->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &m_uVertexStride, &m_uVertexOffset);
+      m_pD3DDeviceCtx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+      m_pPass->Apply(0, m_pD3DDeviceCtx);
+      m_pD3DDeviceCtx->Draw(m_uVertexCount, 0);
+   }
+}
+
+
+void AxesFan::Update (float a_fElapsedTime)
+{
+   XMMATRIX deltaRot = XMMatrixRotationY(a_fElapsedTime * m_fAngleVel);
+   XMMATRIX rot = XMMatrixMultiply(deltaRot, m_mRot);
+   m_mRot = rot;
+}

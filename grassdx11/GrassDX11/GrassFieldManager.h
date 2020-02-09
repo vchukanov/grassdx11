@@ -7,8 +7,9 @@
 #include "GrassProperties.h"
 #include "Terrain.h"
 #include "PhysMath.h"
-#include "AxesFanFlow.h"
 
+#include "FlowManager.h"
+#include "plane.h"
 //TODO:
 #include "Wind.h"
 //#include "ShadowMapping.h"
@@ -37,20 +38,21 @@ private:
    bool                   isGrassRendering = true;
 
    Terrain                    *m_pTerrain;
-   float                   m_fHeightScale;
-   float                  m_fTerrRadius;
+   float                       m_fHeightScale;
+   float                       m_fTerrRadius;
 
    //TODO: Add wind and shadow mapping
    Wind                       *m_pWind;
    //LiSPSM                     *m_pShadowMapping;
-   AxesFanFlow                *m_pAxesFanFlow;
-   ID3DX11EffectShaderResourceVariable *m_pAxesFanFlowESRV[2];
+   
+   FlowManager                   *m_pFlowManager;
 
+private:
    GrassManager               *m_pGrassTypes[GrassTypeNum];
    GrassPropertiesT1          *m_pT1SubTypes;
    GrassPropertiesT2          *m_pT2SubTypes;
    GrassPropertiesT3          *m_pT3SubTypes;
-   ID3DX11Effect               *m_pSceneEffect;
+   ID3DX11Effect              *m_pSceneEffect;
 
    /* links to variables, for all GrassManagers and one for scene effect */
    ID3DX11EffectMatrixVariable *m_pViewProjEMV[GrassTypeNum + 1];
@@ -108,16 +110,17 @@ public:
    void SetWindBias          (float a_fBias);
    void SetTerrRGB           (float3 &a_vValue);
    void SetFogColor          (float4 &a_vColor);
-   void ToggleRenderingGrass ();
+   void ToggleRenderingGrass (void);
 
    void ClearGrassPools      (void);
 
-   Terrain *    const GetTerrain (float *a_fHeightScale, float *a_fGrassRadius);
-   Wind*        const GetWind () { return m_pWind; }
-   AxesFanFlow* const GetAxesFanFlow () { return m_pAxesFanFlow; }
+   Terrain *    const GetTerrain     (float *a_fHeightScale, float *a_fGrassRadius);
+   Wind*        const GetWind        (void) { return m_pWind; }
+
+   FlowManager* const GetFlowManager (void) { return m_pFlowManager; }
 
    void Render  (void);
-   void Update  (float3 a_vCamDir, float3 a_vCamPos, Mesh *a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime);
+   void Update  (float3 a_vCamDir, float3 a_vCamPos, Mesh *a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime, float a_fTime);
     
    ID3DX11Effect *SceneEffect (void);
 };

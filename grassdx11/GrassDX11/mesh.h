@@ -49,13 +49,13 @@ public:
    virtual ~Mesh ();
 
    virtual void        SetPosAndRadius (XMFLOAT4& a_vPosAndRadius);
-   virtual void        SetHeight      (float a_fH);
-   virtual void        SetTransform   (XMFLOAT4X4& a_mTransform);
-   virtual void        SetInvTransform   (XMFLOAT4X4& a_mInvTransform);
-   virtual XMFLOAT4    GetPosAndRadius   ();
-   virtual XMVECTOR    GetMoveDir      ();
-   virtual XMFLOAT4X4  GetMatr         ();
-   virtual void        Render         ();
+   virtual void        SetHeight       (float a_fH);
+   virtual void        SetTransform    (XMFLOAT4X4& a_mTransform);
+   virtual void        SetInvTransform (XMFLOAT4X4& a_mInvTransform);
+   virtual XMFLOAT4    GetPosAndRadius (void);
+   virtual XMVECTOR    GetMoveDir      (void);
+   virtual XMFLOAT4X4  GetMatr         (void);
+   virtual void        Render          (void);
 
 
    virtual bool CheckCollision (XMVECTOR &Beg, XMVECTOR &End, float* Dist) { return false; }

@@ -19,8 +19,8 @@ GrassTracker::GrassTracker (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_p
    TexStagingDesc.ArraySize        = 1;
    TexStagingDesc.Format           = DXGI_FORMAT_R32G32B32A32_FLOAT;
    TexStagingDesc.SampleDesc.Count = 1;
-   TexStagingDesc.Usage         = D3D11_USAGE_DEFAULT;
-   TexStagingDesc.BindFlags      = D3D10_BIND_RENDER_TARGET | D3D10_BIND_SHADER_RESOURCE;
+   TexStagingDesc.Usage            = D3D11_USAGE_DEFAULT;
+   TexStagingDesc.BindFlags        = D3D11_BIND_RENDER_TARGET | D3D10_BIND_SHADER_RESOURCE;
    m_pD3DDevice->CreateTexture2D(&TexStagingDesc, NULL, &m_TrackTexture);
 
    /* Creating Render Target View */
@@ -181,7 +181,7 @@ void GrassTracker::PrepareVertexBuffer (Mesh* a_pMeshes[], UINT a_uNumMeshes)
 
    /* Create vertex buffer */
    D3D11_BUFFER_DESC bd;
-   bd.Usage         = D3D11_USAGE_DEFAULT; // Need to use D3D10_USAGE_DYNAMIC
+   bd.Usage          = D3D11_USAGE_DEFAULT; // Need to use D3D11_USAGE_DYNAMIC
    bd.ByteWidth      = m_TotalPoints * sizeof(VertexDescription) * 2;
    bd.BindFlags      = D3D11_BIND_VERTEX_BUFFER;
    bd.CPUAccessFlags = 0;

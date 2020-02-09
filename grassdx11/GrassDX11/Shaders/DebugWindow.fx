@@ -36,7 +36,7 @@ DebugWindowPSIn VS( DebugWindowVSIn In )
 
 float4 PS( DebugWindowPSIn In ): SV_Target
 {
-   return g_texture.Sample(g_samLinear, In.vTexCoord, 0);
+   return g_texture.Sample(g_samLinear, In.vTexCoord, 0) * 10;
 }
 
 technique10 Render

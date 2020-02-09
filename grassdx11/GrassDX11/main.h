@@ -49,7 +49,7 @@ GrassFieldManager                   *g_pGrassField;
 Mesh                                *g_pMeshes[MAX_NUM_MESHES];
 
 // Output textures to screen
-DebugWindow g_dbgWin;
+DebugWindow                         g_dbgWin;
 //
 
 
@@ -68,13 +68,21 @@ float                               g_fWindStrength = 1.0f;//0.0616f;
 float                               g_fWindStrengthDefault = 1.0f;
 float                               g_fWindBias = 0.4370f;
 float                               g_fWindScale = 4.96f;
+
+float                               g_fMaxHorizFlow = 0.0562;
+float                               g_fMaxVertFlow = 0.0000;
+float                               g_fDampPower = 2.8110;
+float                               g_fDistPower = 2.1620;
+float                               g_fMaxFlowRadius = 0.1080;
+float                               g_fShift = 1.0270;
+
 //phys
 
 float                               g_fWindTexSpeed = 2.5f;//3.78f;
 float                               g_fWindTexTile = 4.f;//4.f;//5.2f;
 float                               g_fCameraSpeed = 30.0f;
 float                               g_fTime = 0.0f;
-float                               g_fHeightScale = 40.0f;
+float                               g_fHeightScale = 0;//40.0f;
 float                               g_fQuality = 1.0f;
 XMFLOAT4                            g_vFogColor = XMFLOAT4(0.2f, 0.3f, 0.25f, 1.0f);
 XMFLOAT3                            g_vTerrRGB = XMFLOAT3(0.16f, 0.28f, 0.09f);
@@ -109,9 +117,29 @@ enum IDC_HUD
 {
    IDC_STATIC = -1,
 
+   IDC_CHANGEDEVICE,
+
    IDC_GRASS_WIND_LABEL,
    IDC_GRASS_WIND_FORCE_SLYDER,
    
+   IDC_GRASS_MAX_HORIZ_FLOW_LABEL,
+   IDC_GRASS_MAX_HORIZ_FLOW_SLYDER,
+   
+   IDC_GRASS_MAX_VERT_FLOW_LABEL,
+   IDC_GRASS_MAX_VERT_FLOW_SLYDER,
+   
+   IDC_GRASS_DAMP_POWER_LABEL,
+   IDC_GRASS_DAMP_POWER_SLYDER,
+
+   IDC_GRASS_DIST_POWER_LABEL,
+   IDC_GRASS_DIST_POWER_SLYDER,
+
+   IDC_GRASS_MAX_FLOW_RADIUS_LABEL,
+   IDC_GRASS_MAX_FLOW_RADIUS_SLYDER,
+
+   IDC_GRASS_SHIFT_LABEL,
+   IDC_GRASS_SHIFT_SLYDER,
+
    IDC_TERR_RGB_LABEL,
    IDC_TERR_R_SLYDER,
    IDC_TERR_G_SLYDER,
@@ -119,6 +147,7 @@ enum IDC_HUD
 
    IDC_TOGGLE_WIREFRAME,
    IDC_TOGGLE_RENDERING_GRASS,
+   IDC_TOGGLE_RENDERING_DBG_WIN,
 
    IDC_SAMPLE_COUNT
 };

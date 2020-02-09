@@ -64,45 +64,32 @@ float getcoord(const float4& v, int idx)
 
 void setx(float4& v, float x)
 {
-   v *= create(0.0f, 1.0f, 1.0f, 1.0f);
-   v += create(x, 0.0f, 0.0f, 0.0f);
+   v = XMVectorSetX(v, x);
 }
 
 
 void sety(float4& v, float y)
 {
-   v *= create(1.0f, 0.0f, 1.0f, 1.0f);
-   v += create(0.0f, y, 0.0f, 0.0f);
+   v = XMVectorSetY(v, y);
 }
 
 
 void setz(float4& v, float z)
 {
-   v *= create(1.0f, 1.0f, 0.0f, 1.0f);
-   v += create(0.0f, 0.0f, z, 0.0f);
+   v = XMVectorSetZ(v, z);
 }
 
 
 void setw(float4& v, float w)
 {
-   v *= create(1.0f, 1.0f, 1.0f, 0.0f);
-   v += create(0.0f, 0.0f, 0.0f, w);
+   v = XMVectorSetW(v, w);
 }
 
 
 
 void setcoord(float4& v, int idx, float val)
 {
-   if (idx == 0)
-      return setx(v, val);
-   else if (idx == 1)
-      return sety(v, val);
-   else if (idx == 2)
-      return setz(v, val);
-   else if (idx == 3)
-      return setw(v, val);
-   else
-      assert(0);
+   v = XMVectorSetByIndex(v, val, idx);
 }
 
 
@@ -225,8 +212,9 @@ float3x3 MakeRotationMatrix(const float3& axis)
 }
 
 
-#define GET_3x3_ELEM(i, j) (_get##j(m.r[i]))
+//#define GET_3x3_ELEM(i, j) (_get##j(m.r[i]))
 
+#define GET_3x3_ELEM(i, j) ((m.m)[i][j])
 #define SQR(x) ((x)*(x))
 
 
@@ -248,8 +236,11 @@ float _get2(float4 v)
 }
 
 
-float3 MakeRotationVector(const float3x3& m)
+float3 MakeRotationVector(const float3x3& m_)
 {
+   XMFLOAT4X4 m;
+   XMStoreFloat4x4(&m, m_);
+   
    float3 v;
    float thetha;
    float3 sp = create(GET_3x3_ELEM(2, 1) - GET_3x3_ELEM(1, 2),

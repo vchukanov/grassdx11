@@ -122,13 +122,42 @@ void InitApp()
    int iY = 30;
    int iYo = 26;
    
+   g_HUD.AddButton(IDC_CHANGEDEVICE, L"Change device (F2)", 25, iY += iYo, 125, 22, VK_F2);
+
    WCHAR sStr[MAX_PATH];
    swprintf_s(sStr, MAX_PATH, L"Wind Strength: %.4f", g_fWindStrength);
-   g_HUD.AddStatic(IDC_GRASS_WIND_LABEL, sStr, 20, iY += iYo, 140, 22);
-   g_HUD.AddSlider(IDC_GRASS_WIND_FORCE_SLYDER, 20, iY += iYo, 135, 22, 0, 10000, (int)(g_fWindStrength * 10000));
+   g_HUD.AddStatic(IDC_GRASS_WIND_LABEL, sStr, 20, iY += iYo, 180, 22);
+   g_HUD.AddSlider(IDC_GRASS_WIND_FORCE_SLYDER, 20, iY += iYo, 185, 22, 0, 10000, (int)(g_fWindStrength * 10000));
+
+   swprintf_s(sStr, MAX_PATH, L"Flow Horiz Strength: %.4f", g_fMaxHorizFlow);
+   g_HUD.AddStatic(IDC_GRASS_MAX_HORIZ_FLOW_LABEL, sStr, 20, iY += iYo, 180, 22);
+   g_HUD.AddSlider(IDC_GRASS_MAX_HORIZ_FLOW_SLYDER, 20, iY += iYo, 185, 22, 0, 10000, (int)(g_fMaxHorizFlow * 10000));
+
+   swprintf_s(sStr, MAX_PATH, L"Flow Vert Strength: %.4f", g_fMaxVertFlow);
+   g_HUD.AddStatic(IDC_GRASS_MAX_VERT_FLOW_LABEL, sStr, 20, iY += iYo, 180, 22);
+   g_HUD.AddSlider(IDC_GRASS_MAX_VERT_FLOW_SLYDER, 20, iY += iYo, 185, 22, 0, 10000, (int)(g_fMaxVertFlow * 10000));
+
+   swprintf_s(sStr, MAX_PATH, L"Damp Power: %.4f", g_fDampPower);
+   g_HUD.AddStatic(IDC_GRASS_DAMP_POWER_LABEL, sStr, 20, iY += iYo, 180, 22);
+   g_HUD.AddSlider(IDC_GRASS_DAMP_POWER_SLYDER, 20, iY += iYo, 185, 22, 0, 10000, (int)(g_fDampPower * 10000));
+
+   swprintf_s(sStr, MAX_PATH, L"Dist Power: %.4f", g_fDistPower);
+   g_HUD.AddStatic(IDC_GRASS_DIST_POWER_LABEL, sStr, 20, iY += iYo, 180, 22);
+   g_HUD.AddSlider(IDC_GRASS_DIST_POWER_SLYDER, 20, iY += iYo, 185, 22, 0, 10000, (int)(g_fDistPower * 10000));
+
+   swprintf_s(sStr, MAX_PATH, L"Max Flow R: %.4f", g_fMaxFlowRadius);
+   g_HUD.AddStatic(IDC_GRASS_MAX_FLOW_RADIUS_LABEL, sStr, 20, iY += iYo, 180, 22);
+   g_HUD.AddSlider(IDC_GRASS_MAX_FLOW_RADIUS_SLYDER, 20, iY += iYo, 185, 22, 0, 10000, (int)(g_fMaxFlowRadius * 10000));
+
+   swprintf_s(sStr, MAX_PATH, L"Flow Shift: %.4f", g_fShift);
+   g_HUD.AddStatic(IDC_GRASS_SHIFT_LABEL, sStr, 20, iY += iYo, 180, 22);
+   g_HUD.AddSlider(IDC_GRASS_SHIFT_SLYDER, 20, iY += iYo, 185, 22, 0, 10000, (int)(g_fShift * 10000));
+
 
    g_HUD.AddButton(IDC_TOGGLE_WIREFRAME, L"Toggle wire-frame (F4)", 25, iY += iYo, 125, 22, VK_F4);
    g_HUD.AddButton(IDC_TOGGLE_RENDERING_GRASS, L"Toggle rendering-grass (F5)", 25, iY += iYo, 125, 22, VK_F5);
+
+   g_HUD.AddButton(IDC_TOGGLE_RENDERING_DBG_WIN, L"Toggle rendering-dbg win (F6)", 25, iY += iYo, 125, 22, VK_F6);
 
    swprintf_s(sStr, MAX_PATH, L"Diffuse: (%.2f,%.2f,%.2f)", g_vTerrRGB.x, g_vTerrRGB.y, g_vTerrRGB.z);
    g_HUD.AddStatic(IDC_TERR_RGB_LABEL, sStr, 20, iY += iYo, 140, 22);
@@ -390,6 +419,12 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    g_pGrassField->SetWindBias(g_fWindBias);
    g_pGrassField->SetWindScale(g_fWindScale);
    
+   g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxHorizFlow);
+   g_pGrassField->GetFlowManager()->SetMaxVertFlow(g_fMaxVertFlow);
+   g_pGrassField->GetFlowManager()->SetDampPower(g_fDampPower);
+   g_pGrassField->GetFlowManager()->SetDistPower(g_fDistPower);
+   g_pGrassField->GetFlowManager()->SetMaxFlowRadius(g_fMaxFlowRadius);
+   g_pGrassField->GetFlowManager()->SetShift(g_fShift);
    //InitMeshes(pd3dDevice);
    
    // Setup the camera's view parameters
@@ -400,9 +435,10 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    
    g_Camera->SetViewParams(XMLoadFloat3(&g_vCameraEyeStart), XMLoadFloat3(&g_vCameraAtStart));
    g_Camera->SetScalers(0.01f, g_fCameraSpeed /* g_fMeter*/);
-   
-   g_dbgWin.Initialize(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetAxesFanFlow()->GetShaderResourceView(), 10);
-   
+   g_dbgWin.Initialize(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->GetFlowSRV(), 1);
+   //g_dbgWin.Initialize(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetWind()->GetMap(), 10);
+
+
    return S_OK;
 }
 
@@ -530,8 +566,8 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
    //g_Camera->SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
     //g_Camera->SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
 
-    g_HUD.SetLocation( pBackBufferSurfaceDesc->Width - 170, 0 );
-    g_HUD.SetSize( 170, 170 );
+    g_HUD.SetLocation( pBackBufferSurfaceDesc->Width - 300, 0 );
+    g_HUD.SetSize( 200, 200 );
     g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 300 );
     g_SampleUI.SetSize( 170, 300 );
 
@@ -563,8 +599,8 @@ void RenderGrass(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dDeviceCtx, X
    // Draw Grass
    XMVECTOR vCamDir = g_Camera->GetLookAtPt() - g_Camera->GetEyePt();
    
-   g_pGrassField->Update(vCamDir, g_Camera->GetEyePt(), g_pMeshes, 0/*g_fNumOfMeshes*/, a_fElapsedTime);
-    g_pGrassField->Render();
+   g_pGrassField->Update(vCamDir, g_Camera->GetEyePt(), g_pMeshes, 0/*g_fNumOfMeshes*/, a_fElapsedTime, g_fTime);
+   g_pGrassField->Render();
    
    
    if (GetGlobalStateManager().UseWireframe())
@@ -643,7 +679,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
    pOrigRT->GetResource(&pRT);
    D3D11_RENDER_TARGET_VIEW_DESC rtDesc;
    pOrigRT->GetDesc(&rtDesc);
-   pd3dImmediateContext->ResolveSubresource(pRT, D3D10CalcSubresource(0, 0, 1), g_pRenderTarget, D3D10CalcSubresource(0, 0,
+   pd3dImmediateContext->ResolveSubresource(pRT, D3D11CalcSubresource(0, 0, 1), g_pRenderTarget, D3D11CalcSubresource(0, 0,
       1),
       rtDesc.Format);
    SAFE_RELEASE(pRT);
@@ -720,6 +756,23 @@ void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
 //--------------------------------------------------------------------------------------
 bool CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* pUserContext )
 {
+   pDeviceSettings->d3d11.SyncInterval = 0;
+   // For the first device created if its a REF device, optionally display a warning dialog box
+   //static bool s_bFirstTime = true;
+   //if (s_bFirstTime)
+   //{
+   //   s_bFirstTime = false;
+   //   if ((DXUT_D3D9_DEVICE == pDeviceSettings->ver && pDeviceSettings->d3d9.DeviceType == D3DDEVTYPE_REF) ||
+   //      (DXUT_D3D10_DEVICE == pDeviceSettings->ver &&
+   //         pDeviceSettings->d3d10.DriverType == D3D10_DRIVER_TYPE_REFERENCE))
+   //      DXUTDisplaySwitchingToREFWarning(pDeviceSettings->ver);
+   //}
+
+   // Disable MSAA settings from the settings dialog
+   g_SettingsDlg.GetDialogControl()->GetComboBox(DXUTSETTINGSDLG_D3D11_MULTISAMPLE_COUNT)->SetEnabled(false);
+   g_SettingsDlg.GetDialogControl()->GetComboBox(DXUTSETTINGSDLG_D3D11_MULTISAMPLE_QUALITY)->SetEnabled(false);
+   g_SettingsDlg.GetDialogControl()->GetStatic(DXUTSETTINGSDLG_D3D11_MULTISAMPLE_COUNT_LABEL)->SetEnabled(false);
+   g_SettingsDlg.GetDialogControl()->GetStatic(DXUTSETTINGSDLG_D3D11_MULTISAMPLE_QUALITY_LABEL)->SetEnabled(false);
    return true;
 }
 
@@ -786,12 +839,20 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
    switch( nControlID )
    {
+      case IDC_CHANGEDEVICE:
+         g_SettingsDlg.SetActive(!g_SettingsDlg.IsActive());
+         break;
+
      case IDC_TOGGLE_WIREFRAME:
         GetGlobalStateManager().ToggleWireframe();
         break;
      
      case IDC_TOGGLE_RENDERING_GRASS:
         g_pGrassField->ToggleRenderingGrass();
+        break;
+
+     case IDC_TOGGLE_RENDERING_DBG_WIN:
+        g_dbgWin.ToggleRender();
         break;
 
      case IDC_GRASS_WIND_FORCE_SLYDER:
@@ -802,6 +863,57 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
         g_pGrassField->SetWindStrength(g_fWindStrength);
         break;
      }
+
+     case IDC_GRASS_MAX_HORIZ_FLOW_SLYDER:
+     {
+        g_fMaxHorizFlow = (float)g_HUD.GetSlider(IDC_GRASS_MAX_HORIZ_FLOW_SLYDER)->GetValue() / 100000.0f;
+        swprintf_s(sStr, MAX_PATH, L"Flow Horiz Strength: %.4f", g_fMaxHorizFlow);
+        g_HUD.GetStatic(IDC_GRASS_MAX_HORIZ_FLOW_LABEL)->SetText(sStr);
+        g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxHorizFlow);
+        break;
+     }
+     case IDC_GRASS_MAX_VERT_FLOW_SLYDER:
+     {
+        g_fMaxVertFlow = (float)g_HUD.GetSlider(IDC_GRASS_MAX_VERT_FLOW_SLYDER)->GetValue() / 100000.0f;
+        swprintf_s(sStr, MAX_PATH, L"Flow Vert Strength: %.4f", g_fMaxVertFlow);
+        g_HUD.GetStatic(IDC_GRASS_MAX_VERT_FLOW_LABEL)->SetText(sStr);
+        g_pGrassField->GetFlowManager()->SetMaxVertFlow(g_fMaxVertFlow);
+        break;
+     }
+     case IDC_GRASS_DAMP_POWER_SLYDER:
+     {
+        g_fDampPower = (float)g_HUD.GetSlider(IDC_GRASS_DAMP_POWER_SLYDER)->GetValue() / 1000.0f;
+        swprintf_s(sStr, MAX_PATH, L"Damp Power: %.4f", g_fDampPower);
+        g_HUD.GetStatic(IDC_GRASS_DAMP_POWER_LABEL)->SetText(sStr);
+        g_pGrassField->GetFlowManager()->SetDampPower(g_fDampPower);
+        break;
+     }
+     case IDC_GRASS_DIST_POWER_SLYDER:
+     {
+        g_fDistPower = (float)g_HUD.GetSlider(IDC_GRASS_DIST_POWER_SLYDER)->GetValue() / 1000.0f;
+        swprintf_s(sStr, MAX_PATH, L"Dist Power: %.4f", g_fDistPower);
+        g_HUD.GetStatic(IDC_GRASS_DIST_POWER_LABEL)->SetText(sStr);
+        g_pGrassField->GetFlowManager()->SetDistPower(g_fDistPower);
+        break;
+     }
+     case IDC_GRASS_MAX_FLOW_RADIUS_SLYDER:
+     {
+        g_fMaxFlowRadius = (float)g_HUD.GetSlider(IDC_GRASS_MAX_FLOW_RADIUS_SLYDER)->GetValue() / 10000.0f;
+        swprintf_s(sStr, MAX_PATH, L"Max Flow R: %.4f", g_fMaxFlowRadius);
+        g_HUD.GetStatic(IDC_GRASS_MAX_FLOW_RADIUS_LABEL)->SetText(sStr);
+        g_pGrassField->GetFlowManager()->SetMaxFlowRadius(g_fMaxFlowRadius);
+        break;
+     }
+     case IDC_GRASS_SHIFT_SLYDER:
+     {
+        g_fShift = (float)g_HUD.GetSlider(IDC_GRASS_SHIFT_SLYDER)->GetValue() / 1000.0f;
+        swprintf_s(sStr, MAX_PATH, L"Flow Shift: %.4f", g_fShift);
+        g_HUD.GetStatic(IDC_GRASS_SHIFT_LABEL)->SetText(sStr);
+        g_pGrassField->GetFlowManager()->SetShift(g_fShift);
+        break;
+     }
+
+
      case IDC_TERR_R_SLYDER:
      case IDC_TERR_G_SLYDER:
      case IDC_TERR_B_SLYDER:

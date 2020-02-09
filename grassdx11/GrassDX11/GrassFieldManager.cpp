@@ -6,7 +6,7 @@
 #include <DDSTextureLoader.h>
 
 
-GrassFieldManager::GrassFieldManager(GrassFieldState& a_InitState)
+GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
 {
    char* errStr;
    ID3DBlob* pErrorBlob = NULL;
@@ -29,20 +29,25 @@ GrassFieldManager::GrassFieldManager(GrassFieldState& a_InitState)
    a_InitState.InitState[1].fTerrRadius = a_InitState.fTerrRadius;
    a_InitState.InitState[2].fTerrRadius = a_InitState.fTerrRadius;
 
-   m_pAxesFanFlow = new AxesFanFlow();
-   m_pAxesFanFlow->Initialize(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx, 32, 32, a_InitState.fTerrRadius);
+   m_pFlowManager = new FlowManager(
+      a_InitState.InitState[0].pD3DDevice,
+      a_InitState.InitState[0].pD3DDeviceCtx, 
+      m_pSceneEffect, 
+      a_InitState.fTerrRadius
+   );
 
-
+   m_pFlowManager->CreateAxesFan(XMFLOAT3(0, 10, 0));
+   
 #pragma omp parallel sections 
    {
 #pragma omp section
       {
-         m_pGrassTypes[0] = new GrassManager(a_InitState.InitState[0], m_pGrassTracker, m_pAxesFanFlow);
+         m_pGrassTypes[0] = new GrassManager(a_InitState.InitState[0], m_pGrassTracker, m_pFlowManager);
       }
 
 #pragma omp section
       {
-         m_pGrassTypes[2] = new GrassManager(a_InitState.InitState[2], m_pGrassTracker, m_pAxesFanFlow);
+         m_pGrassTypes[2] = new GrassManager(a_InitState.InitState[2], m_pGrassTracker, m_pFlowManager);
       }
    }
 
@@ -191,9 +196,8 @@ GrassFieldManager::~GrassFieldManager(void)
       delete m_pGrassTypes[i];
       SAFE_RELEASE(m_pSeatingMapESV[i]);
    }
-   m_pAxesFanFlow->ShutDown();
 
-   delete m_pAxesFanFlow;
+   delete m_pFlowManager;
 
    delete m_pTerrain;
    delete m_pWind;
@@ -337,11 +341,12 @@ void GrassFieldManager::SetViewProjMtx(float4x4& a_mViewProj)
          continue;
       m_pViewProjEMV[i]->SetMatrix((float*)& a_mViewProj);
    }
+
+   m_pFlowManager->m_pAxesFan->SetViewProjMtx(a_mViewProj);
 }
 
 void GrassFieldManager::SetTime(float a_fTime)
 {
-   m_pAxesFanFlow->SetTime(a_fTime);
    m_pTime->SetFloat(a_fTime);
    for (int i = 0; i < GrassTypeNum; i++)
    {
@@ -445,9 +450,11 @@ void GrassFieldManager::Render()
       m_pGrassTypes[0]->Render(false);
       m_pGrassTypes[2]->Render(false);
    }
+
+   m_pFlowManager->RenderFan();
 }
 
-void GrassFieldManager::Update(float3 a_vCamDir, float3 a_vCamPos, Mesh* a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime)
+void GrassFieldManager::Update (float3 a_vCamDir, float3 a_vCamPos, Mesh* a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime, float a_fTime)
 {
    m_vCamDir = a_vCamDir;
    m_vCamPos = a_vCamPos;
@@ -455,8 +462,7 @@ void GrassFieldManager::Update(float3 a_vCamDir, float3 a_vCamPos, Mesh* a_pMesh
    m_pWind->Update(a_fElapsedTime, a_vCamDir);
    m_pTerrain->UpdateLightMap();
 
-   m_pAxesFanFlow->SetPosition(a_vCamPos);
-   m_pAxesFanFlow->Update();
+   m_pFlowManager->Update(a_fElapsedTime, a_fTime);
 
    m_pGrassTypes[0]->Update(*m_pViewProj, a_vCamPos, a_pMeshes, a_uNumMeshes, a_fElapsedTime);
    m_pGrassTypes[2]->Update(*m_pViewProj, a_vCamPos, a_pMeshes, a_uNumMeshes, a_fElapsedTime);

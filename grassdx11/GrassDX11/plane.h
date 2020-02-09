@@ -1,4 +1,6 @@
-﻿#include "mesh.h"
+﻿#pragma once
+
+#include "mesh.h"
 
 class Plane : public Mesh {
 public:

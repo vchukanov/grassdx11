@@ -75,6 +75,9 @@ void DebugWindow::Shutdown (void)
 {
    // Shutdown the vertex and index buffers.
    ShutdownBuffers();
+   SAFE_RELEASE(m_pPass)
+   SAFE_RELEASE(m_pEffect);
+   SAFE_RELEASE(m_pInputLayout);
 
    return;
 }
@@ -82,6 +85,10 @@ void DebugWindow::Shutdown (void)
 
 bool DebugWindow::Render (ID3D11DeviceContext* deviceContext, int positionX, int positionY)
 {
+   if (!m_bNeedRender) {
+      return true;
+   }
+
    bool result;
 
    // Re-build the dynamic vertex buffer for rendering to possibly a different location on the screen.
@@ -209,7 +216,7 @@ void DebugWindow::ShutdownBuffers()
 {
    SAFE_RELEASE(m_indexBuffer);
    SAFE_RELEASE(m_vertexBuffer);
-   
+  
    return;
 }
 
@@ -308,7 +315,7 @@ void DebugWindow::CreateInputLayout (void)
    };
    D3DX11_PASS_DESC PassDesc;
    m_pPass->GetDesc(&PassDesc);
-   int InputElementsCount = sizeof(InputDesc) / sizeof(D3D10_INPUT_ELEMENT_DESC);
+   int InputElementsCount = sizeof(InputDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC);
    m_pDevice->CreateInputLayout(InputDesc, InputElementsCount,
       PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize,
       &m_pInputLayout);
@@ -326,7 +333,7 @@ void DebugWindow::RenderBuffers(ID3D11DeviceContext* deviceContext)
    deviceContext->IASetInputLayout(m_pInputLayout);
    deviceContext->IASetVertexBuffers(0, 1, &m_vertexBuffer, &stride, &offset);
    deviceContext->IASetIndexBuffer(m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-   deviceContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+   deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
    m_pPass->Apply(0, deviceContext);
    deviceContext->DrawIndexed(m_indexCount, 0, 0);
 

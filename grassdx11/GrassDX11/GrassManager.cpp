@@ -78,7 +78,7 @@ void GrassManager::LoadIndexData(void)
    SAFE_RELEASE(pStagingTex);
 }
 
-GrassManager::GrassManager(GrassInitState& a_pInitState, GrassTracker* a_pGrassTracker, AxesFanFlow* a_pAxesFanFlow)
+GrassManager::GrassManager(GrassInitState& a_pInitState, GrassTracker* a_pGrassTracker, FlowManager* a_pFlowManager)
 {
    m_GrassState = a_pInitState;
    ID3DBlob* pErrors;
@@ -93,7 +93,7 @@ GrassManager::GrassManager(GrassInitState& a_pInitState, GrassTracker* a_pGrassT
    m_pLowGrassTexSRV = NULL;
    m_fHeightScale = 0.0f;
    m_pGrassTracker = a_pGrassTracker;
-   m_pAxesFanFlow = a_pAxesFanFlow;
+   m_pFlowManager = a_pFlowManager;
    HRESULT hr;
 
    D3DXLoadTextureArray(m_GrassState.pD3DDevice, m_GrassState.pD3DDeviceCtx, m_GrassState.sTexPaths, &m_pDiffuseTex, &m_pDiffuseTexSRV);
@@ -179,7 +179,7 @@ GrassManager::GrassManager(GrassInitState& a_pInitState, GrassTracker* a_pGrassT
    m_pTrackMapSRV = m_pEffect->GetVariableByName("g_txTrackMap")->AsShaderResource();
    m_pTrackMapSRV->SetResource(m_pGrassTracker->GetTrackSRV());
 
-   m_pAxesFanFlowSRV = m_pEffect->GetVariableByName("g_txAxesFanFlow")->AsShaderResource();
+   m_pAxesFanFlowESRV = m_pEffect->GetVariableByName("g_txAxesFanFlow")->AsShaderResource();
 
    ID3DX11EffectScalarVariable* pESV = m_pEffect->GetVariableByName("g_fMaxQuality")->AsScalar();
    pESV->SetFloat(m_GrassState.fMaxQuality);
@@ -313,7 +313,7 @@ void GrassManager::SetHeightScale(float a_fHeightScale)
 
 void GrassManager::Render(bool a_bShadowPass)
 {
-   m_pAxesFanFlowSRV->SetResource(m_pAxesFanFlow->GetShaderResourceView());
+   m_pAxesFanFlowESRV->SetResource(m_pFlowManager->GetFlowSRV());
 
    if (GetGlobalStateManager().UseWireframe())
       GetGlobalStateManager().SetRasterizerState("EnableMSAA_Wire");
@@ -334,7 +334,7 @@ void GrassManager::Render(bool a_bShadowPass)
          m_GrassState.pD3DDeviceCtx->DrawInstanced(m_GrassLod[0]->VerticesCount(), m_GrassLod[0]->GetTransformsCount(), 0, 0);
       }
 
-      m_pAxesFanFlowSRV->SetResource(NULL);
+      m_pAxesFanFlowESRV->SetResource(NULL);
       m_pLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
    }
    else
@@ -354,7 +354,7 @@ void GrassManager::Render(bool a_bShadowPass)
       m_GrassLod[2]->IASetVertexBuffers();
       m_GrassState.pD3DDeviceCtx->DrawInstanced(m_GrassLod[2]->VerticesCount(), m_GrassLod[2]->GetTransformsCount(), 0, 0);
 
-      m_pAxesFanFlowSRV->SetResource(NULL);
+      m_pAxesFanFlowESRV->SetResource(NULL);
       m_pRenderPass->Apply(0, m_GrassState.pD3DDeviceCtx);
    }
 

@@ -5,8 +5,8 @@
 
 bool AxesFanFlow::Initialize(ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DDeviceCtx, int textureWidth, int textureHeight, float a_fTerrRadius)
 {
-   D3D11_TEXTURE2D_DESC         textureDesc;
-   HRESULT                     result;
+   D3D11_TEXTURE2D_DESC            textureDesc;
+   HRESULT                         result;
    D3D11_RENDER_TARGET_VIEW_DESC   renderTargetViewDesc;
    D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
 
@@ -86,6 +86,12 @@ bool AxesFanFlow::Initialize(ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD
    m_vPositionESV = m_pEffect->GetVariableByName("g_vAxesFanPosOnTex")->AsVector();
    m_pTime = m_pEffect->GetVariableByName("g_fTime")->AsScalar();
 
+   m_pMaxHorizFlowESV = m_pEffect->GetVariableByName("g_fMaxHorizFlow")->AsScalar();;
+   m_pMaxVertFlowESV = m_pEffect->GetVariableByName("g_fMaxVertFlow")->AsScalar();;
+   m_pDampPowerESV = m_pEffect->GetVariableByName("g_fDampPower")->AsScalar();;
+   m_pDistPowerESV = m_pEffect->GetVariableByName("g_fDistPower")->AsScalar();;
+   m_pMaxFlowRadiusESV = m_pEffect->GetVariableByName("g_fMaxFlowRadius")->AsScalar();;
+   m_pShiftESV = m_pEffect->GetVariableByName("g_fShift")->AsScalar();;
 
    m_uVertexStride = sizeof(AxesFanFlowVertex);
    m_uVertexOffset = 0;
@@ -104,6 +110,7 @@ void AxesFanFlow::ShutDown(void)
    SAFE_RELEASE(m_pPass);
    SAFE_RELEASE(m_pEffect);
    SAFE_RELEASE(m_pInputLayout);
+   SAFE_RELEASE(m_pVertexBuffer);
 }
 
 
@@ -241,4 +248,40 @@ void AxesFanFlow::SetPosition(const float3& a_vValue)
 void AxesFanFlow::SetTime(float a_fTime)
 {
    m_pTime->SetFloat(a_fTime);
+}
+
+
+void AxesFanFlow::SetMaxHorizFlow(float a_fValue)
+{
+   m_pMaxHorizFlowESV->SetFloat(a_fValue);
+}
+
+
+void AxesFanFlow::SetMaxVertFlow(float a_fValue)
+{
+   m_pMaxVertFlowESV->SetFloat(a_fValue);
+}
+
+
+void AxesFanFlow::SetDampPower(float a_fValue)
+{
+   m_pDampPowerESV->SetFloat(a_fValue);
+}
+
+
+void AxesFanFlow::SetDistPower(float a_fValue)
+{
+   m_pDistPowerESV->SetFloat(a_fValue);
+}
+
+
+void AxesFanFlow::SetMaxFlowRadius(float a_fValue)
+{
+   m_pMaxFlowRadiusESV->SetFloat(a_fValue);
+}
+
+
+void AxesFanFlow::SetShift(float a_fValue)
+{
+   m_pShiftESV->SetFloat(a_fValue);
 }
