@@ -36,6 +36,8 @@ DebugWindowPSIn VS( DebugWindowVSIn In )
 
 float4 PS( DebugWindowPSIn In ): SV_Target
 {
+   //float4 color = g_texture.Sample(g_samLinear, In.vTexCoord, 0) * 10;
+
    return g_texture.Sample(g_samLinear, In.vTexCoord, 0) * 10;
 }
 

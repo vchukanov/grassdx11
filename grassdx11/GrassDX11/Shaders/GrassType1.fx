@@ -189,8 +189,8 @@ GSIn CalcWindAnimation( float3 a_vBladePos, float3 a_vRotAxe, float3 a_vYRotAxe 
     float3 vF, vLocalF, vAbsWind;
     float fH, fFL, fLenG, fSinBetha, fBetha, fPhi;
    
-   float fT_ = 1000001.0 * vUV.x * vUV.y;
-   int uT_ = int(fT_) % 1011; 
+    float fT_ = 1000001.0 * vUV.x * vUV.y;
+    int uT_ = int(fT_) % 1011; 
     Output.fNoise           = float(uT_)/1011.0;
  
     float3x3 mMYrot = MakeRotateMtx(a_vYRotAxe); 

@@ -19,6 +19,12 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
       errStr = static_cast<char*>(pErrorBlob->GetBufferPointer());
    }
 
+   /* Shadow mapping unit */
+
+   CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.sNoiseMapPath.c_str(), nullptr, &m_pNoiseESV);
+   CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.sGrassOnTerrainTexturePath.c_str(), nullptr, &m_pTerrGrassESV);
+   CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.sColorMapPath.c_str(), nullptr, &m_pGrassColorESV);
+
    /* Grass track unit */
    m_pGrassTracker = new GrassTracker(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx);
 
@@ -33,10 +39,11 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
       a_InitState.InitState[0].pD3DDevice,
       a_InitState.InitState[0].pD3DDeviceCtx, 
       m_pSceneEffect, 
-      a_InitState.fTerrRadius
+      a_InitState.fTerrRadius,
+      m_pNoiseESV
    );
 
-   m_pFlowManager->CreateAxesFan(XMFLOAT3(0, 10, 0));
+   m_pFlowManager->CreateAxesFan(XMFLOAT3(0, 20, 0));
    
 #pragma omp parallel sections 
    {
@@ -63,11 +70,6 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
    m_pGrassTypes[2]->SetHeightDataPtr(m_pTerrain->HeightDataPtr());
    m_pGrassTypes[2]->SetWindDataPtr(m_pWind->WindDataPtr());
 
-   /* Shadow mapping unit */
-
-   CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.sNoiseMapPath.c_str(), nullptr, &m_pNoiseESV);
-   CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.sGrassOnTerrainTexturePath.c_str(), nullptr, &m_pTerrGrassESV);
-   CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.sColorMapPath.c_str(), nullptr, &m_pGrassColorESV);
 
    /* ...and lots of variables... */
    ID3DX11EffectShaderResourceVariable* pESRV;

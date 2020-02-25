@@ -25,8 +25,13 @@ public:
    void CreateVertexBuffer (void);
    void CreateInputLayout  (void);
 
-   void SetPosition  (const float3& a_vValue);
-   void SetTime      (float a_fTime);
+   void SetPosition    (const float3& a_vValue);
+   void SetDirection   (const float3& a_vValue);
+   void SetR           (float a_fValue);
+   void SetRingsNumber (int  a_fValue);
+   void SetTime        (float a_fTime);
+
+   void SetNoise (ID3D11ShaderResourceView *a_pNoiseSRV);
 
    void SetMaxHorizFlow  (float a_fValue);
    void SetMaxVertFlow   (float a_fValue);
@@ -52,7 +57,12 @@ private:
    ID3DX11EffectPass *m_pPass;
 
    ID3DX11EffectVectorVariable *m_vPositionESV;
+   ID3DX11EffectVectorVariable *m_vDirectionESV;
+   ID3DX11EffectScalarVariable *m_pR;
+   ID3DX11EffectScalarVariable *m_pRingsNumber;
    ID3DX11EffectScalarVariable *m_pTime;
+
+   ID3DX11EffectShaderResourceVariable *m_pNoiseSRV;
 
    ID3DX11EffectScalarVariable* m_pMaxHorizFlowESV;
    ID3DX11EffectScalarVariable* m_pMaxVertFlowESV;
@@ -65,7 +75,4 @@ private:
 
    int m_width;
    int m_height;
-
-   XMFLOAT3 m_position;
-   float    m_radius;
 };

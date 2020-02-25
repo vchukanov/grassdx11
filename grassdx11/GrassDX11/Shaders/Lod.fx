@@ -103,9 +103,11 @@ inline float3 CalcWind( float3 a_vPos, int a_iSegmentIndex )
     
     float3 vWind = (vValue) * g_fWindStrength;
     //float3 vWind = float3(0.0, 0.0, 0.0);
-    //return vWind;
+    return vWind;
+    float3 vAxesFlow = float3(0.0, 0.0, 0.0);
+    if (a_iSegmentIndex == 2)
+        vAxesFlow = g_txAxesFanFlow.SampleLevel(g_samLinear, vTexCoordForFlow, 0).rgb;
     
-    float3 vAxesFlow = g_txAxesFanFlow.SampleLevel(g_samLinear, vTexCoordForFlow, 0).rgb;
     return vAxesFlow;
 }
 

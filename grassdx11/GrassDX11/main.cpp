@@ -135,7 +135,7 @@ void InitApp()
 
    swprintf_s(sStr, MAX_PATH, L"Flow Vert Strength: %.4f", g_fMaxVertFlow);
    g_HUD.AddStatic(IDC_GRASS_MAX_VERT_FLOW_LABEL, sStr, 20, iY += iYo, 180, 22);
-   g_HUD.AddSlider(IDC_GRASS_MAX_VERT_FLOW_SLYDER, 20, iY += iYo, 185, 22, 0, 10000, (int)(g_fMaxVertFlow * 10000));
+   g_HUD.AddSlider(IDC_GRASS_MAX_VERT_FLOW_SLYDER, 20, iY += iYo, 185, 22, 0, 10000, (int)(g_fMaxVertFlow * 300000));
 
    swprintf_s(sStr, MAX_PATH, L"Damp Power: %.4f", g_fDampPower);
    g_HUD.AddStatic(IDC_GRASS_DAMP_POWER_LABEL, sStr, 20, iY += iYo, 180, 22);
@@ -151,7 +151,7 @@ void InitApp()
 
    swprintf_s(sStr, MAX_PATH, L"Flow Shift: %.4f", g_fShift);
    g_HUD.AddStatic(IDC_GRASS_SHIFT_LABEL, sStr, 20, iY += iYo, 180, 22);
-   g_HUD.AddSlider(IDC_GRASS_SHIFT_SLYDER, 20, iY += iYo, 185, 22, 0, 10000, (int)(g_fShift * 10000));
+   g_HUD.AddSlider(IDC_GRASS_SHIFT_SLYDER, 20, iY += iYo, 185, 22, 0, 1000, (int)(g_fShift * 1000));
 
 
    g_HUD.AddButton(IDC_TOGGLE_WIREFRAME, L"Toggle wire-frame (F4)", 25, iY += iYo, 125, 22, VK_F4);
@@ -165,7 +165,13 @@ void InitApp()
    g_HUD.AddSlider(IDC_TERR_G_SLYDER, 20, iY += iYo, 135, 22, 0, 100, (int)(g_vTerrRGB.y * 100));
    g_HUD.AddSlider(IDC_TERR_B_SLYDER, 20, iY += iYo, 135, 22, 0, 100, (int)(g_vTerrRGB.z * 100));
 
-    g_SampleUI.SetCallback( OnGUIEvent ); iY = 10;
+   swprintf_s(sStr, MAX_PATH, L"Dir: (%.2f,%.2f,%.2f)", g_vDir.x, g_vDir.y, g_vDir.z);
+   g_HUD.AddStatic(IDC_FLOW_DIR_LABEL, sStr, 20, iY += iYo, 140, 22);
+   g_HUD.AddSlider(IDC_FLOW_DIR_X_SLYDER, 20, iY += iYo, 135, 22, -100, 100, (int)(g_vDir.x * 100));
+   g_HUD.AddSlider(IDC_FLOW_DIR_Y_SLYDER, 20, iY += iYo, 135, 22, -100, 100, (int)(g_vDir.y * 100));
+   g_HUD.AddSlider(IDC_FLOW_DIR_Z_SLYDER, 20, iY += iYo, 135, 22, -100, 100, (int)(g_vDir.z * 100));
+
+   g_SampleUI.SetCallback( OnGUIEvent ); iY = 10;
 }
 
 
@@ -383,12 +389,33 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    g_GrassInitState.InitState[2].fCameraMeshDist = g_fCameraMeshDistMax;
    g_GrassInitState.sSceneEffectPath = L"Shaders/SceneEffect.fx";
    g_GrassInitState.sNoiseMapPath = L"resources/Noise.dds";
-   g_GrassInitState.sGrassOnTerrainTexturePath = L"resources/grass512.dds";
+   g_GrassInitState.sGrassOnTerrainTexturePath = L"resources/g.dds";
    g_GrassInitState.fHeightScale = g_fHeightScale;
    g_GrassInitState.fTerrRadius = 400.0f;
    g_pGrassField = new GrassFieldManager(g_GrassInitState);
    g_pTerrTile = g_pGrassField->SceneEffect()->GetVariableByName("g_fTerrTile")->AsScalar();
    
+   g_pSkyBoxESRV = g_pGrassField->SceneEffect()->GetVariableByName("g_txSkyBox")->AsShaderResource();
+   g_pSkyboxTechnique = g_pGrassField->SceneEffect()->GetTechniqueByName("RenderSkyBox");
+   g_pSkyViewProjEMV = g_pGrassField->SceneEffect()->GetVariableByName("g_mViewProj")->AsMatrix();
+
+   // Define our scene vertex layout
+   const D3D11_INPUT_ELEMENT_DESC SkyBoxLayout[] =
+   {
+      { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "TEXTURE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+   };
+
+   int iNumElements = sizeof(SkyBoxLayout) / sizeof(D3D11_INPUT_ELEMENT_DESC);
+   D3DX11_PASS_DESC PassDesc;
+   ID3DX11EffectPass* pPass;
+   g_pSkyboxPass = g_pSkyboxTechnique->GetPassByIndex(0);
+   g_pSkyboxPass->GetDesc(&PassDesc);
+   V_RETURN(pd3dDevice->CreateInputLayout(SkyBoxLayout, iNumElements, PassDesc.pIAInputSignature,
+      PassDesc.IAInputSignatureSize, &g_pSkyVertexLayout));
+   g_MeshSkybox.Create(pd3dDevice, L"resources\\skysphere.sdkmesh");
+
    /*Loading colors*/
    InFile.open("config/colors.ini");
    InFile >> g_vFogColor.x >> g_vFogColor.y >> g_vFogColor.z;
@@ -435,8 +462,8 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    
    g_Camera->SetViewParams(XMLoadFloat3(&g_vCameraEyeStart), XMLoadFloat3(&g_vCameraAtStart));
    g_Camera->SetScalers(0.01f, g_fCameraSpeed /* g_fMeter*/);
-   g_dbgWin.Initialize(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->GetFlowSRV(), 1);
-   //g_dbgWin.Initialize(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetWind()->GetMap(), 10);
+   //g_dbgWin.Initialize(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->GetFlowSRV(), 1);
+   g_dbgWin.Initialize(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetWind()->GetMap(), 10);
 
 
    return S_OK;
@@ -584,8 +611,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
 }
 
 
-
-void RenderGrass(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dDeviceCtx, XMMATRIX& mView, XMMATRIX& mProj, float a_fElapsedTime)
+void RenderGrass (ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dDeviceCtx, XMMATRIX& mView, XMMATRIX& mProj, float a_fElapsedTime)
 {
    XMMATRIX mViewProj;
    mViewProj = mul(mView, mProj);
@@ -598,15 +624,23 @@ void RenderGrass(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dDeviceCtx, X
 
    // Draw Grass
    XMVECTOR vCamDir = g_Camera->GetLookAtPt() - g_Camera->GetEyePt();
-   
+   //g_pGrassField->GetFlowManager()->m_pAxesFanFlow->SetPosition(g_Camera->GetEyePt());
+
    g_pGrassField->Update(vCamDir, g_Camera->GetEyePt(), g_pMeshes, 0/*g_fNumOfMeshes*/, a_fElapsedTime, g_fTime);
    g_pGrassField->Render();
    
-   
+   pd3dDeviceCtx->IASetInputLayout(g_pSkyVertexLayout);
+   g_pSkyViewProjEMV->SetMatrix((float*)& mViewProj);
+
    if (GetGlobalStateManager().UseWireframe())
       GetGlobalStateManager().SetRasterizerState("EnableMSAACulling_Wire");
    else
       GetGlobalStateManager().SetRasterizerState("EnableMSAACulling");
+
+
+   pd3dDeviceCtx->IASetInputLayout(g_pSkyVertexLayout);
+   g_pSkyboxPass->Apply(0, pd3dDeviceCtx);
+   g_MeshSkybox.Render(pd3dDeviceCtx, 0);
 }
 
 
@@ -746,6 +780,9 @@ void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
    SAFE_DELETE(g_Camera);
    SAFE_DELETE(g_pGrassField);
 
+   SAFE_RELEASE(g_pSkyVertexLayout);
+   g_MeshSkybox.Destroy();
+
    SAFE_RELEASE( g_pcbVSPerObject11 );
    SAFE_RELEASE( g_pcbVSPerFrame11 );
 }
@@ -866,7 +903,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
      case IDC_GRASS_MAX_HORIZ_FLOW_SLYDER:
      {
-        g_fMaxHorizFlow = (float)g_HUD.GetSlider(IDC_GRASS_MAX_HORIZ_FLOW_SLYDER)->GetValue() / 100000.0f;
+        g_fMaxHorizFlow = (float)g_HUD.GetSlider(IDC_GRASS_MAX_HORIZ_FLOW_SLYDER)->GetValue() / 10000.0f;
         swprintf_s(sStr, MAX_PATH, L"Flow Horiz Strength: %.4f", g_fMaxHorizFlow);
         g_HUD.GetStatic(IDC_GRASS_MAX_HORIZ_FLOW_LABEL)->SetText(sStr);
         g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxHorizFlow);
@@ -874,18 +911,20 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
      }
      case IDC_GRASS_MAX_VERT_FLOW_SLYDER:
      {
-        g_fMaxVertFlow = (float)g_HUD.GetSlider(IDC_GRASS_MAX_VERT_FLOW_SLYDER)->GetValue() / 100000.0f;
+        g_fMaxVertFlow = (float)g_HUD.GetSlider(IDC_GRASS_MAX_VERT_FLOW_SLYDER)->GetValue() / 10000.0f * 30.0f;
         swprintf_s(sStr, MAX_PATH, L"Flow Vert Strength: %.4f", g_fMaxVertFlow);
         g_HUD.GetStatic(IDC_GRASS_MAX_VERT_FLOW_LABEL)->SetText(sStr);
-        g_pGrassField->GetFlowManager()->SetMaxVertFlow(g_fMaxVertFlow);
+        //g_pGrassField->GetFlowManager()->SetMaxVertFlow(g_fMaxVertFlow);
+        //auto m = XMMatrixTranslation(0, g_fMaxVertFlow, 0);
+        g_pGrassField->GetFlowManager()->SetTransform(create(0, g_fMaxVertFlow, 0));
         break;
      }
      case IDC_GRASS_DAMP_POWER_SLYDER:
      {
         g_fDampPower = (float)g_HUD.GetSlider(IDC_GRASS_DAMP_POWER_SLYDER)->GetValue() / 1000.0f;
-        swprintf_s(sStr, MAX_PATH, L"Damp Power: %.4f", g_fDampPower);
+        swprintf_s(sStr, MAX_PATH, L"Damp Power: %.4f", g_fDampPower * 2);
         g_HUD.GetStatic(IDC_GRASS_DAMP_POWER_LABEL)->SetText(sStr);
-        g_pGrassField->GetFlowManager()->SetDampPower(g_fDampPower);
+        g_pGrassField->GetFlowManager()->SetRadius(g_fDampPower * 2);
         break;
      }
      case IDC_GRASS_DIST_POWER_SLYDER:
@@ -906,7 +945,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
      }
      case IDC_GRASS_SHIFT_SLYDER:
      {
-        g_fShift = (float)g_HUD.GetSlider(IDC_GRASS_SHIFT_SLYDER)->GetValue() / 1000.0f;
+        g_fShift = (float)g_HUD.GetSlider(IDC_GRASS_SHIFT_SLYDER)->GetValue() / 10000.0f;
         swprintf_s(sStr, MAX_PATH, L"Flow Shift: %.4f", g_fShift);
         g_HUD.GetStatic(IDC_GRASS_SHIFT_LABEL)->SetText(sStr);
         g_pGrassField->GetFlowManager()->SetShift(g_fShift);
@@ -918,13 +957,27 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
      case IDC_TERR_G_SLYDER:
      case IDC_TERR_B_SLYDER:
      {
-        g_vTerrRGB.x = (float)g_HUD.GetSlider(IDC_TERR_R_SLYDER)->GetValue() / 100.0f;
-        g_vTerrRGB.y = (float)g_HUD.GetSlider(IDC_TERR_G_SLYDER)->GetValue() / 100.0f;
-        g_vTerrRGB.z = (float)g_HUD.GetSlider(IDC_TERR_B_SLYDER)->GetValue() / 100.0f;
+        g_vTerrRGB.x = (float)g_HUD.GetSlider(IDC_TERR_R_SLYDER)->GetValue() / 200.0f;
+        g_vTerrRGB.y = (float)g_HUD.GetSlider(IDC_TERR_G_SLYDER)->GetValue() / 200.0f;
+        g_vTerrRGB.z = (float)g_HUD.GetSlider(IDC_TERR_B_SLYDER)->GetValue() / 200.0f;
         swprintf_s(sStr, MAX_PATH, L"Diffuse: (%.2f,%.2f,%.2f)", g_vTerrRGB.x, g_vTerrRGB.y, g_vTerrRGB.z);
         g_HUD.GetStatic(IDC_TERR_RGB_LABEL)->SetText(sStr);
         XM_TO_V(g_vTerrRGB, vTerrRGB, 3);
         g_pGrassField->SetTerrRGB(vTerrRGB);
+        break;
+     }
+
+     case IDC_FLOW_DIR_X_SLYDER:
+     case IDC_FLOW_DIR_Y_SLYDER:
+     case IDC_FLOW_DIR_Z_SLYDER:
+     {
+        g_vDir.x = (float)g_HUD.GetSlider(IDC_FLOW_DIR_X_SLYDER)->GetValue() / 100.0f;
+        g_vDir.y = (float)g_HUD.GetSlider(IDC_FLOW_DIR_Y_SLYDER)->GetValue() / 100.0f;
+        g_vDir.z = (float)g_HUD.GetSlider(IDC_FLOW_DIR_Z_SLYDER)->GetValue() / 100.0f;
+        swprintf_s(sStr, MAX_PATH, L"Dir: (%.2f,%.2f,%.2f)", g_vDir.x, g_vDir.y, g_vDir.z);
+        g_HUD.GetStatic(IDC_FLOW_DIR_LABEL)->SetText(sStr);
+        XM_TO_V(g_vDir, vDir, 3);
+        g_pGrassField->GetFlowManager()->SetDirection(vDir);
         break;
      }
    }

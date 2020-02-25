@@ -3,12 +3,12 @@
 #include <DDSTextureLoader.h>
 #include <DirectXMath.h>
 
-AxesFan::AxesFan (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3DX11Effect* a_pEffect,
-   const float4x4& a_vTransform, int a_iBladesNum, float a_fBladeSize, float a_fAngleVel)
+
+AxesFan::AxesFan (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3DX11Effect* a_pEffect, int a_iBladesNum, float a_fBladeSize, float a_fAngleVel)
 {
    m_pD3DDevice = a_pD3DDevice;
    m_pD3DDeviceCtx = a_pD3DDeviceCtx;
-   XMStoreFloat4x4(&m_mTransform, a_vTransform);
+   XMStoreFloat4x4(&m_mTransform, XMMatrixIdentity());
    m_uVertexStride = sizeof(VertexType);
    m_uVertexOffset = 0;
    m_uVertexCount = 2 * 3;
@@ -48,7 +48,7 @@ AxesFan::AxesFan (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceC
    CreateInputLayout();
 
    XMStoreFloat4x4(&m_mRotation, XMMatrixIdentity());
-   m_mRot = XMMatrixRotationY(0);
+   XMStoreFloat4x4(&m_mRot,XMMatrixIdentity());
 }
 
 AxesFan::~AxesFan()
@@ -60,6 +60,8 @@ AxesFan::~AxesFan()
 
 void AxesFan::CreateVertexBuffer (void)
 {
+   SAFE_RELEASE(m_pVertexBuffer);
+
    VertexType* Vertices = new VertexType[m_uVertexCount];
    
    Vertices[0].vPos = XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -103,14 +105,22 @@ void AxesFan::CreateInputLayout (void)
 void AxesFan::Render()
 {
    for (int i = 0; i < m_iBladesNum; i++) {
-      XM_TO_M(m_mTransform, transform);
+      XM_TO_V(m_vPosition, pos, 3);
+      XM_TO_V(m_vDirection, dir, 3);
+      XM_TO_M(m_mRot, startRot);
+
+      XMMATRIX mTr = XMMatrixTranslationFromVector(pos);
+
       float delta = PI / m_iBladesNum;
 
-      XMMATRIX rot = XMMatrixRotationY(delta * i);
-      rot = XMMatrixMultiply(m_mRot, rot);
-      transform = XMMatrixMultiply(transform, rot);
+      XMMATRIX bladeM = XMMatrixIdentity();
+      bladeM *= startRot;
+      bladeM *= XMMatrixRotationY(delta * i);;
+      bladeM *= XMMatrixRotationZ(PI / 2 - acos(dot(dir, create(1, 0, 0))));
+      bladeM *= XMMatrixRotationX(PI / 2- acos(dot(dir, create(0, 0, 1))));
+      bladeM *= mTr;
 
-      M_TO_XM(transform, bladeTr);
+      M_TO_XM(bladeM, bladeTr);
 
       m_pTransformEMV->SetMatrix((float*)& bladeTr);
       m_pD3DDeviceCtx->IASetInputLayout(m_pInputLayout);
@@ -124,7 +134,33 @@ void AxesFan::Render()
 
 void AxesFan::Update (float a_fElapsedTime)
 {
-   XMMATRIX deltaRot = XMMatrixRotationY(a_fElapsedTime * m_fAngleVel);
-   XMMATRIX rot = XMMatrixMultiply(deltaRot, m_mRot);
-   m_mRot = rot;
+   XM_TO_M(m_mRot, startRot);
+   startRot = mul(XMMatrixRotationY(a_fElapsedTime * m_fAngleVel), startRot);
+   XMStoreFloat4x4(&m_mRot, startRot);
+}
+
+
+
+void AxesFan::SetViewProjMtx (const float4x4& a_mViewProj)
+{ 
+   m_pViewProjEMV->SetMatrix((float*)& a_mViewProj);
+}
+
+
+void AxesFan::SetPosition (const float3& a_vPosition)
+{
+   XMStoreFloat3(&m_vPosition, a_vPosition);
+}
+
+
+void AxesFan::SetDirection (const float3& a_vDirection)
+{
+   XMStoreFloat3(&m_vDirection, a_vDirection);
+}
+
+
+void AxesFan::SetR (float a_fR)
+{
+   m_fBladeSize = a_fR;
+   CreateVertexBuffer();
 }

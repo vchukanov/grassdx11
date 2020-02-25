@@ -84,7 +84,11 @@ bool AxesFanFlow::Initialize(ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD
    }
    m_pPass = m_pEffect->GetTechniqueByIndex(0)->GetPassByName("AxesFanFlowPass");
    m_vPositionESV = m_pEffect->GetVariableByName("g_vAxesFanPosOnTex")->AsVector();
+   m_vDirectionESV = m_pEffect->GetVariableByName("g_vDir")->AsVector();
+   m_pR = m_pEffect->GetVariableByName("g_fR")->AsScalar();
+   m_pRingsNumber = m_pEffect->GetVariableByName("g_uRingNumber")->AsScalar();
    m_pTime = m_pEffect->GetVariableByName("g_fTime")->AsScalar();
+   m_pNoiseSRV = m_pEffect->GetVariableByName("g_txNoise")->AsShaderResource();
 
    m_pMaxHorizFlowESV = m_pEffect->GetVariableByName("g_fMaxHorizFlow")->AsScalar();;
    m_pMaxVertFlowESV = m_pEffect->GetVariableByName("g_fMaxVertFlow")->AsScalar();;
@@ -159,9 +163,9 @@ void AxesFanFlow::MakeFlowTexture(void)
    // Saving render targets
    ID3D11RenderTargetView* pOrigRT;
    ID3D11DepthStencilView* pOrigDS;
-   D3D11_VIEWPORT         OrigViewPort[1];
-   D3D11_VIEWPORT         ViewPort[1];
-   UINT               NumV = 1;
+   D3D11_VIEWPORT          OrigViewPort[1];
+   D3D11_VIEWPORT          ViewPort[1];
+   UINT                    NumV = 1;
 
    m_pD3DDeviceCtx->RSGetViewports(&NumV, OrigViewPort);
 
@@ -245,9 +249,34 @@ void AxesFanFlow::SetPosition(const float3& a_vValue)
 }
 
 
+void AxesFanFlow::SetDirection(const float3& a_vValue)
+{
+   XMVECTOR vDir = normalize(a_vValue);
+   m_vDirectionESV->SetFloatVector((float*)& vDir);
+}
+
+
+void AxesFanFlow::SetR(float a_fValue)
+{
+   m_pR->SetFloat(a_fValue / m_fTerrRadius);
+}
+
+
+void AxesFanFlow::SetRingsNumber(int a_fValue)
+{
+   m_pRingsNumber->SetInt(a_fValue);
+}
+
+
 void AxesFanFlow::SetTime(float a_fTime)
 {
    m_pTime->SetFloat(a_fTime);
+}
+
+
+void AxesFanFlow::SetNoise (ID3D11ShaderResourceView* a_pNoiseSRV)
+{
+   m_pNoiseSRV->SetResource(a_pNoiseSRV);
 }
 
 

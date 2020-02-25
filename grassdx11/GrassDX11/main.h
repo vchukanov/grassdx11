@@ -75,18 +75,18 @@ float                               g_fDampPower = 2.8110;
 float                               g_fDistPower = 2.1620;
 float                               g_fMaxFlowRadius = 0.1080;
 float                               g_fShift = 1.0270;
-
+XMFLOAT3                            g_vDir = XMFLOAT3(0.0f, -1.0f, 0.0f);
 //phys
 
 float                               g_fWindTexSpeed = 2.5f;//3.78f;
 float                               g_fWindTexTile = 4.f;//4.f;//5.2f;
 float                               g_fCameraSpeed = 30.0f;
 float                               g_fTime = 0.0f;
-float                               g_fHeightScale = 0;//40.0f;
+float                               g_fHeightScale = 40;//0;//40.0f;
 float                               g_fQuality = 1.0f;
 XMFLOAT4                            g_vFogColor = XMFLOAT4(0.2f, 0.3f, 0.25f, 1.0f);
 XMFLOAT3                            g_vTerrRGB = XMFLOAT3(0.16f, 0.28f, 0.09f);
-XMFLOAT4                            g_vGrassSpecular = XMFLOAT4(0.64f, 0.8f, 0.24f, 1.0f);
+XMFLOAT4                            g_vGrassSpecular = XMFLOAT4(0.04f, 0.27f, 0.00f, 1.0f);
 
 float                               g_fTerrTile = 45.0f;
 
@@ -105,6 +105,15 @@ ID3D11Texture2D*                    g_pRenderTarget = NULL;
 ID3D11RenderTargetView*             g_pRTRV = NULL;
 ID3D11Texture2D*                    g_pDSTarget = NULL;
 ID3D11DepthStencilView*             g_pDSRV = NULL;
+
+/* sky */
+ID3D11InputLayout                    *g_pSkyVertexLayout = NULL;
+CDXUTSDKMesh                          g_MeshSkybox;
+ID3DX11EffectShaderResourceVariable  *g_pSkyBoxESRV = NULL;
+ID3DX11EffectMatrixVariable          *g_pSkyViewProjEMV;
+ID3DX11EffectTechnique               *g_pSkyboxTechnique = NULL;
+ID3DX11EffectPass                    *g_pSkyboxPass = NULL;
+
 
 UINT                                g_MSAASampleCount = 4;
 UINT                                g_BackBufferWidth;
@@ -144,6 +153,11 @@ enum IDC_HUD
    IDC_TERR_R_SLYDER,
    IDC_TERR_G_SLYDER,
    IDC_TERR_B_SLYDER,
+
+   IDC_FLOW_DIR_LABEL,
+   IDC_FLOW_DIR_X_SLYDER,
+   IDC_FLOW_DIR_Y_SLYDER,
+   IDC_FLOW_DIR_Z_SLYDER,
 
    IDC_TOGGLE_WIREFRAME,
    IDC_TOGGLE_RENDERING_GRASS,
