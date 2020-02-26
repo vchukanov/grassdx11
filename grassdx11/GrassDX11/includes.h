@@ -9,6 +9,7 @@
 #include "DXUT.h"
 #include "PhysMath.h"
 
+#include "memdebug.h"
 
 using namespace DirectX;
 

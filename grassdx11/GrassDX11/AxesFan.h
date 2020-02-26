@@ -46,7 +46,6 @@ private:
    XMFLOAT4X4                   m_mTransform;
    XMFLOAT4X4                   m_mRotation;
    XMFLOAT4X4                   m_mTranslation;
-
    
    ID3DX11EffectShaderResourceVariable* m_pTexESRV;
 

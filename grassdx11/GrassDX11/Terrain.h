@@ -47,7 +47,7 @@ private:
     ID3DX11EffectPass                   *m_pPass;
     ID3DX11EffectPass                   *m_pLightMapPass;
     ID3D11Device                        *m_pD3DDevice;
-    ID3D11DeviceContext               *m_pD3DDeviceCtx;
+    ID3D11DeviceContext                 *m_pD3DDeviceCtx;
     ID3D11InputLayout                   *m_pInputLayout;
     ID3D11Buffer                        *m_pVertexBuffer;
     ID3D11Buffer                        *m_pQuadVertexBuffer;

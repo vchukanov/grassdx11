@@ -12,8 +12,9 @@ private:
    };
 
 public:
-   bool Initialize (ID3D11Device* device, int screenWidth, int screenHeight, ID3D11ShaderResourceView* pSRV, float scale = 1.0);
-   void Shutdown   (void);
+   DebugWindow  (ID3D11Device* device, int screenWidth, int screenHeight, ID3D11ShaderResourceView* pSRV, float scale = 1.0);
+   ~DebugWindow (void);
+
    bool Render     (ID3D11DeviceContext* deviceContext, int positionX, int positionY);
 
    int  GetIndexCount  (void);

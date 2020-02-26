@@ -23,9 +23,7 @@ void FlowManager::CreateAxesFan (const XMFLOAT3& a_vPosition)
    float bladeSize = 10.0f;
    int   bladesNum = 2;
 
-   m_pAxesFanFlow = new AxesFanFlow();
-   m_pAxesFanFlow->Initialize(m_pD3DDevice, m_pD3DDeviceCtx, m_uFlowTexSize, m_uFlowTexSize, m_fTerrRadius);
-   
+   m_pAxesFanFlow = new AxesFanFlow(m_pD3DDevice, m_pD3DDeviceCtx, m_uFlowTexSize, m_uFlowTexSize, m_fTerrRadius);
    m_pAxesFanFlow->SetNoise(m_NoiseSRV);
    m_pAxesFanFlow->SetR(bladeSize);
    m_pAxesFanFlow->SetRingsNumber(16);

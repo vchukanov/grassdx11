@@ -49,7 +49,7 @@ GrassFieldManager                   *g_pGrassField;
 Mesh                                *g_pMeshes[MAX_NUM_MESHES];
 
 // Output textures to screen
-DebugWindow                         g_dbgWin;
+DebugWindow                         *g_dbgWin;
 //
 
 

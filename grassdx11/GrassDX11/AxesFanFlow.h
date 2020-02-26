@@ -11,8 +11,8 @@ struct AxesFanFlowVertex
 
 class AxesFanFlow {
 public:
-   bool Initialize (ID3D11Device* pD3DDevice, ID3D11DeviceContext* pD3DDeviceCtx, int textureWidth, int textureHeight, float a_fTerrRadius);
-   void ShutDown   (void);
+   AxesFanFlow  (ID3D11Device* pD3DDevice, ID3D11DeviceContext* pD3DDeviceCtx, int textureWidth, int textureHeight, float a_fTerrRadius);
+   ~AxesFanFlow (void);
 
    void SetRenderTarget   (ID3D11DepthStencilView* pDSV);
    void ClearRenderTarget (ID3D11DepthStencilView* pDSV);

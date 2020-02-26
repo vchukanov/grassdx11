@@ -31,8 +31,7 @@ void GrassManager::LoadIndexData(void)
    ID3D11Texture2D* pSRTex;
 
    HRESULT hr;
-   ID3D11ShaderResourceView* pTextureSRV;
-   hr = CreateDDSTextureFromFile(m_GrassState.pD3DDevice, m_GrassState.sIndexTexPath.c_str(), &pRes, &pTextureSRV);
+   hr = CreateDDSTextureFromFile(m_GrassState.pD3DDevice, m_GrassState.sIndexTexPath.c_str(), &pRes, nullptr);
    if (hr != S_OK)
       return;
 
@@ -313,7 +312,8 @@ void GrassManager::SetHeightScale(float a_fHeightScale)
 
 void GrassManager::Render(bool a_bShadowPass)
 {
-   m_pAxesFanFlowESRV->SetResource(m_pFlowManager->GetFlowSRV());
+   if (m_pFlowManager)
+      m_pAxesFanFlowESRV->SetResource(m_pFlowManager->GetFlowSRV());
 
    if (GetGlobalStateManager().UseWireframe())
       GetGlobalStateManager().SetRasterizerState("EnableMSAA_Wire");

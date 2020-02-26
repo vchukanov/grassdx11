@@ -112,7 +112,7 @@ private:
    ID3DX11EffectShaderResourceVariable *m_pTrackMapSRV;
    FlowManager                         *m_pFlowManager;
    ID3DX11EffectShaderResourceVariable *m_pAxesFanFlowESRV;
-   UINT                         m_uNumPatchesPerTerrSide;
+   UINT                                 m_uNumPatchesPerTerrSide;
     //DWORD                                m_dwLodTransformsIndex[GrassLodsCount];
     
     //void UpdateEven         ( ConvexVolume &a_cvFrustum, XMFLOAT4X4 &a_mViewProj, XMFLOAT3 a_vCamPos, Mesh *a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime );

@@ -1,10 +1,8 @@
 #include "DebugWindow.h"
+#include "includes.h"
 
-
-bool DebugWindow::Initialize (ID3D11Device* device, int screenWidth, int screenHeight, ID3D11ShaderResourceView *pSRV, float scale)
+DebugWindow::DebugWindow(ID3D11Device* device, int screenWidth, int screenHeight, ID3D11ShaderResourceView *pSRV, float scale)
 {
-   bool result;
-
    m_pDevice = device;
    m_fScale = scale;
 
@@ -19,6 +17,7 @@ bool DebugWindow::Initialize (ID3D11Device* device, int screenWidth, int screenH
    res->QueryInterface<ID3D11Texture2D>(&pTextureInterface);
    D3D11_TEXTURE2D_DESC desc;
    pTextureInterface->GetDesc(&desc);
+   SAFE_RELEASE(pTextureInterface);
 
    // Store the size in pixels that this bitmap should be rendered at.
    m_bitmapWidth = desc.Width * (int)floor(scale);
@@ -29,11 +28,7 @@ bool DebugWindow::Initialize (ID3D11Device* device, int screenWidth, int screenH
    m_previousPosY = -1;
 
    // Initialize the vertex and index buffers.
-   result = InitializeBuffers(device);
-   if (!result)
-   {
-      return false;
-   }
+   InitializeBuffers(device);
 
    
    /* Getting technique from fx */
@@ -66,20 +61,16 @@ bool DebugWindow::Initialize (ID3D11Device* device, int screenWidth, int screenH
    m_pTransformEMV = m_pEffect->GetVariableByName("g_mWorld")->AsMatrix();
 
    CreateInputLayout();
-
-   return true;
 }
 
 
-void DebugWindow::Shutdown (void)
+DebugWindow::~DebugWindow(void)
 {
-   // Shutdown the vertex and index buffers.
-   ShutdownBuffers();
+   SAFE_RELEASE(m_indexBuffer);
+   SAFE_RELEASE(m_vertexBuffer);
    SAFE_RELEASE(m_pPass)
    SAFE_RELEASE(m_pEffect);
    SAFE_RELEASE(m_pInputLayout);
-
-   return;
 }
 
 
@@ -211,14 +202,6 @@ bool DebugWindow::InitializeBuffers (ID3D11Device* device)
    return true;
 }
 
-
-void DebugWindow::ShutdownBuffers()
-{
-   SAFE_RELEASE(m_indexBuffer);
-   SAFE_RELEASE(m_vertexBuffer);
-  
-   return;
-}
 
 
 bool DebugWindow::UpdateBuffers (ID3D11DeviceContext* deviceContext, int positionX, int positionY)

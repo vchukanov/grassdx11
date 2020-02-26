@@ -3,13 +3,12 @@
 // TODO: move to other place to share accses
 #define NUM_SEGMENTS 4
 
-bool AxesFanFlow::Initialize(ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DDeviceCtx, int textureWidth, int textureHeight, float a_fTerrRadius)
+AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DDeviceCtx, int textureWidth, int textureHeight, float a_fTerrRadius)
 {
    D3D11_TEXTURE2D_DESC            textureDesc;
-   HRESULT                         result;
    D3D11_RENDER_TARGET_VIEW_DESC   renderTargetViewDesc;
    D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
-
+   
    m_pD3DDevice = pD3DDevice;
    m_pD3DDeviceCtx = pD3DDeviceCtx;
    m_width = textureWidth;
@@ -32,11 +31,7 @@ bool AxesFanFlow::Initialize(ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD
    textureDesc.MiscFlags = 0;
 
    // Create the render target texture.
-   result = m_pD3DDevice->CreateTexture2D(&textureDesc, NULL, &m_renderTargetTexture);
-   if (FAILED(result))
-   {
-      return false;
-   }
+   m_pD3DDevice->CreateTexture2D(&textureDesc, NULL, &m_renderTargetTexture);
 
    // Setup the description of the render target view.
    renderTargetViewDesc.Format = textureDesc.Format;
@@ -45,11 +40,7 @@ bool AxesFanFlow::Initialize(ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD
 
 
    // Create the render target view.
-   result = m_pD3DDevice->CreateRenderTargetView(m_renderTargetTexture, &renderTargetViewDesc, &m_renderTargetView);
-   if (FAILED(result))
-   {
-      return false;
-   }
+   m_pD3DDevice->CreateRenderTargetView(m_renderTargetTexture, &renderTargetViewDesc, &m_renderTargetView);
 
    // Setup the description of the shader resource view.
    shaderResourceViewDesc.Format = textureDesc.Format;
@@ -58,13 +49,8 @@ bool AxesFanFlow::Initialize(ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD
    shaderResourceViewDesc.Texture2D.MipLevels = 1;
 
    // Create the shader resource view.
-   result = m_pD3DDevice->CreateShaderResourceView(m_renderTargetTexture, &shaderResourceViewDesc, &m_shaderResourceView);
-   if (FAILED(result))
-   {
-      return false;
-   }
-   SAFE_RELEASE(m_renderTargetTexture);
-
+   m_pD3DDevice->CreateShaderResourceView(m_renderTargetTexture, &shaderResourceViewDesc, &m_shaderResourceView);
+   
 
    /* Loading effect */
    ID3DBlob* pErrorBlob = nullptr;
@@ -102,15 +88,15 @@ bool AxesFanFlow::Initialize(ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD
 
    CreateVertexBuffer();
    CreateInputLayout();
-
-   return true;
 }
 
 
-void AxesFanFlow::ShutDown(void)
+AxesFanFlow::~AxesFanFlow (void)
 {
    SAFE_RELEASE(m_shaderResourceView);
    SAFE_RELEASE(m_renderTargetView);
+   m_renderTargetTexture->Release(); //HACK:  m_renderTargetTexture refcount is 2??
+   SAFE_RELEASE(m_renderTargetTexture);
    SAFE_RELEASE(m_pPass);
    SAFE_RELEASE(m_pEffect);
    SAFE_RELEASE(m_pInputLayout);

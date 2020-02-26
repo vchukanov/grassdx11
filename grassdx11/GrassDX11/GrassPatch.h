@@ -19,7 +19,7 @@ class GrassPatch
    friend class PhysPatch;
 
 protected:
-   GrassVertex             *m_pVertices;
+   GrassVertex              *m_pVertices;
    DWORD                     m_dwVerticesCount;
    UINT                      m_dwVertexStride;
    UINT                      m_dwVertexOffset;
@@ -28,9 +28,9 @@ protected:
    DWORD                     m_dwBladesPerSide;
    float                     m_fBladeWidth;
    float                     m_fBladeHeight;
-   /* directx10 variables */
-   ID3D11Buffer       *m_pVertexBuffer;
-   ID3D11Device       *m_pD3DDevice;
+   /* directx11 variables */
+   ID3D11Buffer        *m_pVertexBuffer;
+   ID3D11Device        *m_pD3DDevice;
    ID3D11DeviceContext *m_pD3DDeviceCtx;
 
    void          GenerateBuffers (void);
@@ -46,7 +46,7 @@ public:
    DWORD         VerticesCount      (void);
    float         GetPatchSize       (void);
 
-   ID3D11Device*       GetD3DDevicePtr    (void);
+   ID3D11Device*        GetD3DDevicePtr    (void);
    ID3D11DeviceContext* GetD3DDeviceCtxPtr (void);
 
    GrassPatch& operator = (GrassPatch& a_Patch);

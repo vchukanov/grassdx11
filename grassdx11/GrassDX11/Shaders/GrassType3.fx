@@ -56,7 +56,7 @@ struct GrassSubType
     float3 vMassSegment; 
     float2 vSizes; //x = segment width, y = segment height
     
-    float4 pad0;
+    float2 pad0;
 
     uint   uTexIndex;
     uint   uTopTexIndex;

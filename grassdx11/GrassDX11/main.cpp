@@ -222,8 +222,8 @@ bool CALLBACK IsD3D11DeviceAcceptable( const CD3D11EnumAdapterInfo *AdapterInfo,
 // Create any D3D11 resources that aren't dependant on the back buffer
 //--------------------------------------------------------------------------------------
 
-ID3D11DepthStencilState* m_depthDisabledStencilState;
-ID3D11DepthStencilState* m_depthEnabledStencilState;
+ID3D11DepthStencilState* g_depthStencilStateDisabled;
+ID3D11DepthStencilState* g_depthStencilStateEnabled;
 XMMATRIX m_orthoMatrix;
 
 HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc,
@@ -255,7 +255,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    depthDisabledStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
    depthDisabledStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
    // Create the state using the device.
-   hr = pd3dDevice->CreateDepthStencilState(&depthDisabledStencilDesc, &m_depthDisabledStencilState);
+   hr = pd3dDevice->CreateDepthStencilState(&depthDisabledStencilDesc, &g_depthStencilStateDisabled);
    if (FAILED(hr))
    {
       return false;
@@ -286,14 +286,14 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
    
    // Create the depth stencil state.
-   hr = pd3dDevice->CreateDepthStencilState(&depthStencilDesc, &m_depthEnabledStencilState);
+   hr = pd3dDevice->CreateDepthStencilState(&depthStencilDesc, &g_depthStencilStateEnabled);
    if (FAILED(hr))
    {
       return false;
    }
    
    // Set the depth stencil state.
-   pd3dImmediateContext->OMSetDepthStencilState(m_depthEnabledStencilState, 1);
+   pd3dImmediateContext->OMSetDepthStencilState(g_depthStencilStateEnabled, 1);
 
 
     V_RETURN( g_DialogResourceManager.OnD3D11CreateDevice( pd3dDevice, pd3dImmediateContext ) );
@@ -446,12 +446,12 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    g_pGrassField->SetWindBias(g_fWindBias);
    g_pGrassField->SetWindScale(g_fWindScale);
    
-   g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxHorizFlow);
-   g_pGrassField->GetFlowManager()->SetMaxVertFlow(g_fMaxVertFlow);
-   g_pGrassField->GetFlowManager()->SetDampPower(g_fDampPower);
-   g_pGrassField->GetFlowManager()->SetDistPower(g_fDistPower);
-   g_pGrassField->GetFlowManager()->SetMaxFlowRadius(g_fMaxFlowRadius);
-   g_pGrassField->GetFlowManager()->SetShift(g_fShift);
+   //g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxHorizFlow);
+   //g_pGrassField->GetFlowManager()->SetMaxVertFlow(g_fMaxVertFlow);
+   //g_pGrassField->GetFlowManager()->SetDampPower(g_fDampPower);
+   //g_pGrassField->GetFlowManager()->SetDistPower(g_fDistPower);
+   //g_pGrassField->GetFlowManager()->SetMaxFlowRadius(g_fMaxFlowRadius);
+   //g_pGrassField->GetFlowManager()->SetShift(g_fShift);
    //InitMeshes(pd3dDevice);
    
    // Setup the camera's view parameters
@@ -462,9 +462,9 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    
    g_Camera->SetViewParams(XMLoadFloat3(&g_vCameraEyeStart), XMLoadFloat3(&g_vCameraAtStart));
    g_Camera->SetScalers(0.01f, g_fCameraSpeed /* g_fMeter*/);
-   //g_dbgWin.Initialize(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->GetFlowSRV(), 1);
-   g_dbgWin.Initialize(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetWind()->GetMap(), 10);
-
+   
+   //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetWind()->GetMap(), 10);
+   g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->GetFlowSRV(), 1);
 
    return S_OK;
 }
@@ -591,7 +591,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     
 
    //g_Camera->SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
-    //g_Camera->SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
+   //g_Camera->SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
 
     g_HUD.SetLocation( pBackBufferSurfaceDesc->Width - 300, 0 );
     g_HUD.SetSize( 200, 200 );
@@ -650,14 +650,14 @@ void RenderGrass (ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dDeviceCtx, 
 
 void TurnZBufferOn(ID3D11DeviceContext* pd3dImmediateContext)
 {
-   pd3dImmediateContext->OMSetDepthStencilState(m_depthEnabledStencilState, 1);
+   pd3dImmediateContext->OMSetDepthStencilState(g_depthStencilStateEnabled, 1);
    return;
 }
 
 
 void TurnZBufferOff(ID3D11DeviceContext* pd3dImmediateContext)
 {
-   pd3dImmediateContext->OMSetDepthStencilState(m_depthDisabledStencilState, 1);
+   pd3dImmediateContext->OMSetDepthStencilState(g_depthStencilStateDisabled, 1);
    return;
 }
 
@@ -702,10 +702,10 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
    XMMATRIX mViewProj;
    mViewProj = mul(mView, mProj);
    XMMATRIX mOrtho = XMMatrixTranspose(m_orthoMatrix);
-   g_dbgWin.SetOrthoMtx(mOrtho);
-   g_dbgWin.SetWorldMtx(mWorld);
+   g_dbgWin->SetOrthoMtx(mOrtho);
+   g_dbgWin->SetWorldMtx(mWorld);
    
-   g_dbgWin.Render(pd3dImmediateContext, 100, 100);
+   g_dbgWin->Render(pd3dImmediateContext, 100, 100);
    TurnZBufferOn(pd3dImmediateContext);
 
    // Copy it over because we can't resolve on present at the moment
@@ -745,7 +745,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 //--------------------------------------------------------------------------------------
 void CALLBACK OnD3D11ReleasingSwapChain( void* pUserContext )
 {
-    g_DialogResourceManager.OnD3D11ReleasingSwapChain();
+   g_DialogResourceManager.OnD3D11ReleasingSwapChain();
    
    SAFE_RELEASE(g_pRTRV);
    SAFE_RELEASE(g_pDSRV);
@@ -762,8 +762,6 @@ void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
    g_SettingsDlg.OnD3D11DestroyDevice();
    DXUTGetGlobalResourceCache().OnDestroyDevice();
 
-   g_dbgWin.Shutdown();
-
    SAFE_DELETE( g_pTxtHelper );
 
    SAFE_RELEASE( g_pVertexShader11 );
@@ -776,15 +774,22 @@ void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
    SAFE_RELEASE(g_pDSTarget);
    SAFE_RELEASE(g_pDSRV);
 
+   SAFE_RELEASE(g_depthStencilStateDisabled);
+   SAFE_RELEASE(g_depthStencilStateEnabled);
+
     // Delete additional render resources here...
    SAFE_DELETE(g_Camera);
+   SAFE_DELETE(g_dbgWin);
    SAFE_DELETE(g_pGrassField);
+
 
    SAFE_RELEASE(g_pSkyVertexLayout);
    g_MeshSkybox.Destroy();
 
    SAFE_RELEASE( g_pcbVSPerObject11 );
    SAFE_RELEASE( g_pcbVSPerFrame11 );
+
+  // PrintMemoryLeaks(L"mem.txt");
 }
 
 
@@ -889,7 +894,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
         break;
 
      case IDC_TOGGLE_RENDERING_DBG_WIN:
-        g_dbgWin.ToggleRender();
+        g_dbgWin->ToggleRender();
         break;
 
      case IDC_GRASS_WIND_FORCE_SLYDER:
