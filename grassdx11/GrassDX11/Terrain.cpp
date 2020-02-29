@@ -350,7 +350,7 @@ void Terrain::UpdateLightMap(void)
    GetGlobalStateManager().SetRasterizerState("EnableMSAA");
 
    m_pLightMapESRV->SetResource(NULL);
-   ///* Saving render targets */
+   /* Saving render targets */
    ID3D11RenderTargetView* pOrigRT;
    ID3D11DepthStencilView* pOrigDS;
    D3D11_VIEWPORT         OrigViewPort[1];

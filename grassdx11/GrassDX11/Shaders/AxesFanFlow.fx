@@ -114,8 +114,6 @@ float3 getProjectionToPlane (float3 pNormal, float3 pPoint, float3 pt)
 
 float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ): SV_Target
 {
-   return float4(0, g_fDampPower / 100, 0, 1);
-
    float fNoise = g_txNoise.Sample(g_samLinear, In.vsPos).r;
    
    float3 fanNormal = normalize(g_vDir.xzy);
@@ -187,8 +185,8 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ): SV_Target
        vm_k += s_k[k] * r_k[k] / (2 * PI * r * sqrt(p1_m)) * (K_M + (sqr(r) - sqr(r_k[k]) - sqr(z)) / p2_m * E_M);
    }
 
-   float3 normalFlow   = w_k  * fanNormal;
-   float3 normalFlow_m = wm_k * fanNormal_m;
+   float3 normalFlow   = -w_k  * fanNormal;
+   float3 normalFlow_m = -wm_k * fanNormal_m;
    
    float3 radialFlow   = v_k  * radial;
    float3 radialFlow_m = vm_k * radial_m;

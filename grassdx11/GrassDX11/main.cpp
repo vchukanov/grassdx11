@@ -446,12 +446,12 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    g_pGrassField->SetWindBias(g_fWindBias);
    g_pGrassField->SetWindScale(g_fWindScale);
    
-   //g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxHorizFlow);
-   //g_pGrassField->GetFlowManager()->SetMaxVertFlow(g_fMaxVertFlow);
-   //g_pGrassField->GetFlowManager()->SetDampPower(g_fDampPower);
-   //g_pGrassField->GetFlowManager()->SetDistPower(g_fDistPower);
-   //g_pGrassField->GetFlowManager()->SetMaxFlowRadius(g_fMaxFlowRadius);
-   //g_pGrassField->GetFlowManager()->SetShift(g_fShift);
+   g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxHorizFlow);
+   g_pGrassField->GetFlowManager()->SetMaxVertFlow(g_fMaxVertFlow);
+   g_pGrassField->GetFlowManager()->SetDampPower(g_fDampPower);
+   g_pGrassField->GetFlowManager()->SetDistPower(g_fDistPower);
+   g_pGrassField->GetFlowManager()->SetMaxFlowRadius(g_fMaxFlowRadius);
+   g_pGrassField->GetFlowManager()->SetShift(g_fShift);
    //InitMeshes(pd3dDevice);
    
    // Setup the camera's view parameters

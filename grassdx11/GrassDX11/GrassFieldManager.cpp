@@ -43,7 +43,7 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
       m_pNoiseESV
    );
 
-   m_pFlowManager->CreateAxesFan(XMFLOAT3(0, 20, 0));
+   m_pFlowManager->CreateAxesFan(XMFLOAT3(40, 25, -20));
    
 #pragma omp parallel sections 
    {

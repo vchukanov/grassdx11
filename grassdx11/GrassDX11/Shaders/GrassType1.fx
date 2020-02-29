@@ -402,33 +402,33 @@ void GSGrassMain( point GSIn Input[1], inout TriangleStream< PSIn > TriStream )
  */
 float4 InstPSMain( PSIn Input ) : SV_Target
 {
-   float fNoise;
-   if (Input.fDissolve < 0.0) clip(-1);
-   if ((Input.vTexCoord.w < 40.0) && (Input.fDissolve < 1.0))
-   {
-         fNoise = g_txNoise.Sample(g_samLinear, Input.vTexCoord.xy).r;
-         clip(Input.fDissolve - fNoise);
-   }
-
+    float fNoise;
+    if (Input.fDissolve < 0.0) clip(-1);
+	/*
+	if ((Input.vTexCoord.w < 40.0) && (Input.fDissolve < 1.0))
+	{
+			fNoise = g_txNoise.Sample(g_samLinear, Input.vTexCoord.xy).r;
+			clip(Input.fDissolve - fNoise);
+	}
+*/
     uint uTexIndex   = Input.uIndex;//0;//SubTypes[Input.uIndex].uTexIndex;
     float fAlpha;
     float fL = max(0.17, (1.0 + 5.0 * Input.vTerrSpec.y)*0.6);
+    fAlpha = Input.fDissolve;
+    float4 vDiffuseTexel = g_txGrassDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, uTexIndex));
     if (Input.vTexCoord.w < 70.0)
     {
-      float fTest = max((Input.vTexCoord.w - 40.0)/30.0, 0.0);
-      fAlpha = g_txGrassDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, uTexIndex)).a;
-      fAlpha = fTest + (1.0 - fTest)*fAlpha;
-//       if (Input.vTexCoord.x < 0.5)fL *= 0.862;
+       float fTest = max((Input.vTexCoord.w - 40.0)/30.0, 0.0);
+       fAlpha = vDiffuseTexel.a;//g_txGrassDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, uTexIndex)).a;
+       fAlpha = (fTest + (1.0 - fTest)*fAlpha) * Input.fDissolve;
+//	    if (Input.vTexCoord.x < 0.5)fL *= 0.862;
        if (Input.vTexCoord.x < 0.5)fL *= 0.7862;
-   }   
-   //else
-   //   fAlpha = 1.0;
-
+    }	
     float3 vColor1 = float3(0.5, 0.5, 1.0);
     float3 vColor2 = float3(1.5, 1.5, 1.0);
     float fNoiseScale = lerp(vColor1, vColor2, Input.fNoise);
-    float3 vA = g_vTerrRGB;
-    float3 vD = g_vLowGrassDiffuse.xyz;
+    float3 vA = Input.vBladeColor;
+    float3 vD = vDiffuseTexel.xyz;//g_vLowGrassDiffuse.xyz;
     float3 vT = Input.vColor * max(0.8, (2.0 + 5.0f* Input.vTerrSpec.y)*0.5);
     float fDot = Input.vTerrSpec.x;
     float fT = 1.0 - abs(Input.fLightParam);
@@ -438,13 +438,13 @@ float4 InstPSMain( PSIn Input ) : SV_Target
     float fY2 = fY*fY;
     fY2 = fY2*fY2;
     fY2 = fY2*fY;
-    float3 vC = vT + fY*(vA + fY2*fT2*vD)*fL*fNoiseScale;
-    vC = fY2*fDot * g_vTerrSpec + (1.0 - fY2*fDot) * vC;
-   
-    float fDd = clamp((Input.vTexCoord.w - 90.0)*0.02, 0.0, 1.0);
+	  float3 vC = vT + fY*(vA + fY2*fT2*vD)*fL*fNoiseScale;
+	  vC = fY2*fDot * g_vTerrSpec + (1.0 - fY2*fDot) * vC;
+	
+  	float fDd = clamp((Input.vTexCoord.w - 90.0)*0.02, 0.0, 1.0);
     float fDd2 = fDd*fDd;
     fDd = 1.0 - 3.0*fDd2 +2.0*fDd2*fDd;
-    vC = fDd*vC + (1.0-fDd)*vT;
+   //vC = fDd*vC + (1.0-fDd)*vT;
     return lerp(float4(vC, fAlpha) , g_vFogColor, Input.vTexCoord.z);
 }
  
@@ -482,5 +482,5 @@ technique10 RenderGrass
         SetBlendState( AlphaBlendState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );
         SetDepthStencilState( EnableDepthTestWrite, 0 );
     }
-
+    
 }
