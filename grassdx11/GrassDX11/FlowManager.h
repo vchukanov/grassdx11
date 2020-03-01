@@ -19,30 +19,15 @@ public:
 
    ID3D11ShaderResourceView* GetFlowSRV (void) { return m_pAxesFanFlow->GetShaderResourceView(); }
 
-   void SetMaxHorizFlow  (float a_fMaxHorizFlow) {m_pAxesFanFlow->SetMaxHorizFlow(a_fMaxHorizFlow); }
-   void SetMaxVertFlow   (float a_fMaxVertFlow) { m_pAxesFanFlow->SetMaxVertFlow(a_fMaxVertFlow); }
-   void SetDampPower     (float a_fDampPower) {m_pAxesFanFlow->SetDampPower(a_fDampPower); }
-   void SetDistPower     (float a_fDistPower) {m_pAxesFanFlow->SetDistPower(a_fDistPower); }
-   void SetMaxFlowRadius (float a_fMaxFlowRadius) { m_pAxesFanFlow->SetMaxFlowRadius(a_fMaxFlowRadius); }
-   void SetShift         (float a_fShift) { m_pAxesFanFlow->SetShift(a_fShift); }
+   XMVECTOR GetPosition (void);
 
-   void SetDirection     (const float3& a_vDir) 
-   {
-      m_pAxesFanFlow->SetDirection(a_vDir); 
-      m_pAxesFan->SetDirection(a_vDir);
-   }
-   
-   void SetTransform     (const float3& a_vPos) 
-   { 
-      m_pAxesFanFlow->SetPosition(a_vPos); 
-      m_pAxesFan->SetPosition(a_vPos);
-   }
-
-   void SetRadius (float a_fR)
-   {
-      m_pAxesFanFlow->SetR(a_fR);
-      m_pAxesFan->SetR(a_fR);
-   }
+   void SetMaxHorizFlow  (float a_fMaxFlowStrength) {m_pAxesFanFlow->SetMaxFlowStrength(a_fMaxFlowStrength); }
+   void SetFanRadius     (float a_fR);
+   void SetDeltaSlices   (float a_fDeltaSlices);
+   void SetShift         (float a_fShift);
+   void SetDirection     (const float3& a_vDir);
+   void SetTransform     (const float3& a_vPos);
+   void SetAngleSpeed    (float a_fS);
 
 public:
    AxesFan*     m_pAxesFan      = NULL;
@@ -57,5 +42,7 @@ public:
    UINT m_uFlowTexSize = 512;
 
    ID3D11ShaderResourceView *m_NoiseSRV;
+
+   XMVECTOR m_vPosition;
 };
 

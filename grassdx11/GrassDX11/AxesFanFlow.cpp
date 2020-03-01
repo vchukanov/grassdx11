@@ -6,7 +6,7 @@
 AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DDeviceCtx, int textureWidth, int textureHeight, float a_fTerrRadius)
 {
    D3D11_TEXTURE2D_DESC            textureDesc;
-   D3D11_RENDER_TARGET_VIEW_DESC   renderTargetViewDesc;
+   D3D11_RENDER_TARGET_VIEW_DESC   renderTargetsViewDesc;
    D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
    
    m_pD3DDevice = pD3DDevice;
@@ -30,26 +30,32 @@ AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DD
    textureDesc.CPUAccessFlags = 0;
    textureDesc.MiscFlags = 0;
 
-   // Create the render target texture.
-   m_pD3DDevice->CreateTexture2D(&textureDesc, NULL, &m_renderTargetTexture);
+   // Create the render target textures.
+   m_pD3DDevice->CreateTexture2D(&textureDesc, NULL, &m_renderTargetsTexture);
 
    // Setup the description of the render target view.
-   renderTargetViewDesc.Format = textureDesc.Format;
-   renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-   renderTargetViewDesc.Texture2D.MipSlice = 0;
+   renderTargetsViewDesc.Format = textureDesc.Format;
+   renderTargetsViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
+   renderTargetsViewDesc.Texture2D.MipSlice = 0;
+   renderTargetsViewDesc.Texture2DArray.ArraySize = 1;
 
 
-   // Create the render target view.
-   m_pD3DDevice->CreateRenderTargetView(m_renderTargetTexture, &renderTargetViewDesc, &m_renderTargetView);
+   // Create the render targets view.
+   for (int i = 0; i < NUM_SEGMENTS - 1; i++) {
+      renderTargetsViewDesc.Texture2DArray.FirstArraySlice = D3D11CalcSubresource(0, i, 1);
+      m_pD3DDevice->CreateRenderTargetView(m_renderTargetsTexture, &renderTargetsViewDesc, &m_renderTargetsView[i]);
+   }
 
    // Setup the description of the shader resource view.
    shaderResourceViewDesc.Format = textureDesc.Format;
-   shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+   shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
    shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
    shaderResourceViewDesc.Texture2D.MipLevels = 1;
+   shaderResourceViewDesc.Texture2DArray.ArraySize = NUM_SEGMENTS - 1;
+   shaderResourceViewDesc.Texture2DArray.FirstArraySlice = 0;
 
    // Create the shader resource view.
-   m_pD3DDevice->CreateShaderResourceView(m_renderTargetTexture, &shaderResourceViewDesc, &m_shaderResourceView);
+   m_pD3DDevice->CreateShaderResourceView(m_renderTargetsTexture, &shaderResourceViewDesc, &m_shaderResourceView);
    
 
    /* Loading effect */
@@ -71,17 +77,18 @@ AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DD
    m_pPass = m_pEffect->GetTechniqueByIndex(0)->GetPassByName("AxesFanFlowPass");
    m_vPositionESV = m_pEffect->GetVariableByName("g_vAxesFanPosOnTex")->AsVector();
    m_vDirectionESV = m_pEffect->GetVariableByName("g_vDir")->AsVector();
-   m_pR = m_pEffect->GetVariableByName("g_fR")->AsScalar();
    m_pRingsNumber = m_pEffect->GetVariableByName("g_uRingNumber")->AsScalar();
    m_pTime = m_pEffect->GetVariableByName("g_fTime")->AsScalar();
    m_pNoiseSRV = m_pEffect->GetVariableByName("g_txNoise")->AsShaderResource();
+   m_pHeightMapSRV = m_pEffect->GetVariableByName("g_txHeightMap")->AsShaderResource();
 
-   m_pMaxHorizFlowESV = m_pEffect->GetVariableByName("g_fMaxHorizFlow")->AsScalar();;
-   m_pMaxVertFlowESV = m_pEffect->GetVariableByName("g_fMaxVertFlow")->AsScalar();;
-   m_pDampPowerESV = m_pEffect->GetVariableByName("g_fDampPower")->AsScalar();;
-   m_pDistPowerESV = m_pEffect->GetVariableByName("g_fDistPower")->AsScalar();;
-   m_pMaxFlowRadiusESV = m_pEffect->GetVariableByName("g_fMaxFlowRadius")->AsScalar();;
-   m_pShiftESV = m_pEffect->GetVariableByName("g_fShift")->AsScalar();;
+   m_pHeightScale = m_pEffect->GetVariableByName("g_fHeightScale")->AsScalar();
+   
+   m_pMaxFlowStrengthESV = m_pEffect->GetVariableByName("g_fMaxFlowStrength")->AsScalar();;
+   m_pFanRadiusESV = m_pEffect->GetVariableByName("g_fFanRadius")->AsScalar();;
+   m_pDeltaSlicesESV = m_pEffect->GetVariableByName("g_fDeltaSlices")->AsScalar();;
+   m_pShiftESV = m_pEffect->GetVariableByName("g_fShift")->AsScalar();
+   m_pAngleSpeedESV = m_pEffect->GetVariableByName("g_fAngleSpeed")->AsScalar();
 
    m_uVertexStride = sizeof(AxesFanFlowVertex);
    m_uVertexOffset = 0;
@@ -94,9 +101,11 @@ AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DD
 AxesFanFlow::~AxesFanFlow (void)
 {
    SAFE_RELEASE(m_shaderResourceView);
-   SAFE_RELEASE(m_renderTargetView);
-   m_renderTargetTexture->Release(); //HACK:  m_renderTargetTexture refcount is 2??
-   SAFE_RELEASE(m_renderTargetTexture);
+   for (int i = 0; i < NUM_SEGMENTS; i++) {
+      SAFE_RELEASE(m_renderTargetsView[i]);
+   }
+   m_renderTargetsTexture->Release();   //HACK:  m_renderTargetTexture refcount is 2??
+   SAFE_RELEASE(m_renderTargetsTexture);
    SAFE_RELEASE(m_pPass);
    SAFE_RELEASE(m_pEffect);
    SAFE_RELEASE(m_pInputLayout);
@@ -107,7 +116,7 @@ AxesFanFlow::~AxesFanFlow (void)
 void AxesFanFlow::SetRenderTarget(ID3D11DepthStencilView* depthStencilView)
 {
    // Bind the render target view and depth stencil buffer to the output render pipeline.
-   m_pD3DDeviceCtx->OMSetRenderTargets(1, &m_renderTargetView, depthStencilView);
+   m_pD3DDeviceCtx->OMSetRenderTargets(NUM_SEGMENTS - 1, &m_renderTargetsView[0], depthStencilView);
 
    return;
 }
@@ -123,8 +132,9 @@ void AxesFanFlow::ClearRenderTarget(ID3D11DepthStencilView* depthStencilView)
    color[3] = 0.0f;
 
    // Clear the back buffer.
-   m_pD3DDeviceCtx->ClearRenderTargetView(m_renderTargetView, color);
-
+   for (int i = 0; i < NUM_SEGMENTS - 1; i++) {
+      m_pD3DDeviceCtx->ClearRenderTargetView(m_renderTargetsView[i], color);
+   }
    // Clear the depth buffer.
    //m_pD3DDeviceCtx->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
@@ -242,12 +252,6 @@ void AxesFanFlow::SetDirection(const float3& a_vValue)
 }
 
 
-void AxesFanFlow::SetR(float a_fValue)
-{
-   m_pR->SetFloat(a_fValue / m_fTerrRadius);
-}
-
-
 void AxesFanFlow::SetRingsNumber(int a_fValue)
 {
    m_pRingsNumber->SetInt(a_fValue);
@@ -266,37 +270,43 @@ void AxesFanFlow::SetNoise (ID3D11ShaderResourceView* a_pNoiseSRV)
 }
 
 
-void AxesFanFlow::SetMaxHorizFlow(float a_fValue)
+void AxesFanFlow::SetHeightMap (ID3D11ShaderResourceView* a_pHeightMapSRV)
 {
-   m_pMaxHorizFlowESV->SetFloat(a_fValue);
+   m_pHeightMapSRV->SetResource(a_pHeightMapSRV);
 }
 
 
-void AxesFanFlow::SetMaxVertFlow(float a_fValue)
+void AxesFanFlow::SetHeightScale(float a_fHeightScale)
 {
-   m_pMaxVertFlowESV->SetFloat(a_fValue);
+   m_pHeightScale->SetFloat(a_fHeightScale / m_fTerrRadius);
 }
 
 
-void AxesFanFlow::SetDampPower(float a_fValue)
+void AxesFanFlow::SetMaxFlowStrength (float a_fValue)
 {
-   m_pDampPowerESV->SetFloat(a_fValue);
+   m_pMaxFlowStrengthESV->SetFloat(a_fValue);
 }
 
 
-void AxesFanFlow::SetDistPower(float a_fValue)
+void AxesFanFlow::SetFanRadius(float a_fValue)
 {
-   m_pDistPowerESV->SetFloat(a_fValue);
+   m_pFanRadiusESV->SetFloat(a_fValue);
 }
 
 
-void AxesFanFlow::SetMaxFlowRadius(float a_fValue)
+void AxesFanFlow::SetDeltaSlices (float a_fValue)
 {
-   m_pMaxFlowRadiusESV->SetFloat(a_fValue);
+   m_pDeltaSlicesESV->SetFloat(a_fValue);
 }
 
 
-void AxesFanFlow::SetShift(float a_fValue)
+void AxesFanFlow::SetShift (float a_fValue)
 {
    m_pShiftESV->SetFloat(a_fValue);
+}
+
+
+void AxesFanFlow::SetAngleSpeed (float a_fValue)
+{
+   m_pAngleSpeedESV->SetFloat(a_fValue);
 }

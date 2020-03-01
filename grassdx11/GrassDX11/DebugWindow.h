@@ -21,10 +21,11 @@ public:
    void SetOrthoMtx    (float4x4& a_mViewProj);
    void SetWorldMtx    (float4x4& a_mWorld);
    void ToggleRender   (void) { m_bNeedRender = ! m_bNeedRender; }
+   void ToggleSlice    (void);
 
 private:
    bool InitializeBuffers (ID3D11Device* ctx);
-   void ShutdownBuffers   ();
+   void ShutdownBuffers   (void);
    bool UpdateBuffers     (ID3D11DeviceContext* deviceContext, int positionX, int positionY);
    void RenderBuffers     (ID3D11DeviceContext* deviceContext);
 
@@ -36,6 +37,8 @@ private:
    ID3DX11EffectMatrixVariable         *m_pOrthoEMV;
    ID3DX11EffectMatrixVariable         *m_pTransformEMV;
    ID3DX11EffectShaderResourceVariable *m_pTexESRV;
+   ID3DX11EffectScalarVariable         *m_pArraySlice;
+   int                                  m_iCurSlice = 0;
 
    ID3D11InputLayout        *m_pInputLayout;
 

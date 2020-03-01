@@ -73,7 +73,7 @@ cbuffer cGrassSubTypes
 //--------------------------------------------------------------------------------------
 Texture2DArray   g_txGrassDiffuseArray;
 Texture2DArray   g_txWindTex;
-Texture2D        g_txAxesFanFlow;
+Texture2DArray   g_txAxesFanFlow;
 Texture2D        g_txIndexMap;
 Texture2D        g_txSeatingMap;
 Texture2D        g_txNoise;
@@ -205,36 +205,36 @@ GSIn CalcWindAnimation( float3 a_vBladePos, float3 a_vRotAxe, float3 a_vYRotAxe 
     float3x3 mM_T[4], mM_R[4];
     mM_T[0] = mMStart;
 
-   float3 g = float3(0.0f, -9.8f, 0.0f);
-   float3 halfAxis = vAxe;
+    float3 g = float3(0.0f, -9.8f, 0.0f);
+    float3 halfAxis = vAxe;
     float3 axis = float3(0.0, fSegLength, 0.0);
     float3 sum = float3(0.0f, 0.0f, 0.0f), localSum;
     float3 w, w_;
 
    [unroll]for (int j = 1; j < 4; j++)
    {      
-        mM_T[j] = mM_T[j - 1];
+      mM_T[j] = mM_T[j - 1];
       [unroll]for (int k = 1; k < 4; k++)
       {
 //         sum = g * vMassSegment[j-1] * mM_T[j][1].y;
-         sum = g * vMassSegment[j-1];
+            sum = g * vMassSegment[j-1];
             localSum = mul(sum, mM_T[j]);
-         float3 G;
+            float3 G;
             G = cross(halfAxis, localSum);
             mM_R[j] = MakeRotateMtx(G / vHardnessSeg[j - 1]);
             mM_T[j] = mul(mM_T[j - 1], mM_R[j]);
       }
 
-        w_ = CalcWind(a_vBladePos, j - 1);
-//      sum = g * vMassSegment[j-1] * mM_T[j][1].y;
+      w_ = CalcWind(a_vBladePos, j - 1);
+//    sum = g * vMassSegment[j-1] * mM_T[j][1].y;
       sum = g * vMassSegment[j-1];
-        localSum = mul(sum, mM_T[j]);
+      localSum = mul(sum, mM_T[j]);
       float3 G;
-        G = cross(halfAxis, localSum);
-        w = mul(w_, mM_T[j]);
+      G = cross(halfAxis, localSum);
+      w = mul(w_, mM_T[j]);
       G += w;
-        mM_R[j] = MakeRotateMtx(G / vHardnessSeg[j - 1]);
-        mM_T[j] = mul(mM_T[j-1], mM_R[j]);
+      mM_R[j] = MakeRotateMtx(G / vHardnessSeg[j - 1]);
+      mM_T[j] = mul(mM_T[j-1], mM_R[j]);
    }
 
 
@@ -265,6 +265,13 @@ GSIn CalcWindAnimation( float3 a_vBladePos, float3 a_vRotAxe, float3 a_vYRotAxe 
     float fY = g_txHeightMap.SampleLevel(g_samLinear, (Output.vPos3.xz / g_fTerrRadius) * 0.5 + 0.5, 0).a * g_fHeightScale;    
     if (Output.vPos3.y <= fY)
       Output.vPos3.y = fY + 0.01;
+    
+    if (Output.vPos2.y <= fY)
+      Output.vPos2.y = fY + 0.01;
+    
+    if (Output.vPos1.y <= fY)
+      Output.vPos1.y = fY + 0.01;
+
 
     return Output;
 }

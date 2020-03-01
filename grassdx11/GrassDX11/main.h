@@ -31,14 +31,15 @@ int g_windowHeight = 980;
 int g_windowWidth = 1280;
 
 
-ID3DX11Effect             *g_pSceneEffect;
-//Mesh                  *g_pMeshes[MAX_NUM_MESHES];
-Terrain                     *g_pTerrain;
+//
+struct RototCamFixController {
+   bool isFixed = false;
+   XMVECTOR delta;
+};
 
-ID3DX11EffectScalarVariable *g_pEffectHeightScale;
+RototCamFixController g_RotCamController;
+//
 
-//XMFLOAT3                     g_vCameraEyeStart(9.8f, 9.5f, 7.8f);
-//XMFLOAT3                     g_vCameraAtStart(10.8f, 9.0f, 8.8f);
 
 // Effect handles
 ID3DX11EffectScalarVariable         *g_pTerrTile = NULL;
@@ -69,12 +70,11 @@ float                               g_fWindStrengthDefault = 1.0f;
 float                               g_fWindBias = 0.4370f;
 float                               g_fWindScale = 4.96f;
 
-float                               g_fMaxHorizFlow = 0.0562;
-float                               g_fMaxVertFlow = 0.0000;
-float                               g_fDampPower = 2.8110;
-float                               g_fDistPower = 2.1620;
-float                               g_fMaxFlowRadius = 0.1080;
-float                               g_fShift = 1.0270;
+float                               g_fMaxFlowStrength = 0.0562;
+float                               g_fFanRadius = 5;
+float                               g_fDeltaSlices = 0.005;
+float                               g_fAngleSpeed = 0;
+float                               g_fShift = 0.005;
 XMFLOAT3                            g_vDir = XMFLOAT3(0.0f, -1.0f, 0.0f);
 //phys
 
@@ -82,10 +82,10 @@ float                               g_fWindTexSpeed = 2.5f;//3.78f;
 float                               g_fWindTexTile = 4.f;//4.f;//5.2f;
 float                               g_fCameraSpeed = 30.0f;
 float                               g_fTime = 0.0f;
-float                               g_fHeightScale = 80;//40;//0;//40.0f;
+float                               g_fHeightScale = 40;//40;//0;//40.0f;
 float                               g_fQuality = 1.0f;
 XMFLOAT4                            g_vFogColor = XMFLOAT4(0.2f, 0.3f, 0.25f, 1.0f);
-XMFLOAT3                            g_vTerrRGB = XMFLOAT3(0.16f, 0.28f, 0.09f);
+XMFLOAT3                            g_vTerrRGB = XMFLOAT3(0.5f, 0.5f, 0.0f);
 XMFLOAT4                            g_vGrassSpecular = XMFLOAT4(0.04f, 0.27f, 0.00f, 1.0f);
 
 float                               g_fTerrTile = 45.0f;
@@ -131,20 +131,22 @@ enum IDC_HUD
    IDC_GRASS_WIND_LABEL,
    IDC_GRASS_WIND_FORCE_SLYDER,
    
-   IDC_GRASS_MAX_HORIZ_FLOW_LABEL,
-   IDC_GRASS_MAX_HORIZ_FLOW_SLYDER,
+   IDC_GRASS_MAX_FLOW_STRENGTH_LABEL,
+   IDC_GRASS_MAX_FLOW_STRENGTH_SLYDER,
    
-   IDC_GRASS_MAX_VERT_FLOW_LABEL,
-   IDC_GRASS_MAX_VERT_FLOW_SLYDER,
+   //IDC_GRASS_MAX_VERT_FLOW_LABEL,
+   //IDC_GRASS_MAX_VERT_FLOW_SLYDER,
    
-   IDC_GRASS_DAMP_POWER_LABEL,
-   IDC_GRASS_DAMP_POWER_SLYDER,
+   IDC_FAN_RADIUS_LABEL,
+   IDC_FAN_RADIUS_SLYDER,
 
-   IDC_GRASS_DIST_POWER_LABEL,
-   IDC_GRASS_DIST_POWER_SLYDER,
+   IDC_DELTA_SLICES_LABEL,
+   IDC_DELTA_SLICES_SLYDER,
 
-   IDC_GRASS_MAX_FLOW_RADIUS_LABEL,
-   IDC_GRASS_MAX_FLOW_RADIUS_SLYDER,
+   //IDC_GRASS_MAX_FLOW_RADIUS_LABEL,
+   //IDC_GRASS_MAX_FLOW_RADIUS_SLYDER,
+
+   IDC_FIX_CAMERA,
 
    IDC_GRASS_SHIFT_LABEL,
    IDC_GRASS_SHIFT_SLYDER,
@@ -159,9 +161,13 @@ enum IDC_HUD
    IDC_FLOW_DIR_Y_SLYDER,
    IDC_FLOW_DIR_Z_SLYDER,
 
+   IDC_FAN_ANGLE_SPEED_LABEL,
+   IDC_FAN_ANGLE_SPEED_SLYDER,
+
    IDC_TOGGLE_WIREFRAME,
    IDC_TOGGLE_RENDERING_GRASS,
    IDC_TOGGLE_RENDERING_DBG_WIN,
+   IDC_TOGGLE_DBG_WIN_SLICE,
 
    IDC_SAMPLE_COUNT
 };

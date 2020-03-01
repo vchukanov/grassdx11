@@ -7,6 +7,7 @@ cbuffer cbPerObject
     float4x4 g_mWorld;
     float4x4 g_mOrtho;
     float    g_fScale;
+    int      g_iArraySlice;
 };
 
 
@@ -22,8 +23,8 @@ struct DebugWindowPSIn
     float2 vTexCoord : TEXCOORD0;
 };
 
-Texture2D g_texture;
-  
+Texture2DArray g_texture;
+
   
 DebugWindowPSIn VS( DebugWindowVSIn In )
 {
@@ -36,9 +37,7 @@ DebugWindowPSIn VS( DebugWindowVSIn In )
 
 float4 PS( DebugWindowPSIn In ): SV_Target
 {
-   //float4 color = g_texture.Sample(g_samLinear, In.vTexCoord, 0) * 10;
-
-   return g_texture.Sample(g_samLinear, In.vTexCoord, 0) * 10;
+   return g_texture.SampleLevel(g_samLinear, float3(In.vTexCoord, g_iArraySlice), 0) * 10;
 }
 
 technique10 Render

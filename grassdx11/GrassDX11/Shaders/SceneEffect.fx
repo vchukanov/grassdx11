@@ -237,8 +237,10 @@ float4 TerrainPSMain( TerrPSIn Input ): SV_Target
     float2 fDot = g_txLightMap.Sample(g_samLinear, Input.vTexCoord.xy).rg;
     float3 vTexel = g_txGrassDiffuse.Sample(g_samLinear, Input.vTexCoord.xy * 0.5 * g_fTerrTile).xyz;
     vTexel *=  g_vTerrRGB;
-    float3 vGrassColor = g_txTerrGrass.Sample(g_samAniso, Input.vTexCoord.xy * 64).xyz;
-	float fTexDist = min(Input.vTexCoord.w / 140.f, 1.0);
+    float3 vGrassColor = g_txTerrGrass.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
+	vGrassColor *= g_vTerrRGB;
+    vTexel = vGrassColor;
+    float fTexDist = min(Input.vTexCoord.w / 140.f, 1.0);
 	
     float3 vL = lerp(vGrassColor, vTexel, fTexDist) * max(0.8, (2.0 + 5.0 * fDot.y) * 0.5);
 

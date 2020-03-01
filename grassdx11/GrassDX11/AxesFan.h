@@ -26,6 +26,7 @@ public:
    void SetPosition    (const float3& a_vPosition);
    void SetDirection   (const float3& a_vDirection);
    void SetR           (float a_fR);
+   void SetAngleSpeed  (float a_fSpeed) { m_fAngleVel = a_fSpeed; }
 
 private:
    void CreateInputLayout (void);

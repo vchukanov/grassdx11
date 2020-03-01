@@ -54,6 +54,9 @@ DebugWindow::DebugWindow(ID3D11Device* device, int screenWidth, int screenHeight
    m_pTexESRV = m_pEffect->GetVariableByName("g_texture")->AsShaderResource();
    m_pTexESRV->SetResource(pSRV);
 
+   m_pArraySlice = m_pEffect->GetVariableByName("g_iArraySlice")->AsScalar();
+   m_pArraySlice->SetInt(1);
+
    m_fScaleESV = m_pEffect->GetVariableByName("g_fScale")->AsScalar();
    m_fScaleESV->SetFloat(m_fScale);
 
@@ -105,6 +108,13 @@ void DebugWindow::SetOrthoMtx (float4x4& a_mViewProj)
 void DebugWindow::SetWorldMtx (float4x4& a_mWorld)
 {
    m_pTransformEMV->SetMatrix((float*)& a_mWorld);
+}
+
+
+void DebugWindow::ToggleSlice (void)
+{
+   m_iCurSlice = ++m_iCurSlice % (NUM_SEGMENTS - 1); 
+   m_pArraySlice->SetInt(m_iCurSlice);
 }
 
 

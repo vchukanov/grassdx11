@@ -198,7 +198,7 @@ Terrain::Terrain(ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCt
 
    ID3DX11EffectShaderResourceVariable* pESRV;
    pESRV = a_pEffect->GetVariableByName("g_txGrassDiffuse")->AsShaderResource();
-   CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Grass.dds", nullptr, &m_pGrassSRV);
+   HRESULT hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Grass.dds", nullptr, &m_pGrassSRV);
    pESRV->SetResource(m_pGrassSRV);
 
    m_fCellSize = 0.0f;

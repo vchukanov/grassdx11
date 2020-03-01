@@ -106,8 +106,8 @@ inline float3 CalcWind( float3 a_vPos, int a_iSegmentIndex )
     //return vWind;
     
     float3 vAxesFlow = float3(0.0, 0.0, 0.0);
-    vAxesFlow = g_txAxesFanFlow.SampleLevel(g_samLinear, vTexCoordForFlow, 0).rgb;
-    return vAxesFlow;
+    vAxesFlow = g_txAxesFanFlow.SampleLevel(g_samLinear, float3(vTexCoordForFlow, a_iSegmentIndex), 0).rgb;
+    return vAxesFlow + vWind;
 }
 
 #endif
