@@ -278,6 +278,17 @@ GSIn CalcWindAnimation( float3 a_vBladePos, float3 a_vRotAxe, float3 a_vYRotAxe 
     
     a_vBladePos += transpose(mM[2])[1] * SubTypes[uIndex].vSizes.y;
     Output.vPos3 = a_vBladePos;
+
+    float fY = g_txHeightMap.SampleLevel(g_samLinear, (Output.vPos3.xz / g_fTerrRadius) * 0.5 + 0.5, 0).a * g_fHeightScale;    
+    if (Output.vPos3.y <= fY)
+      Output.vPos3.y = fY + 0.01;
+    
+    if (Output.vPos2.y <= fY)
+      Output.vPos2.y = fY + 0.01;
+    
+    if (Output.vPos1.y <= fY)
+      Output.vPos1.y = fY + 0.01;
+
     
     return Output;
 }

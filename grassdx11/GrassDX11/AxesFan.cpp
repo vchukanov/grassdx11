@@ -155,7 +155,8 @@ void AxesFan::SetPosition (const float3& a_vPosition)
 
 void AxesFan::SetDirection (const float3& a_vDirection)
 {
-   XMStoreFloat3(&m_vDirection, a_vDirection);
+   float3 dir = normalize(a_vDirection);
+   XMStoreFloat3(&m_vDirection, dir);
 }
 
 

@@ -258,7 +258,7 @@ float3 GetWaveW(XMVECTOR vCamDir)
    float fT;
    float3 waveW = create(1.0f, 1.0f, 0.0f);
    sety(vCamDir, 0.0f);;
-   waveW = normalize(waveW);
+   vCamDir = normalize(vCamDir);
 
    if ((getx(vCamDir) < 0.0f) && getz(vCamDir) < 0.7071f)
    {
@@ -441,7 +441,7 @@ void WindData::UpdateWindTex(D3D11_MAPPED_SUBRESOURCE& a_MappedTex, float a_fEla
          if (getz(vWaveW) > 0.001f)
          {
             setx(vUV, gety(vTexCoord));;
-            sety(vUV, getx(-vTexCoord));;
+            sety(vUV, -getx(vTexCoord));;
             setx(vUV, getx(vUV) + 1.4f * fTexOffsets[0]);
             height[2] = BiLinear(vUV);
          }

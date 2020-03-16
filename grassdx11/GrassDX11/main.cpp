@@ -143,7 +143,7 @@ void InitApp()
 
    swprintf_s(sStr, MAX_PATH, L"Angle speed: %.4f", g_fAngleSpeed);
    g_HUD.AddStatic(IDC_FAN_ANGLE_SPEED_LABEL, sStr, 20, iY += iYo, 180, 22);
-   g_HUD.AddSlider(IDC_FAN_ANGLE_SPEED_SLYDER, 20, iY += iYo, 185, 22, 0, 1000, (int)(g_fAngleSpeed * 1000));
+   g_HUD.AddSlider(IDC_FAN_ANGLE_SPEED_SLYDER, 20, iY += iYo, 185, 22, 0, 100, (int)(g_fAngleSpeed * 100));
 
    g_HUD.AddButton(IDC_TOGGLE_WIREFRAME, L"Toggle wire-frame (F4)", 25, iY += iYo, 125, 22, VK_F4);
    g_HUD.AddButton(IDC_TOGGLE_RENDERING_GRASS, L"Toggle rendering-grass (F5)", 25, iY += iYo, 125, 22, VK_F5);
@@ -947,7 +947,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
      case IDC_FAN_ANGLE_SPEED_SLYDER:
      {
-        g_fAngleSpeed = (float)g_HUD.GetSlider(IDC_FAN_ANGLE_SPEED_SLYDER)->GetValue() / 10.0f;
+        g_fAngleSpeed = (float)g_HUD.GetSlider(IDC_FAN_ANGLE_SPEED_SLYDER)->GetValue();
         swprintf_s(sStr, MAX_PATH, L"Angle Speed: %.4f", g_fAngleSpeed);
         g_HUD.GetStatic(IDC_FAN_ANGLE_SPEED_LABEL)->SetText(sStr);
         g_pGrassField->GetFlowManager()->SetAngleSpeed(g_fAngleSpeed);

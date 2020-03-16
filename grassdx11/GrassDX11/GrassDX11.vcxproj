@@ -153,7 +153,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
-      <AdditionalLibraryDirectories>..\DirectXTex\Bin\Desktop_2019_Win10\Win32\Debug;..\DXUT\Optional\Bin\Desktop_2017_Win10\Win32\Debug;..\DXUT\Core\Bin\Desktop_2017_Win10\Win32\Debug\DXUT.tlog;..\DirectXTK\Bin\Desktop_2019_Win10\Win32\Debug;..\Effects11\Bin\Desktop_2019_Win10\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\DirectXTex\Bin\Desktop_2019_Win10\Win32\Debug;..\DXUT\Optional\Bin\Desktop_2017_Win10\Win32\Debug;..\DirectXTK\Bin\Desktop_2019_Win10\Win32\Debug;..\Effects11\Bin\Desktop_2019_Win10\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDPIAwareness>PerMonitorHighDPIAware</EnableDPIAwareness>
@@ -256,6 +256,12 @@
       <Command>
       </Command>
     </PostBuildEvent>
+    <FxCompile>
+      <ShaderType>Effect</ShaderType>
+    </FxCompile>
+    <FxCompile>
+      <ShaderModel>4.0</ShaderModel>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|X64'">
     <ClCompile>
@@ -310,9 +316,9 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <AdditionalIncludeDirectories>..\DXUT\Core;..\DXUT\Optional;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;PROFILE;_WINDOWS;USE_DIRECT3D11_2;_WIN32_WINNT=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>..\DirectXTex;..\DirectXTK\inc;..\DirectXTK\Binary;..\Effects11\inc;..\Effects11\Binary;..\DXUT\Core;..\DXUT\Optional</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;PROFILE;_WINDOWS;USE_DIRECT3D11_2;_WIN32_WINNT=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>DXUT.h</PrecompiledHeaderFile>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
@@ -329,6 +335,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>..\DirectXTex\Bin\Desktop_2019_Win10\Win32\Profile;..\DXUT\Optional\Bin\Desktop_2017_Win10\Win32\Profile;..\DirectXTK\Bin\Desktop_2019_Win10\Win32\Profile;..\Effects11\Bin\Desktop_2019_Win10\Win32\Profile;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDPIAwareness>PerMonitorHighDPIAware</EnableDPIAwareness>
@@ -341,6 +348,11 @@
       <Command>
       </Command>
     </PostBuildEvent>
+    <FxCompile>
+      <ShaderType>Effect</ShaderType>
+      <ShaderModel>4.0</ShaderModel>
+      <EntryPointName />
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|X64'">
     <ClCompile>
@@ -352,11 +364,12 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <AdditionalIncludeDirectories>..\DXUT\Core;..\DXUT\Optional;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;PROFILE;_WINDOWS;USE_DIRECT3D11_2;_WIN32_WINNT=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>..\DirectXTex;..\DirectXTK\inc;..\DirectXTK\Binary;..\Effects11\inc;..\Effects11\Binary;..\DXUT\Core;..\DXUT\Optional</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_XM_NO_INTRINSICS_;WIN32;NDEBUG;PROFILE;_WINDOWS;USE_DIRECT3D11_2;_WIN32_WINNT=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>DXUT.h</PrecompiledHeaderFile>
       <ConformanceMode>true</ConformanceMode>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
@@ -371,6 +384,7 @@
       <TargetMachine>MachineX64</TargetMachine>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>..\DirectXTex\Bin\Desktop_2019_Win10\x64\Profile;..\DXUT\Optional\Bin\Desktop_2017_Win10\x64\Profile;..\DirectXTK\Bin\Desktop_2019_Win10\x64\Profile;..\Effects11\Bin\Desktop_2019_Win10\x64\Profile;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDPIAwareness>PerMonitorHighDPIAware</EnableDPIAwareness>
@@ -383,13 +397,23 @@
       <Command>
       </Command>
     </PostBuildEvent>
+    <FxCompile>
+      <EntryPointName />
+    </FxCompile>
+    <FxCompile>
+      <ShaderModel>4.0</ShaderModel>
+      <ShaderType>Effect</ShaderType>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="aabb.cpp" />
+    <ClCompile Include="AxesFan.cpp" />
     <ClCompile Include="AxesFanFlow.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="ConvexVolume.cpp" />
     <ClCompile Include="DebugWindow.cpp" />
+    <ClCompile Include="FlowManager.cpp" />
+    <ClCompile Include="GrassCollideStatic.cpp" />
     <ClCompile Include="GrassFieldManager.cpp" />
     <ClCompile Include="GrassLod.cpp" />
     <ClCompile Include="GrassManager.cpp" />
@@ -407,6 +431,7 @@
     </ClCompile>
     <ClCompile Include="maths.cpp" />
     <ClCompile Include="mesh.cpp" />
+    <ClCompile Include="NewDel.cpp" />
     <ClCompile Include="PhysMath.cpp" />
     <ClCompile Include="PhysPatch.cpp" />
     <ClCompile Include="plane.cpp" />
@@ -424,12 +449,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aabb.h" />
+    <ClInclude Include="AxesFan.h" />
     <ClInclude Include="AxesFanFlow.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="ConvexVolume.h" />
     <ClInclude Include="DebugWindow.h" />
     <ClInclude Include="fixedvector.h" />
+    <ClInclude Include="FlowManager.h" />
+    <ClInclude Include="GrassCollideStatic.h" />
     <ClInclude Include="GrassFieldManager.h" />
     <ClInclude Include="GrassLod.h" />
     <ClInclude Include="GrassManager.h" />
@@ -440,7 +468,9 @@
     <ClInclude Include="includes.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="maths.h" />
+    <ClInclude Include="memdebug.h" />
     <ClInclude Include="mesh.h" />
+    <ClInclude Include="NewDel.h" />
     <ClInclude Include="ObjArray.h" />
     <ClInclude Include="PhysMath.h" />
     <ClInclude Include="PhysPatch.h" />

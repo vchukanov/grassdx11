@@ -5,11 +5,13 @@ cbuffer cAxesFanSettings
     int    g_uRingNumber;
     float  g_fTime;
 
-    float  g_fMaxFlowStrength;
-    float  g_fFanRadius;
+    float  g_fMaxFlowStrength; // unused
+
+    float  g_fFanRadius; 
     float  g_fDeltaSlices;
     float  g_fShift;
-    float  g_fAngleSpeed;
+
+    float  g_fAngleSpeed; // 0.f .. 100.f
 
     float  g_fHeightScale;
 
@@ -103,28 +105,83 @@ float3 getProjectionToPlane (float3 pNormal, float3 pPoint, float3 pt)
 }
 
 
+float getAngle (float2 radial_, float angle)
+{
+   float2 radial;
+   radial.x = radial_.x * cos(angle) - radial_.y * sin(angle);
+   radial.y = radial_.x * sin(angle) + radial_.y * cos(angle);
+
+    float arccos = acos(radial.x);
+    float crossv1 = dot(cross(float3(radial.x, radial.y, 0), float3(1, 0, 0)), float3(0, 0, 1));
+    if (crossv1 >= 0) {
+        return acos(radial.x);
+    } 
+    arccos = acos(-radial.x);
+    return PI + arccos; 
+}
+
+
+float random (float2 _st) 
+{
+    return frac(sin(dot(_st.xy,
+                             float2(12.9898,78.233)))*
+        43758.5453123);
+}
+
+
+float noise (float2 _st) 
+{
+    float2 i = floor(_st);
+    float2 f = frac(_st);
+
+    float a = random(i);
+    float b = random(i + float2(1.0, 0.0));
+    float c = random(i + float2(0.0, 1.0));
+    float d = random(i + float2(1.0, 1.0));
+
+    float2 u = f * f * (3.0 - 2.0 * f);
+
+    return lerp(a, b, u.x) +
+            (c - a)* u.y * (1.0 - u.x) +
+            (d - b) * u.x * u.y;
+}
+
+
+float fbm (float2 st) 
+{
+    float value = 0.0;
+    float amplitude = .5;
+    float frequency = 0.;
+
+    for (int i = 0; i < 5; i++) {
+        value += amplitude * noise(st);
+        st *= 2.;
+        amplitude *= .5;
+    }
+    return value;
+}
+
 
 AxesFanFlowPSOut PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In )
 {
    AxesFanFlowPSOut Out;
    
    float fY = g_txHeightMap.SampleLevel(g_samLinear, (In.vsPos) * 0.5 + 0.5, 0).a * g_fHeightScale; 
-
+   float3 fNoise = g_txNoise.Sample(g_samLinear, In.vsPos).rgb;
+      
    Out.vFlow0 = float4(0, 0, 0, 1);
    Out.vFlow1 = float4(0, 0, 0, 1);
    Out.vFlow2 = float4(0, 0, 0, 1);
    
    [unroll]
-   for (int i = 0; i < 4; i++) {
-      float fNoise = g_txNoise.Sample(g_samLinear, In.vsPos).r;
-      
+   for (int i = 0; i < 4; i++) {   
       float3 fanNormal = normalize(g_vDir.xzy);
       float3 fanPoint = g_vAxesFanPosOnTex.xzy;
       fanNormal.y = -fanNormal.y;
 
       float3 fanNormal_m = normalize(getReflectedVec(fanNormal));
       float3 fanPoint_m = getReflectedVec(fanPoint);
-      float  z = fY + g_fShift + i * g_fDeltaSlices;
+      float  z = fY + 0.01/*g_fShift*/ + i * 0.005;
 
       float3 queryPoint = float3(In.vsPos, z);
   
@@ -141,7 +198,7 @@ AxesFanFlowPSOut PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In )
       radial_m = normalize(radial_m);
   
       int    N     = g_uRingNumber; 
-      float  R     = g_fFanRadius;
+      float  R     = g_fFanRadius / 2;
       float  s_max = 0;
       float  M     = 0; 
       float  E_M   = 0;
@@ -161,11 +218,12 @@ AxesFanFlowPSOut PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In )
       float wm_k = 0;
 
       float fDist = length(In.vsPos - fanPoint.xy);
+      float angle = acos(dot(radial, float3(0, 1, 0)));
 
       int k;
 
       s_max = 6 * N * R / (2 * N * N + 1);
-      s_max *= g_fMaxFlowStrength * 0.6 + 0.4 * g_fMaxFlowStrength * sin(i + g_fTime * g_fAngleSpeed - fDist * 100);
+      s_max *= sqrt(g_fAngleSpeed / 100);
 
       for (k = 0; k < N; k++) {
           r_k[k] = R - k * R / N;
@@ -188,31 +246,60 @@ AxesFanFlowPSOut PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In )
           vm_k += s_k[k] * r_k[k] / (2 * PI * r * sqrt(p1_m)) * (K_M + (sqr(r) - sqr(r_k[k]) - sqr(z)) / p2_m * E_M);
       }
 
+      
+      float randRadialMagn = fbm(((g_fTime + 20145) / (1 + 1 / g_fAngleSpeed)) + radial.xy * 10);
+      float randDistMagn = fbm(((g_fTime + 20145) / (1 + 1 / g_fAngleSpeed)) - float2(fDist, fDist) * 10);
+      //randRadialMagn = lerp(1, 2, randRadialMagn);
+      //randDistMagn = lerp(1, 2, randDistMagn);
+      float randMagn = (randRadialMagn + randDistMagn) / 2;
+      
+      float randRadialMagn1 = fbm(((g_fTime + 1015) / (1 + 1 / g_fAngleSpeed)) + radial.xy * 10)  - g_fShift * 10;
+      float randDistMagn1 = fbm(((g_fTime + 1015) / (1 + 1 / g_fAngleSpeed)) - float2(fDist, fDist) * 10) - g_fShift * 10;
+      //randRadialMagn1 = lerp(1, g_fMaxFlowStrength, randRadialMagn1); 
+      //randDistMagn1 = lerp(1, g_fMaxFlowStrength, randDistMagn1);
+      float randMagn1 = (randRadialMagn1 + randDistMagn1) / 2;
+      
+      //float randDist = fbm((g_fTime / (1 + 1 / g_fAngleSpeed)) - float2(fDist, fDist) * 10);
+      //randDist = lerp(0.5, 1, randDist);
+
+      float randDCompMagn = fbm((g_fTime / (1 + 1 / g_fAngleSpeed)) - float2(fDist, fDist) * 10) - 0.476;
+      float randRCompMagn = fbm((g_fTime / (1 + 1 / g_fAngleSpeed)) + radial.xy * 10) - 0.476;
+      float randCompMagn = (randDCompMagn + randRCompMagn) / 2;
+
+      float randDCompMagn1 = fbm((g_fTime / (1 + 1 / g_fAngleSpeed)) - float2(fDist, fDist) * 10) - 0.476;
+      float randRCompMagn1 = fbm((g_fTime / (1 + 1 / g_fAngleSpeed)) + radial.xy * 10) - 0.476;
+      float randCompMagn1 = (randDCompMagn1 + randRCompMagn1) / 2;
+
       float3 normalFlow   = -w_k  * fanNormal;
       float3 normalFlow_m = -wm_k * fanNormal_m;
       
       float3 radialFlow   = v_k  * radial;
       float3 radialFlow_m = vm_k * radial_m;
       
-      float3 flow = normalFlow + normalFlow_m + radialFlow + radialFlow_m;
+      float3 randComp = normalize(cross(normalFlow, radialFlow));
+      randComp *= sqrt(length(normalFlow) * length(radialFlow));
+      randComp *= 4;
+      float3 randComp_m = normalize(cross(normalFlow_m, radialFlow_m));
+      randComp_m *= sqrt(length(normalFlow) * length(radialFlow));
+      randComp *= 4;
+      
+      float3 staticFlow = normalFlow * randMagn + normalFlow_m * randMagn
+         + radialFlow * randMagn1 + radialFlow_m * randMagn1
+         + randComp * randCompMagn + randComp_m * randCompMagn1;
+      
+      float3 flow = staticFlow;
       
       flow = clamp(flow, -0.0275, 0.0275);
-
+      
       if (i == 0) {
         Out.vFlow0.xz = flow.yx ;
         Out.vFlow0.z = -Out.vFlow0.z;
-
-        Out.vFlow0.xz = Out.vFlow0.xz;// * 0.8 + 0.2 * sin(i + g_fTime * g_fAngleSpeed - fDist * 100) * Out.vFlow0.xz;
       } else if (i == 1) {
         Out.vFlow1.xz = flow.yx ;
         Out.vFlow1.z = -Out.vFlow1.z;
-
-        Out.vFlow1.xz = Out.vFlow1.xz;// * 0.8 + 0.2 * sin(i + g_fTime * g_fAngleSpeed - fDist * 100) * Out.vFlow1.xz;
       } else if (i == 2) {
         Out.vFlow2.xz = flow.yx ;
         Out.vFlow2.z = -Out.vFlow2.z;
-        // TODO: make more realistic
-        Out.vFlow2.xz = Out.vFlow2.xz;// * 0.8 + 0.2 * sin(i + g_fTime * g_fAngleSpeed - fDist * 100) * Out.vFlow2.xz;
       }
    }
    return Out;
