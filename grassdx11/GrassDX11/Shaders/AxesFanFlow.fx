@@ -161,6 +161,35 @@ float fbm (float2 st)
 }
 
 
+float GetLandscapeDamping (float3 queryPoint, float3 fanCenter)
+{
+    float dampAccum = 1;
+
+    float3 dir = fanCenter - queryPoint;
+    float3 normalizedDir = normalize(dir);
+    float stepLen = 1.0 / 256.0; //HeightMapDimention
+    float stepsCount = length(dir) / stepLen;
+    float3 step = normalizedDir * stepLen;
+    float3 landPoint = float3(0, 0, 0);
+    float4 vHeightData = float4(0, 0, 0, 0);
+    float fY = 0;
+    float3 landNormal = float3(0, 0, 0);
+    
+    [loop]
+    for (int i = 0; i < stepsCount; i++) {
+        landPoint = queryPoint + i * step;
+        vHeightData = g_txHeightMap.Sample(g_samLinear, landPoint.xy * 0.5 + 0.5);
+        fY = vHeightData.a * g_fHeightScale;
+        landNormal = vHeightData.xyz;
+            
+        if (fY > fanCenter.z) {
+            dampAccum += vHeightData.a;
+        }
+    }
+
+    return float4(dampAccum * g_fMaxFlowStrength, 0, 0, 1);
+}
+
 AxesFanFlowPSOut PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In )
 {
    AxesFanFlowPSOut Out;
@@ -246,14 +275,14 @@ AxesFanFlowPSOut PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In )
       }
 
       
-      float randRadialMagn = fbm(((g_fTime + 20145) / (1 /*+ 1 / g_fAngleSpeed*/)) + radial.xy * 10);
-      float randDistMagn = fbm(((g_fTime + 20145) / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10);
+      float randRadialMagn = fbm(((g_fTime + 20145) / (1 /*+ 1 / g_fAngleSpeed*/)) + radial.xy * 10) - 0.1;
+      float randDistMagn = fbm(((g_fTime + 20145) / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10) - 0.1;
       randRadialMagn = lerp(1, 2, randRadialMagn);
       randDistMagn = lerp(1, 2, randDistMagn);
       float randMagn = (randRadialMagn + randDistMagn) / 2;
       
-      float randRadialMagn1 = fbm(((g_fTime + 1015) / (1 /*+ 1 / g_fAngleSpeed*/)) + radial.xy * 10)  - g_fShift * 10;
-      float randDistMagn1 = fbm(((g_fTime + 1015) / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10) - g_fShift * 10;
+      float randRadialMagn1 = fbm(((g_fTime + 1015) / (1 /*+ 1 / g_fAngleSpeed*/)) + radial.xy * 10)  - 0.1;
+      float randDistMagn1 = fbm(((g_fTime + 1015) / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10) - 0.1;
       //randRadialMagn1 = lerp(1, g_fMaxFlowStrength, randRadialMagn1); 
       //randDistMagn1 = lerp(1, g_fMaxFlowStrength, randDistMagn1);
       float randMagn1 = (randRadialMagn1 + randDistMagn1) / 2;
@@ -289,10 +318,12 @@ AxesFanFlowPSOut PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In )
       float3 flow = staticFlow;
       
       flow = clamp(flow, -0.0275, 0.0275);
-      
+      flow /= GetLandscapeDamping(queryPoint, fanPoint);
+
       if (i == 0) {
-        Out.vFlow0.xz = flow.yx ;
+        Out.vFlow0.xz = flow.yx;
         Out.vFlow0.z = -Out.vFlow0.z;
+         //Out.vFlow0 = GetLandscapeDamping(queryPoint, fanPoint);
       } else if (i == 1) {
         Out.vFlow1.xz = flow.yx ;
         Out.vFlow1.z = -Out.vFlow1.z;
