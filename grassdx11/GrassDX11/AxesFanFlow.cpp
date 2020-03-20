@@ -6,7 +6,7 @@
 AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DDeviceCtx, int textureWidth, int textureHeight, float a_fTerrRadius)
 {
    D3D11_TEXTURE2D_DESC            textureDesc;
-   D3D11_RENDER_TARGET_VIEW_DESC   renderTargetsViewDesc;
+   D3D11_RENDER_TARGET_VIEW_DESC   renderTargetViewDesc;
    D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
    
    m_pD3DDevice = pD3DDevice;
@@ -22,7 +22,7 @@ AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DD
    textureDesc.Width = textureWidth;
    textureDesc.Height = textureHeight;
    textureDesc.MipLevels = 1;
-   textureDesc.ArraySize = (NUM_SEGMENTS - 1) * HISTORY_TEX_CNT;
+   textureDesc.ArraySize = HISTORY_TEX_CNT;
    textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
    textureDesc.SampleDesc.Count = 1;
    textureDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -30,32 +30,29 @@ AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DD
    textureDesc.CPUAccessFlags = 0;
    textureDesc.MiscFlags = 0;
 
-   // Create the render target textures.
-   m_pD3DDevice->CreateTexture2D(&textureDesc, NULL, &m_renderTargetsTexture);
+   // Create the render target texture.
+   m_pD3DDevice->CreateTexture2D(&textureDesc, NULL, &m_renderTargetTexture);
 
    // Setup the description of the render target view.
-   renderTargetsViewDesc.Format = textureDesc.Format;
-   renderTargetsViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-   renderTargetsViewDesc.Texture2D.MipSlice = 0;
-   renderTargetsViewDesc.Texture2DArray.ArraySize = 1;
+   renderTargetViewDesc.Format = textureDesc.Format;
+   renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+   renderTargetViewDesc.Texture2D.MipSlice = 0;
+   renderTargetViewDesc.Texture2DArray.ArraySize = 1;
 
 
    // Create the render targets view.
-   for (int i = 0; i < NUM_SEGMENTS - 1; i++) {
-      renderTargetsViewDesc.Texture2DArray.FirstArraySlice = D3D11CalcSubresource(0, i, 1);
-      m_pD3DDevice->CreateRenderTargetView(m_renderTargetsTexture, &renderTargetsViewDesc, &m_renderTargetsView[i]);
-   }
+   m_pD3DDevice->CreateRenderTargetView(m_renderTargetTexture, &renderTargetViewDesc, &m_renderTargetView);
 
    // Setup the description of the shader resource view.
    shaderResourceViewDesc.Format = textureDesc.Format;
    shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
    shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
    shaderResourceViewDesc.Texture2D.MipLevels = 1;
-   shaderResourceViewDesc.Texture2DArray.ArraySize = (NUM_SEGMENTS - 1) * HISTORY_TEX_CNT;
+   shaderResourceViewDesc.Texture2DArray.ArraySize = HISTORY_TEX_CNT;
    shaderResourceViewDesc.Texture2DArray.FirstArraySlice = 0;
 
    // Create the shader resource view.
-   m_pD3DDevice->CreateShaderResourceView(m_renderTargetsTexture, &shaderResourceViewDesc, &m_shaderResourceView);
+   m_pD3DDevice->CreateShaderResourceView(m_renderTargetTexture, &shaderResourceViewDesc, &m_shaderResourceView);
    
    /* Loading effect */
    ID3DBlob* pErrorBlob = nullptr;
@@ -100,11 +97,9 @@ AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DD
 AxesFanFlow::~AxesFanFlow (void)
 {
    SAFE_RELEASE(m_shaderResourceView);
-   for (int i = 0; i < NUM_SEGMENTS; i++) {
-      SAFE_RELEASE(m_renderTargetsView[i]);
-   }
-   m_renderTargetsTexture->Release();   //HACK:  m_renderTargetTexture refcount is 2??
-   SAFE_RELEASE(m_renderTargetsTexture);
+   SAFE_RELEASE(m_renderTargetView);
+   m_renderTargetTexture->Release();   //HACK:  m_renderTargetTexture refcount is 2??
+   SAFE_RELEASE(m_renderTargetTexture);
    SAFE_RELEASE(m_pPass);
    SAFE_RELEASE(m_pEffect);
    SAFE_RELEASE(m_pInputLayout);
@@ -115,7 +110,7 @@ AxesFanFlow::~AxesFanFlow (void)
 void AxesFanFlow::SetRenderTarget(ID3D11DepthStencilView* depthStencilView)
 {
    // Bind the render target view and depth stencil buffer to the output render pipeline.
-   m_pD3DDeviceCtx->OMSetRenderTargets(NUM_SEGMENTS - 1, &m_renderTargetsView[0], depthStencilView);
+   m_pD3DDeviceCtx->OMSetRenderTargets(1, &m_renderTargetView, depthStencilView);
 
    return;
 }
@@ -131,9 +126,7 @@ void AxesFanFlow::ClearRenderTarget(ID3D11DepthStencilView* depthStencilView)
    color[3] = 0.0f;
 
    // Clear the back buffer.
-   for (int i = 0; i < NUM_SEGMENTS - 1; i++) {
-      m_pD3DDeviceCtx->ClearRenderTargetView(m_renderTargetsView[i], color);
-   }
+   m_pD3DDeviceCtx->ClearRenderTargetView(m_renderTargetView, color);
    // Clear the depth buffer.
    //m_pD3DDeviceCtx->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
@@ -150,18 +143,17 @@ ID3D11ShaderResourceView* AxesFanFlow::GetShaderResourceView(void)
 void AxesFanFlow::Update(void)
 {
    MakeFlowTexture();
-   //ClearRenderTarget();
 }
 
 
 void AxesFanFlow::MakeTextHistory (void)
 {
-   for (int i = 0; i < (NUM_SEGMENTS - 1) * (HISTORY_TEX_CNT - 1); i++) {
+   for (int i = 0; i < (HISTORY_TEX_CNT - 1); i++) {
       m_pD3DDeviceCtx->CopySubresourceRegion(
-         m_renderTargetsTexture,
-         D3D11CalcSubresource(0, i + (NUM_SEGMENTS - 1), 1),
+         m_renderTargetTexture,
+         D3D11CalcSubresource(0, i + 1, 1),
          0, 0, 0, 
-         m_renderTargetsTexture,
+         m_renderTargetTexture,
          D3D11CalcSubresource(0, i, 1), 
          NULL
       );
@@ -205,9 +197,7 @@ void AxesFanFlow::MakeFlowTexture(void)
    SAFE_RELEASE(pOrigRT);
    SAFE_RELEASE(pOrigDS);
 
-   static int frameCounter = 0;
-   //if (frameCounter++ % 100 == 0)
-      MakeTextHistory();
+   MakeTextHistory();
 }
 
 

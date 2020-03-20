@@ -113,6 +113,7 @@ void DebugWindow::SetWorldMtx (float4x4& a_mWorld)
 
 void DebugWindow::ToggleSlice (void)
 {
+   // Old code
    m_iCurSlice = ++m_iCurSlice % (NUM_SEGMENTS - 1); 
    m_pArraySlice->SetInt(m_iCurSlice);
 }

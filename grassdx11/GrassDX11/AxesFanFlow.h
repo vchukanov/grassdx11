@@ -48,8 +48,8 @@ private:
    ID3D11Device          *m_pD3DDevice;
    ID3D11DeviceContext   *m_pD3DDeviceCtx;
 
-   ID3D11Texture2D           *m_renderTargetsTexture;
-   ID3D11RenderTargetView    *m_renderTargetsView[NUM_SEGMENTS - 1];
+   ID3D11Texture2D           *m_renderTargetTexture;
+   ID3D11RenderTargetView    *m_renderTargetView;
    ID3D11ShaderResourceView  *m_shaderResourceView;
 
    ID3D11InputLayout *m_pInputLayout;
