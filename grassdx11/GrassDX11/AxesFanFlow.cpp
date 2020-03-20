@@ -22,7 +22,7 @@ AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DD
    textureDesc.Width = textureWidth;
    textureDesc.Height = textureHeight;
    textureDesc.MipLevels = 1;
-   textureDesc.ArraySize = NUM_SEGMENTS - 1;
+   textureDesc.ArraySize = (NUM_SEGMENTS - 1) * HISTORY_TEX_CNT;
    textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
    textureDesc.SampleDesc.Count = 1;
    textureDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -51,13 +51,12 @@ AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DD
    shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
    shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
    shaderResourceViewDesc.Texture2D.MipLevels = 1;
-   shaderResourceViewDesc.Texture2DArray.ArraySize = NUM_SEGMENTS - 1;
+   shaderResourceViewDesc.Texture2DArray.ArraySize = (NUM_SEGMENTS - 1) * HISTORY_TEX_CNT;
    shaderResourceViewDesc.Texture2DArray.FirstArraySlice = 0;
 
    // Create the shader resource view.
    m_pD3DDevice->CreateShaderResourceView(m_renderTargetsTexture, &shaderResourceViewDesc, &m_shaderResourceView);
    
-
    /* Loading effect */
    ID3DBlob* pErrorBlob = nullptr;
    D3DX11CompileEffectFromFile(L"Shaders/AxesFanFlow.fx",
@@ -154,6 +153,22 @@ void AxesFanFlow::Update(void)
    //ClearRenderTarget();
 }
 
+
+void AxesFanFlow::MakeTextHistory (void)
+{
+   for (int i = 0; i < (NUM_SEGMENTS - 1) * HISTORY_TEX_CNT; i++) {
+      m_pD3DDeviceCtx->CopySubresourceRegion(
+         m_renderTargetsTexture,
+         D3D11CalcSubresource(0, i + 3, 1),
+         0, 0, 0, 
+         m_renderTargetsTexture,
+         D3D11CalcSubresource(0, i, 1), 
+         NULL
+      );
+   }
+}
+
+
 void AxesFanFlow::MakeFlowTexture(void)
 {
    // Saving render targets
@@ -189,6 +204,10 @@ void AxesFanFlow::MakeFlowTexture(void)
 
    SAFE_RELEASE(pOrigRT);
    SAFE_RELEASE(pOrigDS);
+
+   static int frameCounter = 0;
+   //if (frameCounter++ % 100 == 0)
+      MakeTextHistory();
 }
 
 

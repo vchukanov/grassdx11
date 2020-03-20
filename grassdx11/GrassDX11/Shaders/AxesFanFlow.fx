@@ -14,7 +14,6 @@ cbuffer cAxesFanSettings
     float  g_fAngleSpeed; // 0.f .. 100.f
 
     float  g_fHeightScale;
-
     float  g_iResolution;
 };
 
@@ -247,14 +246,14 @@ AxesFanFlowPSOut PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In )
       }
 
       
-      float randRadialMagn = fbm(((g_fTime + 20145) / (1 + 1 / g_fAngleSpeed)) + radial.xy * 10);
-      float randDistMagn = fbm(((g_fTime + 20145) / (1 + 1 / g_fAngleSpeed)) - float2(fDist, fDist) * 10);
-      //randRadialMagn = lerp(1, 2, randRadialMagn);
-      //randDistMagn = lerp(1, 2, randDistMagn);
+      float randRadialMagn = fbm(((g_fTime + 20145) / (1 /*+ 1 / g_fAngleSpeed*/)) + radial.xy * 10);
+      float randDistMagn = fbm(((g_fTime + 20145) / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10);
+      randRadialMagn = lerp(1, 2, randRadialMagn);
+      randDistMagn = lerp(1, 2, randDistMagn);
       float randMagn = (randRadialMagn + randDistMagn) / 2;
       
-      float randRadialMagn1 = fbm(((g_fTime + 1015) / (1 + 1 / g_fAngleSpeed)) + radial.xy * 10)  - g_fShift * 10;
-      float randDistMagn1 = fbm(((g_fTime + 1015) / (1 + 1 / g_fAngleSpeed)) - float2(fDist, fDist) * 10) - g_fShift * 10;
+      float randRadialMagn1 = fbm(((g_fTime + 1015) / (1 /*+ 1 / g_fAngleSpeed*/)) + radial.xy * 10)  - g_fShift * 10;
+      float randDistMagn1 = fbm(((g_fTime + 1015) / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10) - g_fShift * 10;
       //randRadialMagn1 = lerp(1, g_fMaxFlowStrength, randRadialMagn1); 
       //randDistMagn1 = lerp(1, g_fMaxFlowStrength, randDistMagn1);
       float randMagn1 = (randRadialMagn1 + randDistMagn1) / 2;
@@ -262,12 +261,12 @@ AxesFanFlowPSOut PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In )
       //float randDist = fbm((g_fTime / (1 + 1 / g_fAngleSpeed)) - float2(fDist, fDist) * 10);
       //randDist = lerp(0.5, 1, randDist);
 
-      float randDCompMagn = fbm((g_fTime / (1 + 1 / g_fAngleSpeed)) - float2(fDist, fDist) * 10) - 0.476;
-      float randRCompMagn = fbm((g_fTime / (1 + 1 / g_fAngleSpeed)) + radial.xy * 10) - 0.476;
+      float randDCompMagn = fbm((g_fTime / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10) - 0.476;
+      float randRCompMagn = fbm((g_fTime / (1 /*+ 1 / g_fAngleSpeed*/)) + radial.xy * 10) - 0.476;
       float randCompMagn = (randDCompMagn + randRCompMagn) / 2;
 
-      float randDCompMagn1 = fbm((g_fTime / (1 + 1 / g_fAngleSpeed)) - float2(fDist, fDist) * 10) - 0.476;
-      float randRCompMagn1 = fbm((g_fTime / (1 + 1 / g_fAngleSpeed)) + radial.xy * 10) - 0.476;
+      float randDCompMagn1 = fbm((g_fTime / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10) - 0.476;
+      float randRCompMagn1 = fbm((g_fTime / (1/* + 1 / g_fAngleSpeed*/)) + radial.xy * 10) - 0.476;
       float randCompMagn1 = (randDCompMagn1 + randRCompMagn1) / 2;
 
       float3 normalFlow   = -w_k  * fanNormal;

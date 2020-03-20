@@ -65,18 +65,19 @@ float                               g_fGrassDiffuse = 10.0f;
 //phys
 float                               g_fMass = 1.0;//0.2450f; //0.230f;
 float                               g_fHardness = 1.0f;
-float                               g_fWindStrength = 1.0f;//0.0616f;
+float                               g_fWindStrength = 0.0f;//0.0616f;
 float                               g_fWindStrengthDefault = 1.0f;
 float                               g_fWindBias = 0.4370f;
 float                               g_fWindScale = 4.96f;
 
 float                               g_fMaxFlowStrength = 0.0562;
-float                               g_fFanRadius = 5;
+float                               g_fFanRadius = 20;
 float                               g_fDeltaSlices = 0.005;
-float                               g_fAngleSpeed = 0;
+float                               g_fAngleSpeed = 100;
 float                               g_fShift = 0.005;
 XMFLOAT3                            g_vDir = XMFLOAT3(0.0f, -1.0f, 0.0f);
 //phys
+
 
 float                               g_fWindTexSpeed = 2.5f;//3.78f;
 float                               g_fWindTexTile = 4.f;//4.f;//5.2f;
@@ -97,8 +98,8 @@ float                               g_fCameraMeshDistMax;
 float                               g_fCameraHeight = 5.0f;
 float                               g_fCameraHeightMax;
 float                               g_fCameraHeightMin;
-XMFLOAT3                            g_vCameraEyeStart(9.8f, 9.5f, 7.8f);
-XMFLOAT3                            g_vCameraAtStart(10.8f, 9.0f, 8.8f);
+XMFLOAT3                            g_vCameraEyeStart(69.79, 20.20, -75.06);
+XMFLOAT3                            g_vCameraAtStart(70.33, 19.97, -75.87);
 
 
 ID3D11Texture2D*                    g_pRenderTarget = NULL;
@@ -142,6 +143,9 @@ enum IDC_HUD
 
    IDC_DELTA_SLICES_LABEL,
    IDC_DELTA_SLICES_SLYDER,
+
+   IDC_CAM_SPEED_SCALE_LABEL,
+   IDC_CAM_SPEED_SCALE_SLYDER,
 
    //IDC_GRASS_MAX_FLOW_RADIUS_LABEL,
    //IDC_GRASS_MAX_FLOW_RADIUS_SLYDER,

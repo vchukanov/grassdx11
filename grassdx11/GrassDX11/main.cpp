@@ -125,6 +125,11 @@ void InitApp()
    g_HUD.AddButton(IDC_CHANGEDEVICE, L"Change device (F2)", 25, iY += iYo, 125, 22, VK_F2);
 
    WCHAR sStr[MAX_PATH];
+   
+   swprintf_s(sStr, MAX_PATH, L"Cam speed scale: %.4f", g_fCameraSpeed);
+   g_HUD.AddStatic(IDC_CAM_SPEED_SCALE_LABEL, sStr, 20, iY += iYo, 180, 22);
+   g_HUD.AddSlider(IDC_CAM_SPEED_SCALE_SLYDER, 20, iY += iYo, 185, 22, 0, 1000, (int)(g_fCameraSpeed * 1000));
+
    swprintf_s(sStr, MAX_PATH, L"Wind Strength: %.4f", g_fWindStrength);
    g_HUD.AddStatic(IDC_GRASS_WIND_LABEL, sStr, 20, iY += iYo, 180, 22);
    g_HUD.AddSlider(IDC_GRASS_WIND_FORCE_SLYDER, 20, iY += iYo, 185, 22, 0, 10000, (int)(g_fWindStrength * 10000));
@@ -133,7 +138,7 @@ void InitApp()
    g_HUD.AddStatic(IDC_GRASS_MAX_FLOW_STRENGTH_LABEL, sStr, 20, iY += iYo, 180, 22);
    g_HUD.AddSlider(IDC_GRASS_MAX_FLOW_STRENGTH_SLYDER, 20, iY += iYo, 185, 22, 0, 10000, (int)(g_fMaxFlowStrength * 10000));
 
-   swprintf_s(sStr, MAX_PATH, L"Fan radius: %.4f", g_fFanRadius);
+   swprintf_s(sStr, MAX_PATH, L"Fan radius: %.4f", g_fFanRadius / 2);
    g_HUD.AddStatic(IDC_FAN_RADIUS_LABEL, sStr, 20, iY += iYo, 180, 22);
    g_HUD.AddSlider(IDC_FAN_RADIUS_SLYDER, 20, iY += iYo, 185, 22, 0, 1000, (int)(g_fFanRadius * 1000));
 
@@ -187,7 +192,7 @@ void RenderText()
    XMVECTOR vLookAt = g_Camera->GetLookAtPt();
    XMFLOAT3 lookAt;
    XMStoreFloat3(&lookAt, vLookAt);
-   
+
    WCHAR eyeStr[100];
    swprintf(eyeStr, sizeof(eyeStr), L"Eye: X = %f, Y = %f, Z = % f", eye.x, eye.y, eye.z);
 
@@ -446,7 +451,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    Terrain* const terr = g_pGrassField->GetTerrain(&height_scale, &grass_radius);
    
    g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxFlowStrength);
-   g_pGrassField->GetFlowManager()->SetFanRadius(g_fFanRadius);
+   g_pGrassField->GetFlowManager()->SetFanRadius(g_fFanRadius / 2);
    g_pGrassField->GetFlowManager()->SetDeltaSlices(g_fDeltaSlices);
    g_pGrassField->GetFlowManager()->SetShift(g_fShift);
    g_pGrassField->GetFlowManager()->SetAngleSpeed(g_fAngleSpeed);
@@ -932,6 +937,15 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
         swprintf_s(sStr, MAX_PATH, L"Fan Radius: %.4f", g_fFanRadius * 2);
         g_HUD.GetStatic(IDC_FAN_RADIUS_LABEL)->SetText(sStr);
         g_pGrassField->GetFlowManager()->SetFanRadius(g_fFanRadius * 2);
+        break;
+     }
+
+     case IDC_CAM_SPEED_SCALE_SLYDER:
+     {
+        g_fCameraSpeed = (float)g_HUD.GetSlider(IDC_CAM_SPEED_SCALE_SLYDER)->GetValue() / 1000.0f;
+        swprintf_s(sStr, MAX_PATH, L"Cam speed scale: %.4f", g_fCameraSpeed * 60);
+        g_HUD.GetStatic(IDC_CAM_SPEED_SCALE_LABEL)->SetText(sStr);
+        g_Camera->SetScalers(0.01, g_fCameraSpeed * 60);
         break;
      }
 

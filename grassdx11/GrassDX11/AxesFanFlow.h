@@ -2,6 +2,7 @@
 
 #include "includes.h"
 
+#define HISTORY_TEX_CNT 5
 
 struct AxesFanFlowVertex
 {
@@ -21,6 +22,7 @@ public:
 
    void Update          (void);
    void MakeFlowTexture (void);
+   void MakeTextHistory (void);
 
    void CreateVertexBuffer (void);
    void CreateInputLayout  (void);
