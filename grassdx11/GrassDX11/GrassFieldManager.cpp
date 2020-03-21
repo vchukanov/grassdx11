@@ -99,7 +99,7 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
       CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[i].sSeatingTexPath.c_str(), nullptr, &m_pSeatingMapESV[i]);
 
       pESRV = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_txSeatingMap")->AsShaderResource();
-      pESRV->SetResource(m_pSeatingMapESV[i]);
+      pESRV->SetResource(m_pSeatingMapESV[0]);
 
       pESRV = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_txHeightMap")->AsShaderResource();
       pESRV->SetResource(pHeightMapSRV);
@@ -131,6 +131,13 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
    m_pLightDirEVV[GrassTypeNum] = m_pSceneEffect->GetVariableByName("vLightDir")->AsVector();
    m_pLightDirEVV[GrassTypeNum]->SetFloatVector((float*)& vLightDir);
 
+   /* Seating map to terrain shader - for correct texturing of roads */
+   pESRV = m_pSceneEffect->GetVariableByName("g_txSeatingT1")->AsShaderResource();
+   pESRV->SetResource(m_pSeatingMapESV[0]);
+   //pESRV = m_pSceneEffect->GetVariableByName("g_txSeatingT2")->AsShaderResource();
+   //pESRV->SetResource(m_pSeatingMapESV[1]);
+   pESRV = m_pSceneEffect->GetVariableByName("g_txSeatingT3")->AsShaderResource();
+   pESRV->SetResource(m_pSeatingMapESV[2]);
 
    ID3DX11EffectScalarVariable* pESV = m_pSceneEffect->GetVariableByName("g_fGrassRadius")->AsScalar();
    pESV->SetFloat(a_InitState.InitState[0].fGrassRadius);

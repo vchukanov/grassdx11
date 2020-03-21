@@ -226,27 +226,27 @@ TerrPSIn TerrainVSMain( TerrVSIn Input )
 
 float GetAlphaCoef(float2 vTexCoord)
 {
-    float3 vAlpha =  float3(g_txSeatingT1.Sample(g_samLinear, vTexCoord).r,
-                            g_txSeatingT2.Sample(g_samLinear, vTexCoord).r,
-                            g_txSeatingT3.Sample(g_samLinear, vTexCoord).r);
+    float vAlpha =  g_txSeatingT1.Sample(g_samLinear, vTexCoord).r;
     return clamp(length(vAlpha), 0.0, 1.0);                            
 }
 
 float4 TerrainPSMain( TerrPSIn Input ): SV_Target
 {
     float2 fDot = g_txLightMap.Sample(g_samLinear, Input.vTexCoord.xy).rg;
-    float3 vTexel = g_txGrassDiffuse.Sample(g_samLinear, Input.vTexCoord.xy * 0.5 * g_fTerrTile).xyz;
-    vTexel *=  g_vTerrRGB;
+  
     float3 vGrassColor = g_txTerrGrass.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
-	vGrassColor *= g_vTerrRGB;
-    vTexel = vGrassColor;
-    float fTexDist = min(Input.vTexCoord.w / 140.f, 1.0);
-	
-    float3 vL = lerp(vGrassColor, vTexel, fTexDist) * max(0.8, (2.0 + 5.0 * fDot.y) * 0.5);
+    vGrassColor *= float3(0.22, 0.25, 0.00);
+    
+    float3 vSandColor = g_txSandDiffuse.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
+    vSandColor *= float3(0.37, 0.37, 0.28);
 
+    float alphaValue = GetAlphaCoef(Input.vTexCoord.xy);    
+    float3 blendColor = (alphaValue * vGrassColor) + ((1.0 - alphaValue) * vSandColor);
+
+    float3 vL = blendColor * max(0.8, (2.0 + 5.0 * fDot.y) * 0.5);
 	float fLimDist = clamp((Input.vTexCoord.w - 140.0) / 20.0, 0.0, 1.0);
 
-    return lerp(float4(fDot.x * fLimDist* g_vTerrSpec + (1.0 - fDot.x * fLimDist) * vL, 1.0), g_vFogColor, Input.vTexCoord.z);
+    return lerp(float4(fDot.x * fLimDist * g_vTerrSpec + (1.0 - fDot.x * fLimDist) * vL, 1.0), g_vFogColor, Input.vTexCoord.z);
 }
 
 /* Light Map Shaders */

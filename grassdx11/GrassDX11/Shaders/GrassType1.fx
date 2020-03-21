@@ -131,7 +131,7 @@ struct PSIn
 };
 
 /* Grass shaders */
-#include "DisableSeating.fx"
+#include "EnableSeating.fx"
 #include "DisableSubTypes.fx"
 #include "Lod.fx"
 

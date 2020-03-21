@@ -377,7 +377,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    g_GrassInitState.InitState[1].sEffectPath = L"Shaders/GrassType2.fx";
    g_GrassInitState.InitState[2].sEffectPath = L"Shaders/GrassType3.fx";
    g_GrassInitState.InitState[0].sSeatingTexPath = L"resources/SeatingType1.dds";
-   g_GrassInitState.InitState[1].sSeatingTexPath = L"resources/SeatingType2.dds";
+   //g_GrassInitState.InitState[1].sSeatingTexPath = L"resources/SeatingType2.dds";
    g_GrassInitState.InitState[2].sSeatingTexPath = L"resources/SeatingType3.dds";
    
    g_GrassInitState.InitState[0].sSubTypesPath = L"config/T1SubTypes.cfg";
