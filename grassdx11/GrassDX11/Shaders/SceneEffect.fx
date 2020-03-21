@@ -43,7 +43,6 @@ cbuffer cImmutable
 //--------------------------------------------------------------------------------------
 Texture2D g_txShadowMap;
 Texture2D g_txGrassDiffuse;
-Texture2D g_txSandDiffuse;
 Texture2D g_txMeshDiffuse;
 Texture2D g_txSeatingT1;
 Texture2D g_txSeatingT2;
@@ -52,6 +51,7 @@ Texture2D g_txHeightMap;
 Texture2D g_txLightMap;
 Texture2D g_txSkyBox;
 Texture2D g_txTerrGrass;
+Texture2D g_txSandDiffuse;
 
 // Mesh textures
 Texture2D g_txMeshMapKd;
