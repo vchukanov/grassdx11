@@ -77,7 +77,7 @@ struct TerrVSIn
 struct TerrPSIn
 {
     float4 vPos      : SV_Position;
-    //float4 vShadowPos: TEXCOORD0;
+    float4 vShadowPos: TEXCOORD0;
     float4 vTexCoord : TEXCOORD1;
     //float3 vNormal   : NORMAL;
 };
@@ -220,7 +220,8 @@ TerrPSIn TerrainVSMain( TerrVSIn Input )
     Output.vTexCoord.xy  = Input.vTexCoord;
     Output.vTexCoord.z   = FogValue(length(vWorldPos - g_mInvCamView[3].xyz));
     Output.vTexCoord.w   = length(vWorldPos - g_mInvCamView[3].xyz);
-    
+    Output.vShadowPos   = mul( vWorldPos, g_mLightViewProj);    
+
     return Output;
 }
 
@@ -232,6 +233,9 @@ float GetAlphaCoef(float2 vTexCoord)
 
 float4 TerrainPSMain( TerrPSIn Input ): SV_Target
 {
+    float shadowCoef = ShadowCoef(Input.vShadowPos);
+    //return shadowCoef;
+
     float2 fDot = g_txLightMap.Sample(g_samLinear, Input.vTexCoord.xy).rg;
   
     float3 vGrassColor = g_txTerrGrass.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
@@ -246,7 +250,9 @@ float4 TerrainPSMain( TerrPSIn Input ): SV_Target
     float3 vL = blendColor * max(0.8, (2.0 + 5.0 * fDot.y) * 0.5);
 	float fLimDist = clamp((Input.vTexCoord.w - 140.0) / 20.0, 0.0, 1.0);
 
-    return lerp(float4(fDot.x * fLimDist * g_vTerrSpec + (1.0 - fDot.x * fLimDist) * vL, 1.0), g_vFogColor, Input.vTexCoord.z);
+    float4 color = lerp(float4(fDot.x * fLimDist * g_vTerrSpec + (1.0 - fDot.x * fLimDist) * vL, 1.0), g_vFogColor, Input.vTexCoord.z);
+    color.xyz = color.xyz * shadowCoef;
+    return color;
 }
 
 /* Light Map Shaders */

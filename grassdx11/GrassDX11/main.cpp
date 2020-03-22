@@ -28,44 +28,6 @@ CDXUTTextHelper*            g_pTxtHelper = nullptr;
 CDXUTDialog                 g_HUD;                  // dialog for standard controls
 CDXUTDialog                 g_SampleUI;             // dialog for sample specific controls
 
-// Scene Effect vars
-ID3DX11EffectMatrixVariable* g_mWorld = nullptr;
-ID3DX11EffectMatrixVariable* g_mViewProj = nullptr;
-ID3DX11EffectMatrixVariable* g_mInvCamView = nullptr;
-ID3DX11EffectMatrixVariable* g_mLightViewProj = nullptr;
-ID3DX11EffectMatrixVariable* g_mNormalMatrix = nullptr;
-//ID3DX11EffectScalarVariable* g_fTime = nullptr;
-
-
-// Direct3D 11 resources
-ID3D11VertexShader*         g_pVertexShader11 = nullptr;
-ID3D11PixelShader*          g_pPixelShader11 = nullptr;
-ID3D11InputLayout*          g_pLayout11 = nullptr;
-ID3D11SamplerState*         g_pSamLinear = nullptr;
-
-//--------------------------------------------------------------------------------------
-// Constant buffers
-//--------------------------------------------------------------------------------------
-#pragma pack(push,1)
-struct CB_VS_PER_OBJECT
-{
-   XMFLOAT4X4  m_mWorldViewProjection;
-   XMFLOAT4X4  m_mWorld;
-   XMFLOAT4    m_MaterialAmbientColor;
-   XMFLOAT4    m_MaterialDiffuseColor;
-};
-
-struct CB_VS_PER_FRAME
-{
-   XMFLOAT3    m_vLightDir;
-   float       m_fTime;
-   XMFLOAT4    m_LightDiffuse;
-};
-#pragma pack(pop)
-
-ID3D11Buffer*                       g_pcbVSPerObject11 = nullptr;
-ID3D11Buffer*                       g_pcbVSPerFrame11 = nullptr;
-
 
 //--------------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
@@ -466,6 +428,9 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    g_Camera->SetScalers(0.01f, g_fCameraSpeed /* g_fMeter*/);
    
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetWind()->GetMap(), 10);
+   
+  // g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pShadowMapping->m_pSRV, 0.1 / 4);
+
    g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->GetFlowSRV(), 1);
   //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, terr->HeightMapSRV(), 1);
 
@@ -769,11 +734,6 @@ void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
 
    SAFE_DELETE( g_pTxtHelper );
 
-   SAFE_RELEASE( g_pVertexShader11 );
-   SAFE_RELEASE( g_pPixelShader11 );
-   SAFE_RELEASE( g_pLayout11 );
-   SAFE_RELEASE( g_pSamLinear );
-
    SAFE_RELEASE(g_pRenderTarget);
    SAFE_RELEASE(g_pRTRV);
    SAFE_RELEASE(g_pDSTarget);
@@ -791,10 +751,7 @@ void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
    SAFE_RELEASE(g_pSkyVertexLayout);
    g_MeshSkybox.Destroy();
 
-   SAFE_RELEASE( g_pcbVSPerObject11 );
-   SAFE_RELEASE( g_pcbVSPerFrame11 );
-
-  // PrintMemoryLeaks(L"mem.txt");
+   PrintMemoryLeaks(L"mem.txt");
 }
 
 

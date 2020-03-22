@@ -332,10 +332,12 @@ void GrassManager::Render(bool a_bShadowPass)
       {
          m_pLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
          m_GrassState.pD3DDeviceCtx->DrawInstanced(m_GrassLod[0]->VerticesCount(), m_GrassLod[0]->GetTransformsCount(), 0, 0);
+         m_pAxesFanFlowESRV->SetResource(NULL);
+         m_pLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
       }
 
       m_pAxesFanFlowESRV->SetResource(NULL);
-      m_pLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
+      m_pShadowPass->Apply(0, m_GrassState.pD3DDeviceCtx);
    }
    else
    {

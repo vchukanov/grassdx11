@@ -186,6 +186,10 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
 {
    float4 Out = float4(0, 0, 0, 1);
    
+    if (g_fFanRadius == 0 || g_fAngleSpeed == 0) {
+        return Out;
+    }
+
    float fY = g_txHeightMap.SampleLevel(g_samLinear, (In.vsPos) * 0.5 + 0.5, 0).a * g_fHeightScale; 
    float3 fNoise = g_txNoise.Sample(g_samLinear, In.vsPos).rgb;
    
@@ -275,13 +279,14 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
    
    //float randDist = fbm((g_fTime / (1 + 1 / g_fAngleSpeed)) - float2(fDist, fDist) * 10);
    //randDist = lerp(0.5, 1, randDist);
-   
-   float randDCompMagn = fbm((g_fTime / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10) - 0.476;
-   float randRCompMagn = fbm((g_fTime / (1 /*+ 1 / g_fAngleSpeed*/)) + radial.xy * 10) - 0.476;
+   float arg = (g_fTime / 1);
+
+   float randDCompMagn = fbm(arg - float2(fDist, fDist) * 10) - 0.476;
+   float randRCompMagn = fbm(arg + radial.xy * 10) - 0.476;
    float randCompMagn = (randDCompMagn + randRCompMagn) / 2;
    
-   float randDCompMagn1 = fbm((g_fTime / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10) - 0.476;
-   float randRCompMagn1 = fbm((g_fTime / (1/* + 1 / g_fAngleSpeed*/)) + radial.xy * 10) - 0.476;
+   float randDCompMagn1 = fbm(arg - float2(fDist, fDist) * 10) - 0.476;
+   float randRCompMagn1 = fbm(arg + radial.xy * 10) - 0.476;
    float randCompMagn1 = (randDCompMagn1 + randRCompMagn1) / 2;
    
    float3 normalFlow   = -w_k  * fanNormal;

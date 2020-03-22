@@ -27,8 +27,8 @@
 //--------------------------------------------------------------------------------------
 // Global variables
 //--------------------------------------------------------------------------------------
-int g_windowHeight = 980;
-int g_windowWidth = 1280;
+int g_windowHeight = 900;
+int g_windowWidth = 1600;
 
 
 //
@@ -83,7 +83,7 @@ float                               g_fWindTexSpeed = 2.5f;//3.78f;
 float                               g_fWindTexTile = 4.f;//4.f;//5.2f;
 float                               g_fCameraSpeed = 30.0f;
 float                               g_fTime = 0.0f;
-float                               g_fHeightScale = 40;//0;//40.0f;
+float                               g_fHeightScale = 100;//120;//0;//40.0f;
 float                               g_fQuality = 1.0f;
 XMFLOAT4                            g_vFogColor = XMFLOAT4(0.2f, 0.3f, 0.25f, 1.0f);
 XMFLOAT3                            g_vTerrRGB = XMFLOAT3(0.5f, 0.5f, 0.0f);

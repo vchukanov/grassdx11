@@ -10,9 +10,9 @@
 
 #include "FlowManager.h"
 #include "plane.h"
-//TODO:
+
 #include "Wind.h"
-//#include "ShadowMapping.h"
+#include "ShadowMapping.h"
 #include "GrassTrack.h"
 
 
@@ -34,16 +34,16 @@ struct GrassFieldState
 
 class GrassFieldManager
 {
-private:
+public:
    bool                   isGrassRendering = true;
 
    Terrain                    *m_pTerrain;
    float                       m_fHeightScale;
    float                       m_fTerrRadius;
 
-   //TODO: Add wind and shadow mapping
+   
    Wind                       *m_pWind;
-   //LiSPSM                     *m_pShadowMapping;
+   LiSPSM                     *m_pShadowMapping;
    
    FlowManager                   *m_pFlowManager;
 

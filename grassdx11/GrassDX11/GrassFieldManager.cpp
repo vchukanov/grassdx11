@@ -70,11 +70,14 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
    m_pGrassTypes[2]->SetHeightDataPtr(m_pTerrain->HeightDataPtr());
    m_pGrassTypes[2]->SetWindDataPtr(m_pWind->WindDataPtr());
 
+   m_pShadowMapping = new LiSPSM(4096 * 4, 4096 * 4, a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx);
+
 
    /* ...and lots of variables... */
    ID3DX11EffectShaderResourceVariable* pESRV;
    ID3D11ShaderResourceView* pHeightMapSRV = m_pTerrain->HeightMapSRV();
-   XMVECTOR vLightDir = create(-1.0f, -0.1f, 1.0f);
+   XMVECTOR vLightDir = create(-0.0f, -1.0f, 1.0f);
+   m_pShadowMapping->UpdateLightDir(vLightDir);
 
    for (int i = 0; i < GrassTypeNum; i++)
    {
@@ -210,6 +213,7 @@ GrassFieldManager::~GrassFieldManager(void)
 
    delete m_pTerrain;
    delete m_pWind;
+   delete m_pShadowMapping;
    delete m_pGrassTracker;
 
    delete m_pT1SubTypes;
@@ -450,17 +454,67 @@ Terrain* const GrassFieldManager::GetTerrain(float* a_fHeightScale, float* a_fGr
 
 void GrassFieldManager::Render()
 {
+   int i;
+   //m_pShadowMapping->SwitchToUniformSM();
+   float *pLightVP;
+   m_pShadowMapping->UpdateMtx(*m_pView, *m_pProj, m_vCamPos, m_vCamDir );
+   XMMATRIX m = m_pShadowMapping->GetViewProjMtx();
+   pLightVP = (float*)& m;
+   
    m_pInvView[0]->SetMatrix((float*)& m_mInvView);
    m_pInvView[1]->SetMatrix((float*)& m_mInvView);
    m_pInvView[2]->SetMatrix((float*)& m_mInvView);
 
-   m_pTerrain->Render();
+    //Current camera (lightsrc) viewproj and lightviewproj (for future stream output) */
+    for (i = 0; i <= GrassTypeNum; i++)
+    {
+        if (i == 1) {
+          continue;
+        }
+        m_pViewProjEMV[i]->SetMatrix( pLightVP );
+        m_pLightViewProjEMV[i]->SetMatrix( pLightVP );
+        m_pShadowMapESRV[i]->SetResource(NULL);
+    }
+    /* Shadow map pass */
+    m_pShadowMapping->BeginShadowMapPass( );
+    for (i = 0; i < GrassTypeNum; i++)
+    {
+        if (i == 1) {
+          continue;
+        }
+        m_pGrassTypes[i]->Render(true);
+    }
+    m_pFlowManager->RenderFan();
+    //m_pTerrain->Render();
+    ID3D11ShaderResourceView *pSRV = m_pShadowMapping->EndShadowMapPass( );
+ 
+    /* Camera viewproj */
+    for (i = 0; i <= GrassTypeNum; i++)
+    {
+       if (i == 1) {
+          continue;
+       }
+        m_pViewProjEMV[i]->SetMatrix( ( float* )m_pViewProj );
+        //m_pLightViewProjEMV[i]->SetMatrix( pLightVP );
+        m_pShadowMapESRV[i]->SetResource(pSRV);
+    }
+    /*****************/
+ 
+    /*for (i = 0; i < GrassTypeNum; i++)
+    {
+        m_pGrassTypes[i]->Render(false);
+    }*/
+
+    m_pTerrain->Render();
+
    if (isGrassRendering) {
       m_pGrassTypes[0]->Render(false);
       m_pGrassTypes[2]->Render(false);
    }
 
    m_pFlowManager->RenderFan();
+
+   m_pShadowMapESRV[GrassTypeNum]->SetResource(NULL);
 }
 
 void GrassFieldManager::Update (float3 a_vCamDir, float3 a_vCamPos, Mesh* a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime, float a_fTime)

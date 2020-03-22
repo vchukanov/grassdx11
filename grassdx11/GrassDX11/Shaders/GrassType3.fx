@@ -112,7 +112,7 @@ struct GSIn
 struct PSIn
 {
     float4 vPos                       : SV_Position;
-    //float4 vShadowPos                 : TEXCOORD0;
+    float4 vShadowPos                 : TEXCOORD0;
     float4 vTexCoord                  : TEXCOORD1;
     nointerpolation float2 vWorldTC   : TEXCOORD2;
     float  fLightParam                : NORMALY;
@@ -608,6 +608,8 @@ float4 InstPSMain( PSIn Input ) : SV_Target
 			clip(Input.fDissolve - fNoise);
 	}
 	*/
+    float fShadowCoef = ShadowCoef(Input.vShadowPos);
+
 	float fL = max(0.17, (1.0 + 5.0 * Input.vTerrSpec.y)*0.6);
     float3 vT = float3(0.04, 0.1, 0.01) * max(0.8, (2.0 + 5.0f* Input.vTerrSpec.y)*0.5);
 //	float3 vT = g_vTerrRGB * max(0.8, (2.0 + 5.0f* Input.vTerrSpec.y)*0.5);
@@ -636,20 +638,24 @@ float4 InstPSMain( PSIn Input ) : SV_Target
 		vC3 = (1.0 - fLimDist1)*vC3 +  fLimDist1*vT;
 	}	
   //  return float4(vC3, vTexel.a);
-   return lerp(float4(vC3, vTexel.a * Input.fDissolve), g_vFogColor, Input.vTexCoord.z);
-     
+    float4 color = lerp(float4(vC3, vTexel.a * Input.fDissolve), g_vFogColor, Input.vTexCoord.z);
+    
+    color.xyz = color.xyz * fShadowCoef;
+    return color;
 }
-//float4 ShadowPSMain( PSIn Input, out float fDepth: SV_Depth ) : SV_Target
-//{   
-//    float fAlpha;
-//    if (Input.bIsTop)
-//        fAlpha = g_txTopDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, Input.uIndex)).a;    
-//    else
-//        fAlpha = g_txGrassDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, Input.uIndex)).a;
-//    clip(fAlpha - 0.001);
-//    fDepth = Input.vShadowPos.z / Input.vShadowPos.w * 0.5 + 0.5;
-//    return float4(0.0, 0.0, 0.0, 1.0);
-//}
+
+
+float4 ShadowPSMain( PSIn Input, out float fDepth: SV_Depth ) : SV_Target
+{   
+    float fAlpha;
+    if (Input.bIsTop)
+        fAlpha = g_txTopDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, Input.uIndex)).a;    
+    else
+        fAlpha = g_txGrassDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, Input.uIndex)).a;
+    clip(fAlpha - 0.001);
+    fDepth = Input.vShadowPos.z / Input.vShadowPos.w * 0.5 + 0.5;
+    return float4(0.0, 0.0, 0.0, 1.0);
+}
 
 technique10 RenderGrass
 {
@@ -687,7 +693,7 @@ technique10 RenderGrass
     }
 
     /* Shadow passes */
-    /*pass ShadowPass
+    pass ShadowPass
     {        
         SetVertexShader( CompileShader( vs_4_0, InstVSMain() ) );
         SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
@@ -699,5 +705,5 @@ technique10 RenderGrass
         SetVertexShader( CompileShader( vs_4_0, PhysVSMain() ) );
         SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
         SetPixelShader( CompileShader( ps_4_0, ShadowPSMain() ) );
-    }*/
+    }
 }

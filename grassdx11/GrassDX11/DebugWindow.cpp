@@ -20,8 +20,8 @@ DebugWindow::DebugWindow(ID3D11Device* device, int screenWidth, int screenHeight
    SAFE_RELEASE(pTextureInterface);
 
    // Store the size in pixels that this bitmap should be rendered at.
-   m_bitmapWidth = desc.Width * (int)floor(scale);
-   m_bitmapHeight = desc.Height * (int)floor(scale);
+   m_bitmapWidth = (int)floor(desc.Width * scale);
+   m_bitmapHeight = (int)floor(desc.Height * scale);
 
    // Initialize the previous rendering position to negative one.
    m_previousPosX = -1;

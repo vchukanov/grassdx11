@@ -80,13 +80,13 @@ float4 PSLowGrassMain( LowGrassPSIn In ): SV_Target
     return float4(fNdotL * vTexel.xyz, vTexel.a);
 }
 
-//float4 PSLowGrassShadowMain( LowGrassPSIn In, out float fDepth : SV_Depth ): SV_Target
-//{
-//    float fAlpha = g_txLowGrassDiffuse.Sample(g_samAniso, In.vTexCoord).r;
-//    clip(fAlpha - 0.001);
-//    fDepth = Input.vShadowPos.z / Input.vShadowPos.w * 0.5 + 0.5;
-//    return float4(0.0, 0.0, 0.0, 0.0);
-//}
+float4 PSLowGrassShadowMain( LowGrassPSIn In, out float fDepth : SV_Depth ): SV_Target
+{
+    float fAlpha = g_txLowGrassDiffuse.Sample(g_samAniso, In.vTexCoord).r;
+    clip(fAlpha - 0.001);
+    fDepth = In.vShadowPos.z / In.vShadowPos.w * 0.5 + 0.5;
+    return float4(0.0, 0.0, 0.0, 0.0);
+}
 
 technique10 RenderLowGrass
 {
@@ -120,12 +120,12 @@ technique10 RenderLowGrass
         //SetRasterizerState( EnableMSAA );
     }
 
-    //pass ShadowLowGrass
-    //{
-    //    SetVertexShader( CompileShader( vs_4_0, InstVSMain() ) );//extern vertex shader
-    //    SetGeometryShader( CompileShader( gs_4_0, GSLowGrassMain() ) );
-    //    SetPixelShader( CompileShader( ps_4_0, PSLowGrassShadowMain() ) );
-    //}
+    pass ShadowLowGrass
+    {
+        SetVertexShader( CompileShader( vs_4_0, InstVSMain() ) );//extern vertex shader
+        SetGeometryShader( CompileShader( gs_4_0, GSLowGrassMain() ) );
+        SetPixelShader( CompileShader( ps_4_0, PSLowGrassShadowMain() ) );
+    }
 }
 
 #endif

@@ -120,6 +120,7 @@ struct PSIn
 {
     float4 vPos                        : SV_Position;
     float4 vTexCoord                   : TEXCOORD1;
+    float4 vShadowPos                  : TEXCOORD0;
     float  fLightParam                 : NORMALY;
     float2 vTerrSpec                   : TERRSPEC;
     nointerpolation float3 vColor      : GCOLOR;
@@ -409,6 +410,8 @@ void GSGrassMain( point GSIn Input[1], inout TriangleStream< PSIn > TriStream )
  */
 float4 InstPSMain( PSIn Input ) : SV_Target
 {
+    float shadowCoef = ShadowCoef(Input.vShadowPos);
+    
     float fNoise;
     if (Input.fDissolve < 0.0) clip(-1);
 	/*
@@ -452,9 +455,21 @@ float4 InstPSMain( PSIn Input ) : SV_Target
     float fDd2 = fDd*fDd;
     fDd = 1.0 - 3.0*fDd2 +2.0*fDd2*fDd;
    //vC = fDd*vC + (1.0-fDd)*vT;
-    return lerp(float4(vC, fAlpha) , g_vFogColor, Input.vTexCoord.z);
+    float4 color = lerp(float4(vC, fAlpha) , g_vFogColor, Input.vTexCoord.z);
+    color.xyz = color.xyz * shadowCoef;
+    return color;
 }
- 
+
+
+float4 ShadowPSMain( PSIn Input, out float fDepth: SV_Depth ) : SV_Target
+{   
+    uint uTexIndex = SubTypes[Input.uIndex].uTexIndex;
+    float fAlpha = g_txGrassDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, uTexIndex)).a;
+    clip(fAlpha - 0.001);
+    fDepth = Input.vShadowPos.z / Input.vShadowPos.w * 0.5 + 0.5;
+    return float4(0.0, 0.0, 0.0, 1.0);
+}
+
 
 technique10 RenderGrass
 {
@@ -489,5 +504,19 @@ technique10 RenderGrass
         SetBlendState( AlphaBlendState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );
         SetDepthStencilState( EnableDepthTestWrite, 0 );
     }
+
+    /* Shadow passes */
+    pass ShadowPass
+    {        
+        SetVertexShader( CompileShader( vs_4_0, InstVSMain() ) );
+        SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
+        SetPixelShader( CompileShader( ps_4_0, ShadowPSMain() ) );
+    }  
     
+    pass ShadowPhysicsPass
+    {
+        SetVertexShader( CompileShader( vs_4_0, PhysVSMain() ) );
+        SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
+        SetPixelShader( CompileShader( ps_4_0, ShadowPSMain() ) );
+    }
 }

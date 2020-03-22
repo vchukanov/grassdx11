@@ -530,13 +530,16 @@ float4 InstPSMain( PSIn Input ) : SV_Target
     uint uTexIndex = SubTypes[Input.uIndex].uTexIndex;
     float4 vTexel = g_txGrassDiffuseArray.Sample(g_samAniso, float3(Input.vTexCoord, uTexIndex)) * SubTypes[Input.uIndex].vColor;
 
-    //float fShadowCoef = ShadowCoef(Input.vShadowPos);
+    float fShadowCoef = ShadowCoef(Input.vShadowPos);
         
     float3 vL = mul(float4(-vLightDir, 0.0), g_mView).xyz;
     float fNdotL  = clamp(dot(Input.vNormal, vL), 0.15, 0.25) + g_fGrassAmbient;
 
-    return float4(fNdotL * vTexel.xyz, vTexel.a);
+    float4 color = float4(fNdotL * vTexel.xyz, vTexel.a);
+    color.xyz = color.xyz * shadowCoef;
+    return color;
 }
+
 
 float4 ShadowPSMain( PSIn Input, out float fDepth: SV_Depth ) : SV_Target
 {   
