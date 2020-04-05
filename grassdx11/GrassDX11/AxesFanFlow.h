@@ -2,7 +2,7 @@
 
 #include "includes.h"
 
-#define HISTORY_TEX_CNT 5
+#define HISTORY_TEX_CNT 15
 
 struct AxesFanFlowVertex
 {

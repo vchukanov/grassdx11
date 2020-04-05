@@ -75,10 +75,11 @@ float sqr ( float x )
 }
 
 
+// with sign
 float distanceToPlane (float3 pNormal, float3 pPoint, float3 vPoint) 
 {
     float3 normal = normalize(pNormal);
-    return abs(dot(vPoint - pPoint, normal));
+    return (dot(vPoint - pPoint, normal));
 }
 
 
@@ -199,6 +200,8 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
    
    float3 fanNormal_m = normalize(getReflectedVec(fanNormal));
    float3 fanPoint_m = getReflectedVec(fanPoint);
+   fanPoint_m.z += fY;
+   
    float  z = fY + 0.015;
    
    float3 queryPoint = float3(In.vsPos, z);
@@ -264,36 +267,34 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
        vm_k += s_k[k] * r_k[k] / (2 * PI * r * sqrt(p1_m)) * (K_M + (sqr(r) - sqr(r_k[k]) - sqr(z)) / p2_m * E_M);
    }
    
-   
-   float randRadialMagn = fbm(((g_fTime + 20145) / (1 /*+ 1 / g_fAngleSpeed*/)) + radial.xy * 10) - 0.1;
-   float randDistMagn = fbm(((g_fTime + 20145) / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10) - 0.1;
-   randRadialMagn = lerp(1, 2, randRadialMagn);
-   randDistMagn = lerp(1, 2, randDistMagn);
-   float randMagn = (randRadialMagn + randDistMagn) / 2;
-   
-   float randRadialMagn1 = fbm(((g_fTime + 1015) / (1 /*+ 1 / g_fAngleSpeed*/)) + radial.xy * 10)  - 0.1;
-   float randDistMagn1 = fbm(((g_fTime + 1015) / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10) - 0.1;
-   //randRadialMagn1 = lerp(1, g_fMaxFlowStrength, randRadialMagn1); 
-   //randDistMagn1 = lerp(1, g_fMaxFlowStrength, randDistMagn1);
-   float randMagn1 = (randRadialMagn1 + randDistMagn1) / 2;
-   
-   //float randDist = fbm((g_fTime / (1 + 1 / g_fAngleSpeed)) - float2(fDist, fDist) * 10);
-   //randDist = lerp(0.5, 1, randDist);
-   float arg = (g_fTime / 1);
-
-   float randDCompMagn = fbm(arg - float2(fDist, fDist) * 10) - 0.476;
-   float randRCompMagn = fbm(arg + radial.xy * 10) - 0.476;
-   float randCompMagn = (randDCompMagn + randRCompMagn) / 2;
-   
-   float randDCompMagn1 = fbm(arg - float2(fDist, fDist) * 10) - 0.476;
-   float randRCompMagn1 = fbm(arg + radial.xy * 10) - 0.476;
-   float randCompMagn1 = (randDCompMagn1 + randRCompMagn1) / 2;
-   
    float3 normalFlow   = -w_k  * fanNormal;
    float3 normalFlow_m = -wm_k * fanNormal_m;
    
    float3 radialFlow   = v_k  * radial;
    float3 radialFlow_m = vm_k * radial_m;
+
+   radial = normalize(queryPoint - fanPoint);
+   float time = g_fTime;
+   float randRadialMagn = fbm(((time + 20145) / (1 /*+ 1 / g_fAngleSpeed*/)) + radial.xy * 10) - 0.1;
+   float randDistMagn = fbm(((time + 20145) / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10) - 0.1;
+   randRadialMagn = lerp(1, 2, randRadialMagn);
+   randDistMagn = lerp(1, 2, randDistMagn);
+   float randMagn = (randRadialMagn + randDistMagn) / 2;
+   
+   float randRadialMagn1 = fbm(((time + 1015) / (1 /*+ 1 / g_fAngleSpeed*/)) + radial.xy * 10)  - 0.1;
+   float randDistMagn1 = fbm(((time + 1015) / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10) - 0.1;
+   float randMagn1 = (randRadialMagn1 + randDistMagn1) / 2;
+   
+   float arg = (time / 1);
+
+   float randDCompMagn = fbm(arg - float2(fDist, fDist) * 10) - 0.476;
+   float randRCompMagn = fbm(arg + radial.xy * 100) - 0.476;
+   float randCompMagn = (randDCompMagn + randRCompMagn) / 2;
+   
+   float randDCompMagn1 = fbm(arg - float2(fDist, fDist) * 10) - 0.476;
+   float randRCompMagn1 = fbm(arg + radial.xy * 100) - 0.476;
+   float randCompMagn1 = (randDCompMagn1 + randRCompMagn1) / 2;
+   
    
    float3 randComp = normalize(cross(normalFlow, radialFlow));
    randComp *= sqrt(length(normalFlow) * length(radialFlow));
