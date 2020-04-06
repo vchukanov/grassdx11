@@ -517,3 +517,9 @@ void Terrain::Render(void)
    m_pPass->Apply(0, m_pD3DDeviceCtx);
    m_pD3DDeviceCtx->DrawIndexed(m_uIndicesCount, 0, 0);
 }
+
+
+void Terrain::ApplyPass (void)
+{
+   m_pPass->Apply(0, m_pD3DDeviceCtx);
+}

@@ -216,16 +216,11 @@ void maths::PointArray::Transform (XMMATRIX &a_Mtx)
     for (i = 0; i < m_ArraySize; ++i)
     {
         (m_Array[i]) = maths::operator * ((m_Array[i]),  m);
-        //D3DXVec3Transform(&vOut, &m_Array[i], &a_Mtx);
-        /*m_Array[i].x = vOut.x;
-        m_Array[i].y = vOut.y;
-        m_Array[i].z = vOut.z;*/
     }
 }
 
 void maths::PointArray::CalcAABBox(AABox *a_Res)
 {
-    const int VEC_SIZE = 3;
     int i, j;
     a_Res->Min() =  m_Array[0];
     a_Res->Max() =  m_Array[0];

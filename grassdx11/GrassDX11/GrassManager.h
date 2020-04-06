@@ -148,6 +148,9 @@ public:
    void AddSubType         (const GrassPropsUnified &a_SubTypeData);
    void ClearSubTypes      (void);
 
+
+   void ApplyRenderPass (void) { m_pRenderPass->Apply(0, m_GrassState.pD3DDeviceCtx); }
+
    ID3DX11Effect* GetEffect (void);
    void           Render    (bool a_bShadowPass);
    void           Update    (float4x4 &a_mViewProj, float3 a_vCamPos, Mesh *a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime);

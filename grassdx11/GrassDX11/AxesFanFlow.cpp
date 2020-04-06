@@ -147,7 +147,7 @@ void AxesFanFlow::Update(void)
 
 void AxesFanFlow::MakeTextHistory (void)
 {
-   for (int i = (HISTORY_TEX_CNT - 1); i >= 0; i--) {
+   for (int i = (HISTORY_TEX_CNT - 2); i >= 0; i--) {
       m_pD3DDeviceCtx->CopySubresourceRegion(
          m_renderTargetTexture,
          D3D11CalcSubresource(0, i + 1, 1),

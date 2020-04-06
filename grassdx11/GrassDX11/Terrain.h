@@ -71,4 +71,5 @@ public:
     TerrainHeightData         *HeightDataPtr (void);//unsafe!
     void UpdateLightMap                      (void);
     void Render                              (void);
+    void ApplyPass                           (void);
 };
