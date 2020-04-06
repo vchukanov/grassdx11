@@ -6,6 +6,11 @@ cbuffer cEveryFrame
     float4x4 g_mWorld;
     float4x4 g_mViewProj;
     float4x4 g_mInvCamView;
+    
+    float4x4 g_mPrevWorld;
+    float4x4 g_mPrevViewProj;
+    float4x4 g_mPrevInvCamView;
+
     float4x4 g_mLightViewProj;
     float4x4 g_mNormalMatrix;
     float    g_fTime;
@@ -41,6 +46,8 @@ cbuffer cImmutable
 //--------------------------------------------------------------------------------------
 // Texture and samplers
 //--------------------------------------------------------------------------------------
+Texture2D g_txScene;
+Texture2D g_txVelocityMap;
 Texture2D g_txShadowMap;
 Texture2D g_txGrassDiffuse;
 Texture2D g_txMeshDiffuse;
@@ -77,8 +84,10 @@ struct TerrVSIn
 struct TerrPSIn
 {
     float4 vPos      : SV_Position;
-    float4 vShadowPos: TEXCOORD0;
-    float4 vTexCoord : TEXCOORD1;
+
+    float4 vShadowPos     : TEXCOORD0;
+    float4 vTexCoord      : TEXCOORD1;
+
     //float3 vNormal   : NORMAL;
 };
 
@@ -103,6 +112,14 @@ struct PSCarIn
     float3 world_pos : TEXCOORD1;
     float3 norm : NORMAL;
     float2 tex : TEXTURE0;
+};
+
+struct BlurPSIn
+{
+   float4 vPos : SV_Position;
+
+   float4 vPosition : POSITION0;
+   float4 vPrevPosition : POSITION1;
 };
 
 //--------------------------------------------------------------------------------------
@@ -189,10 +206,46 @@ TerrPSIn MeshVSMain( TerrVSIn Input )
 
 float4 MeshPSMain( TerrPSIn Input ): SV_Target
 {
-    float4 vTexel = g_txMeshDiffuse.Sample(g_samLinear, Input.vTexCoord.xy );
-    return vTexel;
+    float2 texelSize = (1.0 / 1600.0, 1.0 / 900.0);
+    float2 screenTexCoords = Input.vPos * texelSize;
+    screenTexCoords.x /= (1600.0 / 900.0);  // bug ??
+
+    float2 velocity = g_txVelocityMap.Sample(g_samLinear, screenTexCoords).xy;
+    velocity = pow(velocity * 2 - 1, 3.0);
+    velocity *= 0.1; //uVelocityScale;
+
+    float speed = length(velocity / texelSize);
+    int nSamples = clamp(int(speed), 1, 4);
+    
+    float4 oResult = g_txScene.Sample(g_samLinear, screenTexCoords);
+    for (int i = 1; i < nSamples; ++i) {
+       float2 offset = velocity * (float(i) / float(nSamples - 1) - 0.5);
+       oResult += g_txScene.Sample(g_samLinear, screenTexCoords + offset);
+    }
+    oResult /= float(nSamples);
+    
+    return oResult;
 }
 
+/* Blur shaders */
+BlurPSIn MeshVSBlur( TerrVSIn Input )
+{
+    BlurPSIn Output;
+    Output.vPosition = mul(mul(float4(Input.vPos, 1.0), g_mWorld), g_mViewProj);
+    Output.vPrevPosition = mul(mul(float4(Input.vPos, 1.0), g_mPrevWorld), g_mPrevViewProj);
+
+    Output.vPos = Output.vPosition;
+    return Output;    
+}
+
+
+float4 MeshPSBlur( BlurPSIn Input ): SV_Target
+{
+    float2 a = (Input.vPosition.xy / Input.vPosition.w) * 0.5 + 0.5;
+    float2 b = (Input.vPrevPosition.xy / Input.vPrevPosition.w) * 0.5 + 0.5;
+    float2 oVelocity = pow(abs(a - b), 1 / 3.0) * sign(a - b) * 0.5 + 0.5;
+    return float4(oVelocity.x, oVelocity.y, 0, 1);
+}
 
 /* Terrain shaders */
 
@@ -290,7 +343,7 @@ technique10 Render
         SetPixelShader( CompileShader( ps_4_0, TerrainPSMain() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );
         SetDepthStencilState( EnableDepthTestWrite, 0 );
-        //SetRasterizerState( EnableMSAACulling );
+        SetRasterizerState( EnableMSAACulling );
     }  
 
     pass RenderMeshPass
@@ -299,7 +352,7 @@ technique10 Render
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, MeshPSMain() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
-        //SetRasterizerState( EnableMSAA );
+        SetRasterizerState( EnableMSAA );
     }
 
     pass RenderLightMapPass
@@ -308,7 +361,17 @@ technique10 Render
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, LightMapPSMain() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
-        //SetRasterizerState( EnableMSAA );
+        SetRasterizerState( EnableMSAA );
+    }
+
+    
+    pass RenderVelocityPass
+    {
+        SetVertexShader( CompileShader( vs_4_0, MeshVSBlur() ) );
+        SetGeometryShader( NULL );
+        SetPixelShader( CompileShader( ps_4_0, MeshPSBlur() ) ); 
+        SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
+        SetRasterizerState( EnableMSAA );
     }
 }
 
@@ -330,6 +393,6 @@ technique10 RenderCar
         SetVertexShader( CompileShader( vs_5_0, VSCarmain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, PSCarmain0() ) ); 
-        //SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
+        SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
     }	
 }

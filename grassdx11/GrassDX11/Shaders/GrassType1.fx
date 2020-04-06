@@ -19,8 +19,14 @@ cbuffer cEveryFrame
 {
     float4x4 g_mWorld;
     float4x4 g_mViewProj;
+    
+    float4x4 g_mPrevWorld;
+    float4x4 g_mPrevViewProj;
+    float4x4 g_mPrevInvCamView;
+
     float4x4 g_mLightViewProj;
     float4x4 g_mInvCamView;
+
     float4x4 g_mView;
     float    g_fTime;
     /* pos and radius of B-spheres of the meshes */

@@ -1,6 +1,5 @@
 #include "AxesFanFlow.h"
 
-// TODO: move to other place to share accses
 
 AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DDeviceCtx, int textureWidth, int textureHeight, float a_fTerrRadius)
 {

@@ -19,10 +19,9 @@ public:
 
    ~AxesFan (void);
 
-   void Render (void);
+   void Render (bool isVelPass);
    void Update (float a_fElapsedTime);
    
-   void SetViewProjMtx (const float4x4& a_mViewProj);
    void SetPosition    (const float3& a_vPosition);
    void SetDirection   (const float3& a_vDirection);
    void SetR           (float a_fR);
@@ -37,9 +36,7 @@ private:
    ID3D11DeviceContext *m_pD3DDeviceCtx;
    
    ID3DX11EffectMatrixVariable* m_pTransformEMV;
-   ID3DX11EffectMatrixVariable* m_pViewProjEMV;
-
-   ID3DX11EffectMatrixVariable *m_pWorldEMV;
+   ID3DX11EffectMatrixVariable* m_pPrevTransformEMV;
 
    XMFLOAT3                     m_vPosition;
    XMFLOAT3                     m_vDirection;
@@ -54,6 +51,8 @@ private:
 
    ID3DX11Effect     *m_pEffect;
    ID3DX11EffectPass *m_pPass;
+   ID3DX11EffectPass* m_pVelPass;
+
    ID3D11Buffer      *m_pVertexBuffer = nullptr;
    
    UINT m_uVertexCount;
@@ -65,6 +64,7 @@ private:
 
    float m_fAngleVel;
    XMFLOAT4X4 m_mRot;
+   XMFLOAT4X4 m_mPrevRot;
 
    ID3DX11EffectScalarVariable* m_fScaleESV;
 };

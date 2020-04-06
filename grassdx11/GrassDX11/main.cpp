@@ -429,9 +429,10 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetWind()->GetMap(), 10);
    
-  // g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pShadowMapping->m_pSRV, 0.1 / 4);
+   //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pShadowMapping->m_pSRV, 0.1 / 4);
+   g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pSceneTex->GetShaderResourceView(), 0.5);
 
-   g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->GetFlowSRV(), 1);
+   //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->GetFlowSRV(), 1);
    
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, terr->HeightMapSRV(), 1);
    g_dbgWin->ToggleRender();
@@ -677,7 +678,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
    g_dbgWin->SetOrthoMtx(mOrtho);
    g_dbgWin->SetWorldMtx(mWorld);
    
-   g_dbgWin->Render(pd3dImmediateContext, 100, 100);
+   g_dbgWin->Render(pd3dImmediateContext, 0, 0);
    TurnZBufferOn(pd3dImmediateContext);
 
    // Copy it over because we can't resolve on present at the moment
@@ -952,7 +953,8 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
         swprintf_s(sStr, MAX_PATH, L"Dir: (%.2f,%.2f,%.2f)", g_vDir.x, g_vDir.y, g_vDir.z);
         g_HUD.GetStatic(IDC_FLOW_DIR_LABEL)->SetText(sStr);
         XM_TO_V(g_vDir, vDir, 3);
-        g_pGrassField->GetFlowManager()->SetDirection(vDir);
+        g_pGrassField->m_pFlowManager->SetDirection(vDir);
+        //g_pGrassField->m_pShadowMapping->UpdateLightDir(-vDir);
         break;
      }
    }

@@ -39,12 +39,14 @@ AxesFan::AxesFan (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceC
 
    ID3DX11EffectTechnique* pTechnique = a_pEffect->GetTechniqueByIndex(0);
    m_pPass = pTechnique->GetPassByName("RenderMeshPass");
+   m_pVelPass = pTechnique->GetPassByName("RenderVelocityPass");
    //m_pPass = pTechnique->GetPassByName("RenderAxesFan");
 
    CreateVertexBuffer();
 
    m_pTransformEMV = a_pEffect->GetVariableByName("g_mWorld")->AsMatrix();
-   m_pViewProjEMV = a_pEffect->GetVariableByName("g_mViewProj")->AsMatrix();
+   m_pPrevTransformEMV = a_pEffect->GetVariableByName("g_mPrevWorld")->AsMatrix();
+
    CreateInputLayout();
 
    XMStoreFloat4x4(&m_mRotation, XMMatrixIdentity());
@@ -102,13 +104,15 @@ void AxesFan::CreateInputLayout (void)
 }
 
 
-void AxesFan::Render()
+void AxesFan::Render(bool isVelPass)
 {
+   XM_TO_M(m_mRot, startRot);
+   XM_TO_M(m_mPrevRot, prevStartRot);
+
    for (int i = 0; i < m_iBladesNum; i++) {
       XM_TO_V(m_vPosition, pos, 3);
       XM_TO_V(m_vDirection, dir, 3);
-      XM_TO_M(m_mRot, startRot);
-
+     
       XMMATRIX mTr = XMMatrixTranslationFromVector(pos);
 
       float delta = PI / m_iBladesNum;
@@ -117,16 +121,32 @@ void AxesFan::Render()
       bladeM *= startRot;
       bladeM *= XMMatrixRotationY(delta * i);;
       bladeM *= XMMatrixRotationZ(PI / 2 - acos(dot(dir, create(1, 0, 0))));
-      bladeM *= XMMatrixRotationX(PI / 2- acos(dot(dir, create(0, 0, 1))));
+      bladeM *= XMMatrixRotationX(PI / 2 - acos(dot(dir, create(0, 0, 1))));
       bladeM *= mTr;
 
+      XMMATRIX prevBladeM = XMMatrixIdentity();
+      prevBladeM *= prevStartRot;
+      prevBladeM *= XMMatrixRotationY(delta * i);;
+      prevBladeM *= XMMatrixRotationZ(PI / 2 - acos(dot(dir, create(1, 0, 0))));
+      prevBladeM *= XMMatrixRotationX(PI / 2 - acos(dot(dir, create(0, 0, 1))));
+      prevBladeM *= mTr;
+
       M_TO_XM(bladeM, bladeTr);
+      M_TO_XM(prevBladeM, prevBladeTr);
 
       m_pTransformEMV->SetMatrix((float*)& bladeTr);
+      m_pPrevTransformEMV->SetMatrix((float*)& prevBladeTr);
+
       m_pD3DDeviceCtx->IASetInputLayout(m_pInputLayout);
       m_pD3DDeviceCtx->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &m_uVertexStride, &m_uVertexOffset);
       m_pD3DDeviceCtx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-      m_pPass->Apply(0, m_pD3DDeviceCtx);
+
+      if (isVelPass) {
+         m_pVelPass->Apply(0, m_pD3DDeviceCtx);
+      } else {
+         m_pPass->Apply(0, m_pD3DDeviceCtx);
+      }
+
       m_pD3DDeviceCtx->Draw(m_uVertexCount, 0);
    }
 }
@@ -135,15 +155,11 @@ void AxesFan::Render()
 void AxesFan::Update (float a_fElapsedTime)
 {
    XM_TO_M(m_mRot, startRot);
+   
+   m_mPrevRot = m_mRot;
    startRot = mul(XMMatrixRotationY(a_fElapsedTime * m_fAngleVel), startRot);
+   
    XMStoreFloat4x4(&m_mRot, startRot);
-}
-
-
-
-void AxesFan::SetViewProjMtx (const float4x4& a_mViewProj)
-{ 
-   m_pViewProjEMV->SetMatrix((float*)& a_mViewProj);
 }
 
 

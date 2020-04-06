@@ -43,9 +43,9 @@ void FlowManager::Update (float a_fElapsedTime, float a_fTime)
    m_pAxesFan->Update(a_fElapsedTime);
 }
 
-void FlowManager::RenderFan (void)
+void FlowManager::RenderFan (bool isVelPass)
 {
-   m_pAxesFan->Render();
+   m_pAxesFan->Render(isVelPass);
 }
 
 

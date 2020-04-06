@@ -40,7 +40,13 @@ float4 PS( DebugWindowPSIn In ): SV_Target
    float4 color = g_texture.SampleLevel(g_samLinear, float3(In.vTexCoord, g_iArraySlice), 0) * 10;
    float gray = (abs(color.r) + abs(color.g) + abs(color.b)) / 3;
   // return float4(gray, gray, gray, 1);
-   
+    float2 texelSize = (1.0 / 1600.0, 1.0 / 900.0);
+    float2 screenTexCoords = In.vPos * texelSize;
+    screenTexCoords.x /= 2;
+    //screenTexCoords = 0.5f * float2(screenTexCoords.x,-screenTexCoords.y) + 0.5f;
+
+    return g_texture.SampleLevel(g_samPoint, float3(screenTexCoords, 0), 0);
+  
    return g_texture.SampleLevel(g_samLinear, float3(In.vTexCoord, g_iArraySlice), 0) * 10;
 }
 

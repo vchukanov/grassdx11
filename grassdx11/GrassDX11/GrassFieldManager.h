@@ -15,6 +15,7 @@
 #include "ShadowMapping.h"
 #include "GrassTrack.h"
 
+#include "VelocityMap.h"
 
 enum
 {
@@ -42,9 +43,10 @@ public:
    float                       m_fTerrRadius;
 
    
-   Wind                       *m_pWind;
-   LiSPSM                     *m_pShadowMapping;
-   
+   Wind                          *m_pWind;
+   LiSPSM                        *m_pShadowMapping;
+   VelocityMap                   *m_pVelocityMap;
+   VelocityMap                   *m_pSceneTex;
    FlowManager                   *m_pFlowManager;
 
 private:
@@ -58,10 +60,19 @@ private:
    ID3DX11EffectMatrixVariable *m_pViewProjEMV[GrassTypeNum + 1];
    ID3DX11EffectMatrixVariable *m_pViewEMV[GrassTypeNum];
    ID3DX11EffectMatrixVariable *m_pInvView[3];                      //only 1, 2 grass types and terrain
+
+   ID3DX11EffectMatrixVariable* m_pPrevViewProjEMV[GrassTypeNum + 1];
+   ID3DX11EffectMatrixVariable* m_pPrevViewEMV[GrassTypeNum];
+   ID3DX11EffectMatrixVariable* m_pPrevInvView[3];                      //only 1, 2 grass types and terrain
+
+
    ID3DX11EffectScalarVariable *m_pTerrRadiusESV[3];                //only 1, 2 grass types and terrain
    ID3DX11EffectScalarVariable *m_pHeightScale[GrassTypeNum + 1];
    ID3DX11EffectMatrixVariable *m_pLightViewProjEMV[GrassTypeNum + 1];
    ID3DX11EffectShaderResourceVariable *m_pShadowMapESRV[GrassTypeNum + 1];
+   ID3DX11EffectShaderResourceVariable* m_pVelocityMapESRV[GrassTypeNum + 1];
+   ID3DX11EffectShaderResourceVariable* m_pSceneTxESRV[GrassTypeNum + 1];
+
    ID3DX11EffectVectorVariable *m_pLightDirEVV[GrassTypeNum + 1];
    ID3DX11EffectVectorVariable *m_pTerrRGBEVV[3];
    ID3DX11EffectVectorVariable *m_pFogColorEVV[3];
@@ -80,7 +91,14 @@ private:
    float4x4                    *m_pView;
    float4x4                    *m_pProj;
    float4x4                     m_mInvView;
-   float4x4                    *m_pViewProj;
+   float4x4                    *m_pViewProj = NULL;
+
+   float4x4* m_pPrevView;
+   float4x4* m_pPrevProj;
+   float4x4  m_mPrevInvView;
+   float4x4* m_pPrevViewProj = NULL;
+
+
    float3                       m_vCamDir;
    float3                       m_vCamPos;
    GrassTracker                *m_pGrassTracker;

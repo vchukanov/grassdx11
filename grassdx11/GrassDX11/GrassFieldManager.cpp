@@ -16,7 +16,8 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
 
    if (pErrorBlob)
    {
-      errStr = static_cast<char*>(pErrorBlob->GetBufferPointer());
+      OutputDebugStringA(reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()));
+      pErrorBlob->Release();
    }
 
    /* Shadow mapping unit */
@@ -72,6 +73,8 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
 
    m_pShadowMapping = new LiSPSM(4096 * 4, 4096 * 4, a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx);
 
+   m_pVelocityMap = new VelocityMap(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx);
+   m_pSceneTex = new VelocityMap(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx);
 
    /* ...and lots of variables... */
    ID3DX11EffectShaderResourceVariable* pESRV;
@@ -85,6 +88,10 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
          continue;
       m_pViewProjEMV[i] = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_mViewProj")->AsMatrix();
       m_pViewEMV[i] = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_mView")->AsMatrix();
+      
+      m_pPrevViewProjEMV[i] = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_mPrevViewProj")->AsMatrix();
+      m_pPrevViewEMV[i] = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_mPrevView")->AsMatrix();
+
       m_pMeshesEVV[i] = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_vMeshSpheres")->AsVector();
       m_pHardness[i] = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_fHardness")->AsScalar();
       m_pSegMass[i] = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_fMass")->AsScalar();
@@ -94,6 +101,8 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
       m_pLightDirEVV[i]->SetFloatVector((float*)& vLightDir);
 
       m_pShadowMapESRV[i] = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_txShadowMap")->AsShaderResource();
+      m_pVelocityMapESRV[i] = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_txVelocityMap")->AsShaderResource();
+
       m_pLightViewProjEMV[i] = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_mLightViewProj")->AsMatrix();
       pESRV = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_txWindTex")->AsShaderResource();
       pESRV->SetResource(m_pWind->GetMap());
@@ -124,12 +133,22 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
    m_pFogColorEVV[1] = m_pGrassTypes[2]->GetEffect()->GetVariableByName("g_vFogColor")->AsVector();
    m_pFogColorEVV[2] = m_pSceneEffect->GetVariableByName("g_vFogColor")->AsVector();
    m_pViewProjEMV[GrassTypeNum] = m_pSceneEffect->GetVariableByName("g_mViewProj")->AsMatrix();
+   m_pPrevViewProjEMV[GrassTypeNum] = m_pSceneEffect->GetVariableByName("g_mPrevViewProj")->AsMatrix();
+
    m_pInvView[0] = m_pGrassTypes[0]->GetEffect()->GetVariableByName("g_mInvCamView")->AsMatrix();
    m_pInvView[1] = m_pGrassTypes[2]->GetEffect()->GetVariableByName("g_mInvCamView")->AsMatrix();
    m_pInvView[2] = m_pSceneEffect->GetVariableByName("g_mInvCamView")->AsMatrix();
+   
+   m_pPrevInvView[0] = m_pGrassTypes[0]->GetEffect()->GetVariableByName("g_mPrevInvCamView")->AsMatrix();
+   m_pPrevInvView[1] = m_pGrassTypes[2]->GetEffect()->GetVariableByName("g_mPrevInvCamView")->AsMatrix();
+   m_pPrevInvView[2] = m_pSceneEffect->GetVariableByName("g_mPrevInvCamView")->AsMatrix();
+
    m_pHeightScale[GrassTypeNum] = m_pSceneEffect->GetVariableByName("g_fHeightScale")->AsScalar();
    m_pTime = m_pSceneEffect->GetVariableByName("g_fTime")->AsScalar();
    m_pShadowMapESRV[GrassTypeNum] = m_pSceneEffect->GetVariableByName("g_txShadowMap")->AsShaderResource();
+   m_pVelocityMapESRV[GrassTypeNum] = m_pSceneEffect->GetVariableByName("g_txVelocityMap")->AsShaderResource();
+   m_pSceneTxESRV[GrassTypeNum] = m_pSceneEffect->GetVariableByName("g_txScene")->AsShaderResource();
+
    m_pLightViewProjEMV[GrassTypeNum] = m_pSceneEffect->GetVariableByName("g_mLightViewProj")->AsMatrix();
    m_pLightDirEVV[GrassTypeNum] = m_pSceneEffect->GetVariableByName("vLightDir")->AsVector();
    m_pLightDirEVV[GrassTypeNum]->SetFloatVector((float*)& vLightDir);
@@ -214,6 +233,7 @@ GrassFieldManager::~GrassFieldManager(void)
    delete m_pTerrain;
    delete m_pWind;
    delete m_pShadowMapping;
+   delete m_pVelocityMap;
    delete m_pGrassTracker;
 
    delete m_pT1SubTypes;
@@ -327,35 +347,41 @@ void GrassFieldManager::SetWindSpeed(float a_fWindSpeed)
 void GrassFieldManager::SetViewMtx(float4x4& a_mView)
 {
    UINT i;
+   m_pPrevView = m_pView;
    m_pView = &a_mView;
 
+   m_mPrevInvView = m_mInvView;
    m_mInvView = inverse(a_mView);
 
    for (i = 0; i < GrassTypeNum; i++)
    {
       if (i == 1)
          continue;
+      m_pPrevViewEMV[i]->SetMatrix((float*)& m_pPrevView);
       m_pViewEMV[i]->SetMatrix((float*)& a_mView);
    }
 }
 
 void GrassFieldManager::SetProjMtx(float4x4& a_mProj)
 {
+   m_pPrevProj = m_pProj;
    m_pProj = &a_mProj;
 }
 
 void GrassFieldManager::SetViewProjMtx(float4x4& a_mViewProj)
 {
    UINT i;
+   m_pPrevViewProj = m_pViewProj;
    m_pViewProj = &a_mViewProj;
    for (i = 0; i <= GrassTypeNum; i++)
    {
       if (i == 1)
          continue;
+      if (m_pPrevViewProj != NULL) {
+         m_pPrevViewProjEMV[i]->SetMatrix((float*)& m_pPrevViewProj);
+      }
       m_pViewProjEMV[i]->SetMatrix((float*)& a_mViewProj);
    }
-
-   m_pFlowManager->m_pAxesFan->SetViewProjMtx(a_mViewProj);
 }
 
 void GrassFieldManager::SetTime(float a_fTime)
@@ -460,11 +486,17 @@ void GrassFieldManager::Render()
    float *pLightVP;
    m_pShadowMapping->UpdateMtx(*m_pView, *m_pProj, m_vCamPos, m_vCamDir );
    XMMATRIX m = m_pShadowMapping->GetViewProjMtx();
+   XMMATRIX minverse = inverse(m);
    pLightVP = (float*)& m;
+
 
    m_pInvView[0]->SetMatrix((float*)& m_mInvView);
    m_pInvView[1]->SetMatrix((float*)& m_mInvView);
    m_pInvView[2]->SetMatrix((float*)& m_mInvView);
+
+   m_pPrevInvView[0]->SetMatrix((float*)& m_mPrevInvView);
+   m_pPrevInvView[1]->SetMatrix((float*)& m_mPrevInvView);
+   m_pPrevInvView[2]->SetMatrix((float*)& m_mPrevInvView);
 
     //Current camera (lightsrc) viewproj and lightviewproj (for future stream output) */
     for (i = 0; i <= GrassTypeNum; i++)
@@ -494,6 +526,8 @@ void GrassFieldManager::Render()
     }
     m_pFlowManager->RenderFan();
     SetViewMtx(tmp);
+
+
     //m_pTerrain->Render();
     ID3D11ShaderResourceView *pSRV = m_pShadowMapping->EndShadowMapPass( );
  
@@ -503,7 +537,10 @@ void GrassFieldManager::Render()
        if (i == 1) {
           continue;
        }
-        m_pViewProjEMV[i]->SetMatrix( ( float* )m_pViewProj );
+       if (m_pPrevViewProj != NULL) {
+          m_pPrevViewProjEMV[i]->SetMatrix((float*)m_pPrevViewProj);
+       }
+       m_pViewProjEMV[i]->SetMatrix( ( float* )m_pViewProj );
         //m_pLightViewProjEMV[i]->SetMatrix( pLightVP );
         m_pShadowMapESRV[i]->SetResource(pSRV);
     }
@@ -516,9 +553,30 @@ void GrassFieldManager::Render()
       m_pGrassTypes[2]->Render(false);
    }
 
+   ID3D11ShaderResourceView* pVelSRV = NULL;
+   ID3D11ShaderResourceView* pSceneSRV = NULL;
+   {
+      m_pSceneTex->BeginVelocityMap();
+
+      m_pTerrain->Render();
+      m_pGrassTypes[0]->Render(false);
+      m_pGrassTypes[2]->Render(false);
+      m_pFlowManager->RenderFan();
+      
+      pSceneSRV = m_pSceneTex->EndVelocityMap();
+      m_pSceneTxESRV[GrassTypeNum]->SetResource(pSceneSRV);
+
+      m_pVelocityMap->BeginVelocityMap();
+      m_pFlowManager->RenderFan(true);
+      pVelSRV = m_pVelocityMap->EndVelocityMap();
+      m_pVelocityMapESRV[GrassTypeNum]->SetResource(pVelSRV);
+   }
+
    m_pFlowManager->RenderFan();
 
+   m_pVelocityMapESRV[GrassTypeNum]->SetResource(NULL);
    m_pShadowMapESRV[GrassTypeNum]->SetResource(NULL);
+   m_pSceneTxESRV[GrassTypeNum]->SetResource(NULL);
 }
 
 void GrassFieldManager::Update (float3 a_vCamDir, float3 a_vCamPos, Mesh* a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime, float a_fTime)

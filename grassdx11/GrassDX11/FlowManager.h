@@ -15,7 +15,7 @@ public:
    void CreateAxesFan (const XMFLOAT3& a_vPosition);
 
    void Update    (float a_fElapsedTime, float a_fTime);
-   void RenderFan (void);
+   void RenderFan (bool isVelPass = false);
 
    ID3D11ShaderResourceView* GetFlowSRV (void) { return m_pAxesFanFlow->GetShaderResourceView(); }
 
