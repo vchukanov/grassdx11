@@ -19,6 +19,7 @@ cbuffer cAxesFanSettings
 
 static const float PI = 3.14159265f;
 
+Texture2D g_txAxesFanFlowPre;
 Texture2D g_txNoise;
 Texture2D g_txHeightMap;
 
@@ -316,7 +317,11 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
    Out.xz = flow.yx;
    Out.z = -Out.z;
    
-   return Out;
+   float2 fieldCoord = In.vTexCoord.xy;
+   fieldCoord.y *= -1;
+   float4 curField = g_txAxesFanFlowPre.SampleLevel(g_samPoint, float3(fieldCoord, 0), 0);
+
+   return Out + curField;
 }
 
 

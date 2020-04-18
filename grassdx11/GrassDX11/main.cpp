@@ -412,15 +412,13 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    float height_scale, grass_radius;
    Terrain* const terr = g_pGrassField->GetTerrain(&height_scale, &grass_radius);
    
+   // Setup global flow parameters (some of them unused, just for debug)
    g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxFlowStrength);
-   g_pGrassField->GetFlowManager()->SetFanRadius(g_fFanRadius / 2);
    g_pGrassField->GetFlowManager()->SetDeltaSlices(g_fDeltaSlices);
    g_pGrassField->GetFlowManager()->SetShift(g_fShift);
-   g_pGrassField->GetFlowManager()->SetAngleSpeed(g_fAngleSpeed);
    g_pGrassField->GetFlowManager()->m_pAxesFanFlow->SetHeightMap(terr->HeightMapSRV());
    g_pGrassField->GetFlowManager()->m_pAxesFanFlow->SetHeightScale(g_fHeightScale);
    //InitMeshes(pd3dDevice);
-   
    
    g_Camera = new LandscapeCamera(g_fCameraHeight, terr, height_scale, grass_radius);
    
@@ -430,9 +428,9 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetWind()->GetMap(), 10);
    
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pShadowMapping->m_pSRV, 0.1 / 4);
-   g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pSceneTex->GetShaderResourceView(), 0.5);
+   //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pSceneTex->GetShaderResourceView(), 0.5);
 
-   //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->GetFlowSRV(), 1);
+   g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->m_pAxesFanFlow->m_shaderResourceView, 1);
    
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, terr->HeightMapSRV(), 1);
    g_dbgWin->ToggleRender();
@@ -596,7 +594,9 @@ void RenderGrass(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dDeviceCtx, X
    // Draw Grass
    XMVECTOR vCamDir = g_Camera->GetLookAtPt() - g_Camera->GetEyePt();
    if (g_RotCamController.isFixed) {
-      g_pGrassField->GetFlowManager()->SetTransform(g_Camera->GetEyePt() + g_RotCamController.delta);
+      XMVECTOR pos = (g_Camera->GetEyePt() + g_RotCamController.delta);
+      V_TO_XM(pos, xpos, 3);
+      g_pGrassField->GetFlowManager()->fans[0].position = xpos;
    }
 
    g_pGrassField->Update(vCamDir, g_Camera->GetEyePt(), g_pMeshes, 0/*g_fNumOfMeshes*/, a_fElapsedTime, g_fTime);
@@ -869,7 +869,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
      case IDC_FIX_CAMERA:
         g_RotCamController.isFixed = !g_RotCamController.isFixed;
         if (g_RotCamController.isFixed) {
-           g_RotCamController.delta = g_pGrassField->GetFlowManager()->GetPosition() - g_Camera->GetEyePt();
+           XMFLOAT3 position = g_pGrassField->GetFlowManager()->fans[0].position;
+           XM_TO_V(position, pos, 3);
+           g_RotCamController.delta = pos - g_Camera->GetEyePt();
         }
         break;
 
@@ -896,7 +898,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
         g_fFanRadius = (float)g_HUD.GetSlider(IDC_FAN_RADIUS_SLYDER)->GetValue() / 100.0f;
         swprintf_s(sStr, MAX_PATH, L"Fan Radius: %.4f", g_fFanRadius * 2);
         g_HUD.GetStatic(IDC_FAN_RADIUS_LABEL)->SetText(sStr);
-        g_pGrassField->GetFlowManager()->SetFanRadius(g_fFanRadius * 2);
+        g_pGrassField->GetFlowManager()->fans[0].radius = g_fFanRadius * 2;
         break;
      }
 
@@ -924,7 +926,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
         g_fAngleSpeed = (float)g_HUD.GetSlider(IDC_FAN_ANGLE_SPEED_SLYDER)->GetValue();
         swprintf_s(sStr, MAX_PATH, L"Angle Speed: %.4f", g_fAngleSpeed);
         g_HUD.GetStatic(IDC_FAN_ANGLE_SPEED_LABEL)->SetText(sStr);
-        g_pGrassField->GetFlowManager()->SetAngleSpeed(g_fAngleSpeed);
+        g_pGrassField->GetFlowManager()->fans[0].angleSpeed = g_fAngleSpeed;
         break;
      }
 
@@ -952,9 +954,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
         g_vDir.z = (float)g_HUD.GetSlider(IDC_FLOW_DIR_Z_SLYDER)->GetValue() / 100.0f;
         swprintf_s(sStr, MAX_PATH, L"Dir: (%.2f,%.2f,%.2f)", g_vDir.x, g_vDir.y, g_vDir.z);
         g_HUD.GetStatic(IDC_FLOW_DIR_LABEL)->SetText(sStr);
-        XM_TO_V(g_vDir, vDir, 3);
-        g_pGrassField->m_pFlowManager->SetDirection(vDir);
-        //g_pGrassField->m_pShadowMapping->UpdateLightDir(-vDir);
+        g_pGrassField->m_pFlowManager->fans[0].direction = g_vDir;
         break;
      }
    }

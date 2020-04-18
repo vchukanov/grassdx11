@@ -31,6 +31,9 @@ AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DD
    // Create the render target texture.
    m_pD3DDevice->CreateTexture2D(&textureDesc, NULL, &m_renderTargetTexture);
 
+   textureDesc.ArraySize = 1;
+   m_pD3DDevice->CreateTexture2D(&textureDesc, NULL, &m_renderTargetTexturePre);
+
    // Setup the description of the render target view.
    renderTargetViewDesc.Format = textureDesc.Format;
    renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
@@ -52,6 +55,9 @@ AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DD
    // Create the shader resource view.
    m_pD3DDevice->CreateShaderResourceView(m_renderTargetTexture, &shaderResourceViewDesc, &m_shaderResourceView);
    
+   shaderResourceViewDesc.Texture2DArray.ArraySize = 1;
+   m_pD3DDevice->CreateShaderResourceView(m_renderTargetTexturePre, &shaderResourceViewDesc, &m_shaderResourceViewPre);
+
    /* Loading effect */
    ID3DBlob* pErrorBlob = nullptr;
    D3DX11CompileEffectFromFile(L"Shaders/AxesFanFlow.fx",
@@ -83,6 +89,8 @@ AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DD
    m_pDeltaSlicesESV = m_pEffect->GetVariableByName("g_fDeltaSlices")->AsScalar();;
    m_pShiftESV = m_pEffect->GetVariableByName("g_fShift")->AsScalar();
    m_pAngleSpeedESV = m_pEffect->GetVariableByName("g_fAngleSpeed")->AsScalar();
+
+   m_pFieldPreSRV = m_pEffect->GetVariableByName("g_txAxesFanFlowPre")->AsShaderResource();
 
    m_uVertexStride = sizeof(AxesFanFlowVertex);
    m_uVertexOffset = 0;
@@ -138,9 +146,70 @@ ID3D11ShaderResourceView* AxesFanFlow::GetShaderResourceView(void)
 }
 
 
-void AxesFanFlow::Update(void)
+void AxesFanFlow::BeginMakeFlowTexture (void)
 {
-   MakeFlowTexture();
+   // Saving render targets
+  UINT NumV = 1;
+
+   m_pD3DDeviceCtx->RSGetViewports(&NumV, &m_OrigVP);
+
+   m_ViewPort = m_OrigVP;
+   m_ViewPort.Height = m_width;
+   m_ViewPort.Width = m_height;
+
+   m_pD3DDeviceCtx->RSSetViewports(1, &m_ViewPort);
+   m_pD3DDeviceCtx->OMGetRenderTargets(1, &m_pOrigRTV, &m_pOrigDSV);
+   m_pD3DDeviceCtx->RSGetState(&m_pOrigRS);
+
+   SetRenderTarget(NULL);
+   ClearRenderTarget(NULL);
+
+   CopyField();
+}
+
+
+void AxesFanFlow::CreateFlow (void)
+{
+   /* Executing rendering */
+   m_pFieldPreSRV->SetResource(m_shaderResourceViewPre);
+
+   m_pD3DDeviceCtx->IASetInputLayout(m_pInputLayout);
+   m_pD3DDeviceCtx->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &m_uVertexStride, &m_uVertexOffset);
+   m_pD3DDeviceCtx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+   m_pPass->Apply(0, m_pD3DDeviceCtx);
+   m_pD3DDeviceCtx->Draw(4, 0);
+
+   m_pFieldPreSRV->SetResource(NULL);
+   m_pPass->Apply(0, m_pD3DDeviceCtx);
+
+   CopyField();
+}
+
+
+void AxesFanFlow::CopyField (void) 
+{
+   m_pD3DDeviceCtx->CopySubresourceRegion(
+      m_renderTargetTexturePre,
+      D3D11CalcSubresource(0, 0, 1),
+      0, 0, 0,
+      m_renderTargetTexture,
+      D3D11CalcSubresource(0, 0, 1),
+      NULL
+   );
+}
+
+
+void AxesFanFlow::EndMakeFlowTexture (void)
+{
+   /* Reverting changes */
+   m_pD3DDeviceCtx->OMSetRenderTargets(1, &m_pOrigRTV, m_pOrigDSV);
+   m_pD3DDeviceCtx->RSSetViewports(1, &m_OrigVP);
+
+   SAFE_RELEASE(m_pOrigRTV);
+   SAFE_RELEASE(m_pOrigDSV);
+   SAFE_RELEASE(m_pOrigRS);
+
+   MakeTextHistory();
 }
 
 
@@ -156,46 +225,6 @@ void AxesFanFlow::MakeTextHistory (void)
          NULL
       );
    }
-}
-
-
-void AxesFanFlow::MakeFlowTexture(void)
-{
-   // Saving render targets
-   ID3D11RenderTargetView* pOrigRT;
-   ID3D11DepthStencilView* pOrigDS;
-   D3D11_VIEWPORT          OrigViewPort[1];
-   D3D11_VIEWPORT          ViewPort[1];
-   UINT                    NumV = 1;
-
-   m_pD3DDeviceCtx->RSGetViewports(&NumV, OrigViewPort);
-
-   ViewPort[0] = OrigViewPort[0];
-   ViewPort[0].Height = m_width;
-   ViewPort[0].Width = m_height;
-
-   m_pD3DDeviceCtx->RSSetViewports(1, ViewPort);
-
-   m_pD3DDeviceCtx->OMGetRenderTargets(1, &pOrigRT, &pOrigDS);
-
-   SetRenderTarget(NULL);
-   ClearRenderTarget(NULL);
-
-   /* Executing rendering */
-   m_pD3DDeviceCtx->IASetInputLayout(m_pInputLayout);
-   m_pD3DDeviceCtx->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &m_uVertexStride, &m_uVertexOffset);
-   m_pD3DDeviceCtx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-   m_pPass->Apply(0, m_pD3DDeviceCtx);
-   m_pD3DDeviceCtx->Draw(4, 0);
-
-   /* Reverting changes */
-   m_pD3DDeviceCtx->OMSetRenderTargets(1, &pOrigRT, pOrigDS);
-   m_pD3DDeviceCtx->RSSetViewports(NumV, OrigViewPort);
-
-   SAFE_RELEASE(pOrigRT);
-   SAFE_RELEASE(pOrigDS);
-
-   MakeTextHistory();
 }
 
 
@@ -297,7 +326,7 @@ void AxesFanFlow::SetMaxFlowStrength (float a_fValue)
 
 void AxesFanFlow::SetFanRadius(float a_fValue)
 {
-   m_pFanRadiusESV->SetFloat(a_fValue);
+   m_pFanRadiusESV->SetFloat(a_fValue / m_fTerrRadius);
 }
 
 

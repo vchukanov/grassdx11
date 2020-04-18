@@ -4,6 +4,8 @@
 
 #include "includes.h"
 
+struct AxesFanDesc;
+
 class AxesFan {
 
 private:
@@ -14,8 +16,7 @@ private:
    };
 
 public:
-   AxesFan  (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3DX11Effect* a_pEffect,
-         int a_iBladesNum, float a_fBladeSize, float angleVel = 1.0f);
+   AxesFan  (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3DX11Effect* a_pEffect, AxesFanDesc* desc);
 
    ~AxesFan (void);
 

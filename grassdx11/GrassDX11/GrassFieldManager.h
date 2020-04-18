@@ -47,7 +47,9 @@ public:
    LiSPSM                        *m_pShadowMapping;
    VelocityMap                   *m_pVelocityMap;
    VelocityMap                   *m_pSceneTex;
+
    FlowManager                   *m_pFlowManager;
+   std::vector<int>               fansIds;
 
 private:
    GrassManager               *m_pGrassTypes[GrassTypeNum];

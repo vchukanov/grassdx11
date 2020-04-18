@@ -44,8 +44,10 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
       m_pNoiseESV
    );
 
-   m_pFlowManager->CreateAxesFan(XMFLOAT3(88, 17, -98));
-   
+   //TODO: this code must move to copter code
+   fansIds.push_back(m_pFlowManager->CreateAxesFan(XMFLOAT3(88, 17, -98)));
+   fansIds.push_back(m_pFlowManager->CreateAxesFan(XMFLOAT3(108, 17, -98)));
+
 #pragma omp parallel sections 
    {
 #pragma omp section
@@ -524,7 +526,7 @@ void GrassFieldManager::Render()
         }
         m_pGrassTypes[i]->Render(true);
     }
-    m_pFlowManager->RenderFan();
+    m_pFlowManager->RenderFans();
     SetViewMtx(tmp);
 
 
@@ -561,18 +563,18 @@ void GrassFieldManager::Render()
       m_pTerrain->Render();
       m_pGrassTypes[0]->Render(false);
       m_pGrassTypes[2]->Render(false);
-      m_pFlowManager->RenderFan();
+      m_pFlowManager->RenderFans();
       
       pSceneSRV = m_pSceneTex->EndVelocityMap();
       m_pSceneTxESRV[GrassTypeNum]->SetResource(pSceneSRV);
 
       m_pVelocityMap->BeginVelocityMap();
-      m_pFlowManager->RenderFan(true);
+      m_pFlowManager->RenderFans(true);
       pVelSRV = m_pVelocityMap->EndVelocityMap();
       m_pVelocityMapESRV[GrassTypeNum]->SetResource(pVelSRV);
    }
 
-   m_pFlowManager->RenderFan();
+   m_pFlowManager->RenderFans();
 
    m_pVelocityMapESRV[GrassTypeNum]->SetResource(NULL);
    m_pShadowMapESRV[GrassTypeNum]->SetResource(NULL);

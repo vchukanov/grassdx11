@@ -8,86 +8,106 @@ FlowManager::FlowManager (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3
    , m_Effect(a_Effect)
    , m_NoiseSRV(a_NoiseSRV)
 {
+   m_pAxesFanFlow = new AxesFanFlow(m_pD3DDevice, m_pD3DDeviceCtx, FLOW_TEX_SIZE, FLOW_TEX_SIZE, m_fTerrRadius);
+   m_pAxesFanFlow->SetRingsNumber(16);
 }
+
 
 FlowManager::~FlowManager(void)
 {
-   SAFE_DELETE(m_pAxesFan);
-   SAFE_DELETE(m_pAxesFanFlow);
+   for (auto& fan : fans) {
+      SAFE_DELETE(fan.pAxesFan);
+      SAFE_DELETE(fan.pAxesFanFlow);
+   }
 }
 
 
-void FlowManager::CreateAxesFan (const XMFLOAT3& a_vPosition)
+int FlowManager::CreateAxesFan (const XMFLOAT3& a_vPosition)
 {
-   float angleVel = 0.0f;
-   float bladeSize = 10.0f;
-   int   bladesNum = 2;
+   const float bladeSize = 10.0f;
+   const int   bladesNum = 2;
 
-   m_pAxesFanFlow = new AxesFanFlow(m_pD3DDevice, m_pD3DDeviceCtx, m_uFlowTexSize, m_uFlowTexSize, m_fTerrRadius);
-   m_pAxesFanFlow->SetNoise(m_NoiseSRV);
-   m_pAxesFanFlow->SetFanRadius(bladeSize / m_fTerrRadius);
-   m_pAxesFanFlow->SetRingsNumber(16);
-   XM_TO_V(a_vPosition, pos, 3);
-   
-   m_pAxesFan = new AxesFan(m_pD3DDevice, m_pD3DDeviceCtx, m_Effect, bladesNum, bladeSize, angleVel);
-   
-   SetDirection(create(0, -1, 0));
-   SetTransform(pos);
+   AxesFanDesc fan;
+   fan.pFlowManager = this;
+   fan.pAxesFanFlow = m_pAxesFanFlow;
+   fan.pAxesFan = new AxesFan(m_pD3DDevice, m_pD3DDeviceCtx, m_Effect, &fan);
+
+   fans.push_back(fan);
+   return fans.size() - 1;
 }
 
 
 void FlowManager::Update (float a_fElapsedTime, float a_fTime)
 {
    m_pAxesFanFlow->SetTime(a_fTime);
-   m_pAxesFanFlow->Update();
-   m_pAxesFan->Update(a_fElapsedTime);
+
+   for (auto& fan : fans) {
+      fan.pAxesFan->Update(a_fElapsedTime);
+   }
+
+   m_pAxesFanFlow->BeginMakeFlowTexture();
+
+   for (auto& fan : fans) {
+      fan.Setup();
+      m_pAxesFanFlow->CreateFlow();
+   }
+
+   m_pAxesFanFlow->EndMakeFlowTexture();
 }
 
-void FlowManager::RenderFan (bool isVelPass)
+
+void FlowManager::RenderFans (bool isVelPass)
 {
-   m_pAxesFan->Render(isVelPass);
+   for (auto& fan : fans) {
+      fan.Setup();
+      fan.pAxesFan->Render(isVelPass);
+   }
 }
 
 
-void FlowManager::SetFanRadius (float a_fR)
+ID3D11ShaderResourceView* FlowManager::GetFlowSRV (void)
+{ 
+   return m_pAxesFanFlow->GetShaderResourceView();
+}
+
+
+
+void FlowManager::SetMaxHorizFlow (float a_fMaxFlowStrength) 
 {
-   m_pAxesFanFlow->SetFanRadius(a_fR / m_fTerrRadius);
-   m_pAxesFan->SetR(a_fR);
+   m_pAxesFanFlow->SetMaxFlowStrength(a_fMaxFlowStrength); 
 }
 
 
-void FlowManager::SetDeltaSlices(float a_fDeltaSlices)
+
+void FlowManager::SetDeltaSlices (float a_fDeltaSlices)
 {
    m_pAxesFanFlow->SetDeltaSlices(a_fDeltaSlices); 
 }
 
 
-void FlowManager::SetShift(float a_fShift) 
+void FlowManager::SetShift (float a_fShift) 
 {
    m_pAxesFanFlow->SetShift(a_fShift); 
 }
 
 
-void FlowManager::SetDirection(const float3& a_vDir)
+void AxesFanDesc::Setup (void)
 {
-   m_pAxesFanFlow->SetDirection(a_vDir);
-   m_pAxesFan->SetDirection(a_vDir);
-}
+   // setup position
+   XM_TO_V(position, pos, 3);
+   pAxesFanFlow->SetPosition(pos);
+   pAxesFan->SetPosition(pos);
 
-void FlowManager::SetTransform(const float3& a_vPos)
-{
-   m_vPosition = a_vPos;
-   m_pAxesFanFlow->SetPosition(a_vPos);
-   m_pAxesFan->SetPosition(a_vPos);
-}
+   // setup direction
+   XM_TO_V(direction, dir, 3);
+   pAxesFanFlow->SetDirection(dir);
+   pAxesFan->SetDirection(dir);
 
-XMVECTOR FlowManager::GetPosition (void)
-{
-   return m_vPosition;
-}
+   // setup radius
+   pAxesFanFlow->SetFanRadius(radius);
+   pAxesFan->SetR(radius);
 
-void FlowManager::SetAngleSpeed(float a_fS)
-{
-   m_pAxesFanFlow->SetAngleSpeed(a_fS);
-   m_pAxesFan->SetAngleSpeed(a_fS);
+   // setup angle speed
+   pAxesFanFlow->SetAngleSpeed(angleSpeed);
+   pAxesFan->SetAngleSpeed(angleSpeed);
 }

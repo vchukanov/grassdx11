@@ -1,10 +1,11 @@
 #include "AxesFan.h"
+#include "FlowManager.h"
 
 #include <DDSTextureLoader.h>
 #include <DirectXMath.h>
 
 
-AxesFan::AxesFan (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3DX11Effect* a_pEffect, int a_iBladesNum, float a_fBladeSize, float a_fAngleVel)
+AxesFan::AxesFan(ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3DX11Effect* a_pEffect, AxesFanDesc* desc)
 {
    m_pD3DDevice = a_pD3DDevice;
    m_pD3DDeviceCtx = a_pD3DDeviceCtx;
@@ -12,9 +13,9 @@ AxesFan::AxesFan (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceC
    m_uVertexStride = sizeof(VertexType);
    m_uVertexOffset = 0;
    m_uVertexCount = 2 * 3;
-   m_iBladesNum = a_iBladesNum;
-   m_fBladeSize = a_fBladeSize;
-   m_fAngleVel = a_fAngleVel;
+   m_iBladesNum = desc->bladesNum;
+   m_fBladeSize = desc->radius;
+   m_fAngleVel  = desc->angleSpeed;
 
    /* Loading effect */
    /*ID3DBlob* pErrorBlob = nullptr;

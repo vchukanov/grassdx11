@@ -15,17 +15,12 @@ public:
    AxesFanFlow  (ID3D11Device* pD3DDevice, ID3D11DeviceContext* pD3DDeviceCtx, int textureWidth, int textureHeight, float a_fTerrRadius);
    ~AxesFanFlow (void);
 
-   void SetRenderTarget   (ID3D11DepthStencilView* pDSV);
-   void ClearRenderTarget (ID3D11DepthStencilView* pDSV);
    
    ID3D11ShaderResourceView* GetShaderResourceView (void);
 
-   void Update          (void);
-   void MakeFlowTexture (void);
-   void MakeTextHistory (void);
-
-   void CreateVertexBuffer (void);
-   void CreateInputLayout  (void);
+   void BeginMakeFlowTexture (void);
+   void CreateFlow           (void);
+   void EndMakeFlowTexture   (void);
 
    void SetPosition    (const float3& a_vValue);
    void SetDirection   (const float3& a_vValue);
@@ -35,7 +30,6 @@ public:
    void SetNoise     (ID3D11ShaderResourceView *a_pNoiseSRV);
    void SetHeightMap (ID3D11ShaderResourceView* a_pHeightMapSRV);
 
-
    void SetHeightScale (float a_fHeightScale);
 
    void SetMaxFlowStrength  (float a_fValue);
@@ -44,13 +38,27 @@ public:
    void SetShift            (float a_fValue);
    void SetAngleSpeed       (float a_fValue);
 
-private: 
+private:
+   void SetRenderTarget   (ID3D11DepthStencilView* pRT);
+   void ClearRenderTarget (ID3D11DepthStencilView* pDSV);
+
+   void MakeTextHistory (void);
+
+   void CreateVertexBuffer (void);
+   void CreateInputLayout  (void);
+
+   void CopyField (void);
+
+public: 
    ID3D11Device          *m_pD3DDevice;
    ID3D11DeviceContext   *m_pD3DDeviceCtx;
 
    ID3D11Texture2D           *m_renderTargetTexture;
+   ID3D11Texture2D           *m_renderTargetTexturePre;
    ID3D11RenderTargetView    *m_renderTargetView;
-   ID3D11ShaderResourceView  *m_shaderResourceView;
+
+   ID3D11ShaderResourceView  *m_shaderResourceView;         // mixed field
+   ID3D11ShaderResourceView  *m_shaderResourceViewPre;  // copy of cur field
 
    ID3D11InputLayout *m_pInputLayout;
    ID3D11Buffer      *m_pVertexBuffer;
@@ -67,7 +75,8 @@ private:
    ID3DX11EffectScalarVariable* m_pHeightScale;
 
    ID3DX11EffectShaderResourceVariable *m_pNoiseSRV;
-   ID3DX11EffectShaderResourceVariable* m_pHeightMapSRV;
+   ID3DX11EffectShaderResourceVariable *m_pHeightMapSRV;
+   ID3DX11EffectShaderResourceVariable* m_pFieldPreSRV;
 
    ID3DX11EffectScalarVariable* m_pMaxFlowStrengthESV;
    ID3DX11EffectScalarVariable* m_pFanRadiusESV;
@@ -75,6 +84,11 @@ private:
    ID3DX11EffectScalarVariable* m_pShiftESV;
    ID3DX11EffectScalarVariable* m_pAngleSpeedESV;
 
+   D3D11_VIEWPORT          m_ViewPort;
+   ID3D11RenderTargetView *m_pOrigRTV;
+   ID3D11DepthStencilView *m_pOrigDSV;
+   ID3D11RasterizerState  *m_pOrigRS;
+   D3D11_VIEWPORT          m_OrigVP;
 
    float                        m_fTerrRadius;
 
