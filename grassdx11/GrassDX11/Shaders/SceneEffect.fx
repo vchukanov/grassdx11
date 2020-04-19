@@ -206,8 +206,9 @@ TerrPSIn MeshVSMain( TerrVSIn Input )
 
 float4 MeshPSMain (TerrPSIn Input): SV_Target
 {
-    float4 vTexel = g_txMeshDiffuse.Sample(g_samLinear, Input.vTexCoord.xy );
-    return vTexel;
+    //float4 vTexel = g_txMeshDiffuse.Sample(g_samLinear, Input.vTexCoord.xy );
+    return float4(1, 1, 1, 1);
+    //return vTexel;
 }
 
 float4 MeshPSMainBlured( TerrPSIn Input ): SV_Target

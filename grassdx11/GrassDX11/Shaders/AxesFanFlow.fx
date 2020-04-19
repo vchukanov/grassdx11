@@ -197,6 +197,7 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
    
    float3 fanNormal = normalize(g_vDir.xzy);
    float3 fanPoint = g_vAxesFanPosOnTex.xzy;
+  // fanNormal.y = -fanNormal.y;
    
    float3 fanNormal_m = normalize(getReflectedVec(fanNormal));
    float3 fanPoint_m = getReflectedVec(fanPoint);
@@ -275,24 +276,27 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
 
    radial = normalize(queryPoint - fanPoint);
    float time = g_fTime;
-   float randRadialMagn = fbm(((time + 20145) / (1 /*+ 1 / g_fAngleSpeed*/)) + radial.xy * 10) - 0.1;
-   float randDistMagn = fbm(((time + 20145) / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10) - 0.1;
+   
+   float randRadialMagn = fbm((time + 20145) + In.vsPos.xy * 100) - 0.1; 
+   float randDistMagn = fbm((time + 2144) - In.vsPos.xy * 100) - 0.1;
    randRadialMagn = lerp(1, 2, randRadialMagn);
    randDistMagn = lerp(1, 2, randDistMagn);
+
    float randMagn = (randRadialMagn + randDistMagn) / 2;
    
-   float randRadialMagn1 = fbm(((time + 1015) / (1 /*+ 1 / g_fAngleSpeed*/)) + radial.xy * 10)  - 0.1;
-   float randDistMagn1 = fbm(((time + 1015) / (1 /*+ 1 / g_fAngleSpeed*/)) - float2(fDist, fDist) * 10) - 0.1;
+   float randRadialMagn1 = fbm((time + 1015) + In.vsPos.xy  * 100)  - 0.1;
+   float randDistMagn1 = fbm((time + 1015) - In.vsPos.xy  * 100) - 0.1;
    float randMagn1 = (randRadialMagn1 + randDistMagn1) / 2;
    
-   float arg = (time / 1);
+   float arg = (time);
 
-   float randDCompMagn = fbm(arg - float2(fDist, fDist) * 10) - 0.476;
-   float randRCompMagn = fbm(arg + radial.xy * 100) - 0.476;
+   float randDCompMagn = fbm(arg - In.vsPos.xy * 100) - 0.476;
+   float randRCompMagn = fbm(arg + In.vsPos.xy * 100) - 0.476;
    float randCompMagn = (randDCompMagn + randRCompMagn) / 2;
    
-   float randDCompMagn1 = fbm(arg - float2(fDist, fDist) * 10) - 0.476;
-   float randRCompMagn1 = fbm(arg + radial.xy * 100) - 0.476;
+   arg = time + 212;
+   float randDCompMagn1 = fbm(arg - In.vsPos.xy * 100) - 0.476;
+   float randRCompMagn1 = fbm(arg + In.vsPos.xy * 100) - 0.476;
    float randCompMagn1 = (randDCompMagn1 + randRCompMagn1) / 2;
    
    

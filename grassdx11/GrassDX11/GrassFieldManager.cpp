@@ -526,6 +526,7 @@ void GrassFieldManager::Render(Copter* copter)
         }
         m_pGrassTypes[i]->Render(true);
     }
+    copter->Render();
     m_pFlowManager->RenderFans();
     SetViewMtx(tmp);
 

@@ -22,15 +22,17 @@ FlowManager::~FlowManager(void)
 }
 
 
-int FlowManager::CreateAxesFan (void)
+int FlowManager::CreateAxesFan (const XMMATRIX& initialTransform_)
 {
    const float bladeSize = 10.0f;
    const int   bladesNum = 2;
 
+ 
    AxesFanDesc fan;
    fan.pFlowManager = this;
    fan.pAxesFanFlow = m_pAxesFanFlow;
    fan.pAxesFan = new AxesFan(m_pD3DDevice, m_pD3DDeviceCtx, m_Effect, &fan);
+   XMStoreFloat4x4(&fan.initialTransform, initialTransform_);
 
    fans.push_back(fan);
    return fans.size() - 1;
@@ -90,6 +92,12 @@ void FlowManager::SetShift (float a_fShift)
    m_pAxesFanFlow->SetShift(a_fShift); 
 }
 
+AxesFanDesc::AxesFanDesc (void)
+{
+   XMStoreFloat4x4(&transform, XMMatrixIdentity());
+   XMStoreFloat4x4(&initialTransform, XMMatrixIdentity());
+}
+
 
 void AxesFanDesc::Setup (void)
 {
@@ -114,8 +122,11 @@ void AxesFanDesc::Setup (void)
 
 void AxesFanDesc::UpdateFromTransform (const XMMATRIX& transform)
 {
+   XMMATRIX tr = XMLoadFloat4x4(&initialTransform);
+   tr *= transform;
+
    XMVECTOR scale, pos, quatr;
-   XMMatrixDecompose(&scale, &quatr, &pos, transform);
+   XMMatrixDecompose(&scale, &quatr, &pos, tr);
    
    XMMATRIX rot = XMMatrixRotationQuaternion(quatr);
    XMVECTOR down = create(0, -1, 0);
@@ -124,5 +135,5 @@ void AxesFanDesc::UpdateFromTransform (const XMMATRIX& transform)
    XMStoreFloat3(&direction, dir);
    XMStoreFloat3(&position, pos);
 
-   XMStoreFloat4x4(&pAxesFan->m_mTransform, transform);
+   XMStoreFloat4x4(&pAxesFan->m_mTransform, tr);
 }

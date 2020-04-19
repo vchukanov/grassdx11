@@ -13,60 +13,9 @@ CopterController::CopterController(void)
 }
 
 
-void CopterController::OnForward(void)
-{
-   input = FORWARD;
-}
-
-
-void CopterController::OnBackward(void)
-{
-   input = BACKWARD;
-}
-
-
-void CopterController::OnLeft(void)
-{
-   input = LEFT;
-}
-
-
-void CopterController::OnRight(void)
-{
-   input = RIGHT;
-}
-
-void CopterController::RotLeft(void)
-{
-   input = R_LEFT;
-}
-
-void CopterController::RotRight(void)
-{
-   input = R_RIGHT;
-}
-
-void CopterController::OnNothing(void)
-{
-   input = NONE;
-}
-
-
-void CopterController::OnTorque(void)
-{
-   torque += 0.1 / (1 / 1 - torque);
-}
-
-
-void CopterController::OnDetorque(void)
-{
-   torque *= 0.9;
-}
-
-
 void CopterController::UpdatePhysics(void)
 {
-   const float dt = 0.2;
+   const float dt = 0.5;
 
    UpdateInput();
 
@@ -84,8 +33,8 @@ void CopterController::UpdatePhysics(void)
    //
 
    XMVECTOR mg = create(0, -1, 0);
-   acceleration = dir + mg;  // TODO: add torque
-   sety(acceleration, 0);
+   acceleration = dir + mg; 
+   sety(acceleration, torque);
 
    velocity += acceleration * dt;
    position += velocity * dt;
@@ -96,6 +45,7 @@ void CopterController::UpdatePhysics(void)
    pitch *= 0.9;
    roll *= 0.9;
    velocity *= 0.9;
+   torque = 0;
 
    if (gety(position) < 10) {
       sety(position, 10);
@@ -109,7 +59,8 @@ void CopterController::UpdateCamera (void)
    XMMATRIX rot = XMMatrixRotationY(yaw);
    toCam = XMVector3Transform(toCam, rot);
 
-   cam->SetViewParams(position + toCam, position);
+   if (!fixCam)
+      cam->SetViewParams(position + toCam, position);
 }
 
 
@@ -117,29 +68,35 @@ void CopterController::UpdateInput (void)
 {
    const float angleStep = 0.1;
 
-   switch (input)
-   {
-   case FORWARD:
+   if (forward == FORWARD) {
       pitch -= angleStep;
-      break;
-   case BACKWARD:
+   }
+
+   if (backward == BACKWARD) {
       pitch += angleStep;
-      break;
-   case LEFT:
+   }
+
+   if (left == LEFT) {
       roll += angleStep;
-      break;
-   case RIGHT:
+   }
+
+   if (right == RIGHT) {
       roll -= angleStep;
-      break;
-   case R_LEFT:
+   }
+
+   if (rLeft == R_LEFT) {
       yaw -= angleStep;
-      break;
-   case R_RIGHT:
+   }
+
+   if (rRight == R_RIGHT) {
       yaw += angleStep;
-      break;
-   case NONE:
-      break;
-   default:
-      break;
+   }
+
+   if (up == UP) {
+      torque += 2;
+   }
+
+   if (down == DOWN) {
+      torque -= 2;
    }
 }

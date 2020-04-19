@@ -20,13 +20,8 @@ public:
    ~Copter (void);
 
    void Render (void);
-   void Update (float a_fElapsedTime);
-
+   
    void UpdateFromTransform (const XMMATRIX& transform);
-  // void SetPosition   (const float3& a_vPosition);
-  // void SetDirection  (const float3& a_vDirection);
-  // void SetR          (float a_fR);
-  // void SetAngleSpeed (float a_fSpeed) { m_fAngleVel = a_fSpeed; }
 
 private:
    void CreateInputLayout(void);
@@ -49,12 +44,14 @@ public:
    ID3DX11EffectPass* m_pPass;
    
    ID3D11Buffer* m_pVertexBuffer = nullptr;
+   ID3D11Buffer* m_pIndexBuffer  = nullptr;
 
    UINT m_uVertexCount;
+   UINT m_uIndexCount;
    UINT m_uVertexStride;
    UINT m_uVertexOffset;
 
-   int fanId = 0;
+   std::vector<int> fanIds;
 
    FlowManager* flowManager;
 };

@@ -439,7 +439,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, terr->HeightMapSRV(), 1);
 
    g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->m_pAxesFanFlow->m_shaderResourceView, 1);
-   g_dbgWin->ToggleRender();
+   //g_dbgWin->ToggleRender();
 
    return S_OK;
 }
@@ -708,9 +708,9 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
    SAFE_RELEASE(pOrigDS);
 
    DXUT_BeginPerfEvent( DXUT_PERFEVENTCOLOR, L"HUD / Stats" );
-   g_HUD.OnRender( fElapsedTime );
-   g_SampleUI.OnRender( fElapsedTime );
-   RenderText();
+   //g_HUD.OnRender( fElapsedTime );
+   //g_SampleUI.OnRender( fElapsedTime );
+   //RenderText();
    DXUT_EndPerfEvent();
 
    static ULONGLONG timefirst = GetTickCount64();
@@ -861,26 +861,51 @@ void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserC
          copterController.OnForward();
          break;
       case 85://u
-         copterController.RotLeft();
+         copterController.OnRLeft();
          break;
       case 79://o
-         copterController.RotRight();
+         copterController.OnRRight();
          break;
-      case 219:
+      case 219://[
          copterController.OnDetorque();
          break;
-      case 221:
+      case 221://]
          copterController.OnTorque();
+         break;
+      case VK_ADD:
+         copterController.ToggleFixCam();
          break;
       }
    }
    else
    {
-      copterController.OnNothing();
-      /*if (nChar == VK_RIGHT || nChar == VK_LEFT)
-         g_fCarRotAccel = 0;
-      else if (nChar == VK_UP || nChar == VK_DOWN)
-         g_fCarAccel = 0;//-g_fCarForce;*/
+      switch (nChar)
+      {
+      case 74: //j
+         copterController.NonLeft();
+         break;
+      case 75: //k
+         copterController.NonBackward();
+         break;
+      case 76: //l
+         copterController.NonRight();
+         break;
+      case 73://i
+         copterController.NonForward();
+         break;
+      case 85://u
+         copterController.NonRLeft();
+         break;
+      case 79://o
+         copterController.NonRRight();
+         break;
+      case 219://[
+         copterController.NonDetorque();
+         break;
+      case 221://]
+         copterController.NonTorque();
+         break;
+      }
    }
 }
 
