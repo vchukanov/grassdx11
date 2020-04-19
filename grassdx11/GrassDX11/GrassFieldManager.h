@@ -16,6 +16,7 @@
 #include "GrassTrack.h"
 
 #include "VelocityMap.h"
+#include "Copter.h"
 
 enum
 {
@@ -50,13 +51,13 @@ public:
 
    FlowManager                   *m_pFlowManager;
    std::vector<int>               fansIds;
+   ID3DX11Effect*                 m_pSceneEffect;
 
 private:
    GrassManager               *m_pGrassTypes[GrassTypeNum];
    GrassPropertiesT1          *m_pT1SubTypes;
    GrassPropertiesT2          *m_pT2SubTypes;
    GrassPropertiesT3          *m_pT3SubTypes;
-   ID3DX11Effect              *m_pSceneEffect;
 
    /* links to variables, for all GrassManagers and one for scene effect */
    ID3DX11EffectMatrixVariable *m_pViewProjEMV[GrassTypeNum + 1];
@@ -139,7 +140,7 @@ public:
 
    FlowManager* const GetFlowManager (void) { return m_pFlowManager; }
 
-   void Render  (void);
+   void Render  (Copter* copter);
    void Update  (float3 a_vCamDir, float3 a_vCamPos, Mesh *a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime, float a_fTime);
     
    ID3DX11Effect *SceneEffect (void);

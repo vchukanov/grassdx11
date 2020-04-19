@@ -204,7 +204,13 @@ TerrPSIn MeshVSMain( TerrVSIn Input )
     return Output;    
 }
 
-float4 MeshPSMain( TerrPSIn Input ): SV_Target
+float4 MeshPSMain (TerrPSIn Input): SV_Target
+{
+    float4 vTexel = g_txMeshDiffuse.Sample(g_samLinear, Input.vTexCoord.xy );
+    return vTexel;
+}
+
+float4 MeshPSMainBlured( TerrPSIn Input ): SV_Target
 {
     float2 texelSize = (1.0 / 1600.0, 1.0 / 900.0);
     float2 screenTexCoords = Input.vPos * texelSize;
@@ -351,6 +357,15 @@ technique10 Render
         SetVertexShader( CompileShader( vs_5_0, MeshVSMain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, MeshPSMain() ) ); 
+        SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
+        SetRasterizerState( EnableMSAA );
+    }
+
+    pass RenderMeshPassBlured
+    {
+        SetVertexShader( CompileShader( vs_5_0, MeshVSMain() ) );
+        SetGeometryShader( NULL );
+        SetPixelShader( CompileShader( ps_4_0, MeshPSMainBlured() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
         SetRasterizerState( EnableMSAA );
     }

@@ -45,8 +45,8 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
    );
 
    //TODO: this code must move to copter code
-   fansIds.push_back(m_pFlowManager->CreateAxesFan(XMFLOAT3(88, 17, -98)));
-   fansIds.push_back(m_pFlowManager->CreateAxesFan(XMFLOAT3(108, 17, -98)));
+  // fansIds.push_back(m_pFlowManager->CreateAxesFan());
+  // fansIds.push_back(m_pFlowManager->CreateAxesFan(XMFLOAT3(108, 17, -98)));
 
 #pragma omp parallel sections 
    {
@@ -480,7 +480,7 @@ Terrain* const GrassFieldManager::GetTerrain(float* a_fHeightScale, float* a_fGr
    return m_pTerrain;
 }
 
-void GrassFieldManager::Render()
+void GrassFieldManager::Render(Copter* copter)
 {
    int i;
    HRESULT hr;
@@ -563,6 +563,7 @@ void GrassFieldManager::Render()
       m_pTerrain->Render();
       m_pGrassTypes[0]->Render(false);
       m_pGrassTypes[2]->Render(false);
+      copter->Render();
       m_pFlowManager->RenderFans();
       
       pSceneSRV = m_pSceneTex->EndVelocityMap();
@@ -574,6 +575,7 @@ void GrassFieldManager::Render()
       m_pVelocityMapESRV[GrassTypeNum]->SetResource(pVelSRV);
    }
 
+   copter->Render();
    m_pFlowManager->RenderFans();
 
    m_pVelocityMapESRV[GrassTypeNum]->SetResource(NULL);

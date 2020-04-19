@@ -32,15 +32,12 @@ private:
    void CreateInputLayout (void);
    void CreateVertexBuffer (void);
 
-private:
+public:
    ID3D11Device        *m_pD3DDevice;
    ID3D11DeviceContext *m_pD3DDeviceCtx;
    
    ID3DX11EffectMatrixVariable* m_pTransformEMV;
    ID3DX11EffectMatrixVariable* m_pPrevTransformEMV;
-
-   XMFLOAT3                     m_vPosition;
-   XMFLOAT3                     m_vDirection;
 
    XMFLOAT4X4                   m_mTransform;
    XMFLOAT4X4                   m_mRotation;

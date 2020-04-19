@@ -22,7 +22,7 @@ FlowManager::~FlowManager(void)
 }
 
 
-int FlowManager::CreateAxesFan (const XMFLOAT3& a_vPosition)
+int FlowManager::CreateAxesFan (void)
 {
    const float bladeSize = 10.0f;
    const int   bladesNum = 2;
@@ -96,12 +96,10 @@ void AxesFanDesc::Setup (void)
    // setup position
    XM_TO_V(position, pos, 3);
    pAxesFanFlow->SetPosition(pos);
-   pAxesFan->SetPosition(pos);
 
    // setup direction
    XM_TO_V(direction, dir, 3);
    pAxesFanFlow->SetDirection(dir);
-   pAxesFan->SetDirection(dir);
 
    // setup radius
    pAxesFanFlow->SetFanRadius(radius);
@@ -110,4 +108,21 @@ void AxesFanDesc::Setup (void)
    // setup angle speed
    pAxesFanFlow->SetAngleSpeed(angleSpeed);
    pAxesFan->SetAngleSpeed(angleSpeed);
+}
+
+
+
+void AxesFanDesc::UpdateFromTransform (const XMMATRIX& transform)
+{
+   XMVECTOR scale, pos, quatr;
+   XMMatrixDecompose(&scale, &quatr, &pos, transform);
+   
+   XMMATRIX rot = XMMatrixRotationQuaternion(quatr);
+   XMVECTOR down = create(0, -1, 0);
+   
+   XMVECTOR dir = XMVector3Transform(down, rot);
+   XMStoreFloat3(&direction, dir);
+   XMStoreFloat3(&position, pos);
+
+   XMStoreFloat4x4(&pAxesFan->m_mTransform, transform);
 }

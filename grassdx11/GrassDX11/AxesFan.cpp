@@ -39,7 +39,7 @@ AxesFan::AxesFan(ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCt
    }*/
 
    ID3DX11EffectTechnique* pTechnique = a_pEffect->GetTechniqueByIndex(0);
-   m_pPass = pTechnique->GetPassByName("RenderMeshPass");
+   m_pPass = pTechnique->GetPassByName("RenderMeshPassBlured");
    m_pVelPass = pTechnique->GetPassByName("RenderVelocityPass");
    //m_pPass = pTechnique->GetPassByName("RenderAxesFan");
 
@@ -111,25 +111,18 @@ void AxesFan::Render(bool isVelPass)
    XM_TO_M(m_mPrevRot, prevStartRot);
 
    for (int i = 0; i < m_iBladesNum; i++) {
-      XM_TO_V(m_vPosition, pos, 3);
-      XM_TO_V(m_vDirection, dir, 3);
-     
-      XMMATRIX mTr = XMMatrixTranslationFromVector(pos);
+      XMMATRIX mTr = XMLoadFloat4x4(&m_mTransform);
 
       float delta = PI / m_iBladesNum;
 
       XMMATRIX bladeM = XMMatrixIdentity();
       bladeM *= startRot;
       bladeM *= XMMatrixRotationY(delta * i);;
-      bladeM *= XMMatrixRotationZ(PI / 2 - acos(dot(dir, create(1, 0, 0))));
-      bladeM *= XMMatrixRotationX(PI / 2 - acos(dot(dir, create(0, 0, 1))));
       bladeM *= mTr;
 
       XMMATRIX prevBladeM = XMMatrixIdentity();
       prevBladeM *= prevStartRot;
       prevBladeM *= XMMatrixRotationY(delta * i);;
-      prevBladeM *= XMMatrixRotationZ(PI / 2 - acos(dot(dir, create(1, 0, 0))));
-      prevBladeM *= XMMatrixRotationX(PI / 2 - acos(dot(dir, create(0, 0, 1))));
       prevBladeM *= mTr;
 
       M_TO_XM(bladeM, bladeTr);
@@ -161,19 +154,6 @@ void AxesFan::Update (float a_fElapsedTime)
    startRot = mul(XMMatrixRotationY(a_fElapsedTime * m_fAngleVel), startRot);
    
    XMStoreFloat4x4(&m_mRot, startRot);
-}
-
-
-void AxesFan::SetPosition (const float3& a_vPosition)
-{
-   XMStoreFloat3(&m_vPosition, a_vPosition);
-}
-
-
-void AxesFan::SetDirection (const float3& a_vDirection)
-{
-   float3 dir = normalize(a_vDirection);
-   XMStoreFloat3(&m_vDirection, dir);
 }
 
 

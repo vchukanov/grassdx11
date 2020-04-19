@@ -197,7 +197,6 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
    
    float3 fanNormal = normalize(g_vDir.xzy);
    float3 fanPoint = g_vAxesFanPosOnTex.xzy;
-   fanNormal.y = -fanNormal.y;
    
    float3 fanNormal_m = normalize(getReflectedVec(fanNormal));
    float3 fanPoint_m = getReflectedVec(fanPoint);

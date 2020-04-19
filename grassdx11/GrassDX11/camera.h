@@ -1,3 +1,5 @@
+#pragma once
+
 #include "DXUT.h"
 #include "DXUTcamera.h"
 #include "Terrain.h"

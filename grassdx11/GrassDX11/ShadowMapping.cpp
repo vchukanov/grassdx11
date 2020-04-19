@@ -1,11 +1,12 @@
 #include "ShadowMapping.h"
 #include "mtxfrustum.h"
+#include "maths.h"
 
 LiSPSM::LiSPSM(UINT a_uWidth, UINT a_uHeight, ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx)
 {
    m_pD3DDevice = a_pD3DDevice;
    m_pD3DDeviceCtx = a_pD3DDeviceCtx;
-   m_bUseUniformSM = true;
+   m_bUseUniformSM = false;
    /* Init ViewPort */
    m_ViewPort.Height = a_uHeight;
    m_ViewPort.Width = a_uWidth;
@@ -92,14 +93,14 @@ void LiSPSM::UpdatePointSet(const XMMATRIX& a_mCamMV, const XMMATRIX& a_mCamProj
 {
    //int i;
    XMVECTOR vIsect;
-   XMVECTOR cubeMin = create(-1.0f, -1.0f, 0.0f);
+   XMVECTOR cubeMin = create(-1.0f, -1.0f, -1.0f);
    XMVECTOR cubeMax = create(1.0f, 1.0f, 1.0f);
 
    V_TO_XM(cubeMin, cmin, 3);
    V_TO_XM(cubeMax, cmax, 3);
 
    maths::AABox FrustumBBox(cmin, cmax);
-   //maths::PointArray FrustumPts;
+  
    XMMATRIX M;
    XMMATRIX InvEyeProjView;// = !(CamMvMtx * CamPjMtx);
    
@@ -110,17 +111,6 @@ void LiSPSM::UpdatePointSet(const XMMATRIX& a_mCamMV, const XMMATRIX& a_mCamProj
    m_ShadowOcclAndCasters.SetSize(8);
    FrustumBBox.GetPoints(&m_ShadowOcclAndCasters);
    m_ShadowOcclAndCasters.Transform(InvEyeProjView);
-
-   //XMVECTOR vIsectDir = (-1.0f) * LightDir;
-   //m_ShadowOcclAndCasters = FrustumPts;    
-   /*XMVECTOR vIsectDir = (-1.0f) * m_vLightDir;
-   for (i = 0; i < 8; ++i)
-   {
-       if (m_pSceneBBox->LastLineISect(&vIsect, maths::Line(vIsectDir, Frustum[i] )) )
-       {
-           m_ShadowOcclAndCasters.AppendObj(&vIsect);
-       }
-   }*/
 }
 
 void LiSPSM::GenUniformMtx()
@@ -184,19 +174,11 @@ void LiSPSM::GenLiSPSMMtx()
 
    /* Getting real light-space volume */
    m_ShadowOcclAndCasters.Transform(mv);
+   maths::AABox box;
+   m_ShadowOcclAndCasters.CalcAABBox(&box);
+   yMin = box.Min().y;
+   yMax = box.Max().y;
 
-   yMax = yMin = m_ShadowOcclAndCasters[0].y;
-   for (i = 1; i < m_ShadowOcclAndCasters.GetSize(); ++i)
-   {
-      if (m_ShadowOcclAndCasters[i].y > yMax)
-      {
-         yMax = m_ShadowOcclAndCasters[i].y;
-      }
-      if (m_ShadowOcclAndCasters[i].y < yMin)
-      {
-         yMin = m_ShadowOcclAndCasters[i].y;
-      }
-   }
    /*extreme case: yMin < 0*/
    Offset = com::maximum(-yMin, 0.0f);
    yMin += Offset;
@@ -238,8 +220,8 @@ void LiSPSM::GenLiSPSMMtx()
    fTop *= fNear;
 
    ModelViewMtx(&mv, pos, ldir, Up);
-   /*lookat = pos + m_vLightDir;
-   XMMATRIXLookAtLH(&m_mModelView, &pos, &lookat, &Up);*/
+   //lookat = pos + ldir;
+   //mv = XMMatrixLookAtLH(pos, lookat, Up);
 
    //symmetric perspective transformation matrix
    //fNear and fFar in y direction    
@@ -260,13 +242,6 @@ void LiSPSM::GenLiSPSMMtx()
    pProj[13] = -fFar * fNear / (fFar - fNear);//-2.0f * fFar * fNear / (fFar - fNear);		
    pProj[14] = 0.0;
    pProj[15] = 0.0;
-   //XMMATRIX mScale;
-   //pProj = (float*)(&mScale);
-   //pProj[ 0]  = 1.0f; pProj[ 1]  = 0.0f; pProj[ 2]  = 0.0f; pProj[ 3]  = 0.0f;
-   //pProj[ 4]  = 0.0f; pProj[ 5]  = 1.0f; pProj[ 6]  = 0.0f; pProj[ 7]  = 0.0f;
-   //pProj[ 8]  = 0.0f; pProj[ 9]  = 0.0f; pProj[10]  = 1.0f;pProj[11]  = 0.0f;
-   //pProj[12]  = 0.0f; pProj[13]  = 0.0f; pProj[14]  = 0.0f;pProj[15]  = 1.0f;
-   //XMMATRIXMultiply(&m_mProjection, &m_mProjection, &mScale);
 
    XMStoreFloat4x4(&m_mModelView, mv);
 }
@@ -311,9 +286,8 @@ void LiSPSM::UpdateMtx(const XMMATRIX& a_mCamMV, const XMMATRIX& a_mCamProj,
    }
    XM_TO_M(m_mModelView, mv);
    XM_TO_M(m_mProjection, p);
-   XM_TO_M(m_mViewProj, vp);
 
-   vp = XMMatrixMultiply(mv, p);
+   XMMATRIX vp = XMMatrixMultiply(mv, p);
    
    XMStoreFloat4x4(&m_mViewProj, vp);
 }              

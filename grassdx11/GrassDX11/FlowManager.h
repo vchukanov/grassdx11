@@ -13,17 +13,20 @@ class FlowManager;
 
 struct AxesFanDesc {
 public:
-   void Setup (void);
+   void Setup               (void);
+   void UpdateFromTransform (const XMMATRIX& transform);
 
 public:
-   float    radius = 10;
-   XMFLOAT3 direction = XMFLOAT3(0, -1, 0);
-   XMFLOAT3 position = XMFLOAT3(0, 20, 0);
+   float      radius     = 10;
+   XMFLOAT3   direction  = XMFLOAT3(0, -1, 0);
+   XMFLOAT3   position   = XMFLOAT3(0, 20, 0);
+   XMFLOAT4X4 transform;
+
    float    angleSpeed = 50;
-   int      bladesNum = 2;
+   int      bladesNum  = 2;
 
    AxesFanFlow *pAxesFanFlow = NULL; 
-   AxesFan     *pAxesFan = NULL;
+   AxesFan     *pAxesFan     = NULL;
    FlowManager *pFlowManager = NULL;
 };
 
@@ -33,12 +36,11 @@ public:
    FlowManager  (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3DX11Effect* a_Effect, float a_fTerrRadius, ID3D11ShaderResourceView* a_NoiseSRV);
    ~FlowManager (void);
 
-   int CreateAxesFan (const XMFLOAT3& a_vPosition);
+   int CreateAxesFan (void);
 
    void Update          (float a_fElapsedTime, float a_fTime);
    void RenderFans      (bool isVelPass = false);
-   void RenderFansFlows (void);
-
+ 
    ID3D11ShaderResourceView* GetFlowSRV (void);
 
    void SetMaxHorizFlow  (float a_fMaxFlowStrength);
@@ -47,6 +49,7 @@ public:
  
 public:
    std::vector<AxesFanDesc> fans;
+
    ID3D11Device         *m_pD3DDevice;
    ID3D11DeviceContext  *m_pD3DDeviceCtx;
 
