@@ -411,6 +411,8 @@
     <ClCompile Include="AxesFanFlow.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="ConvexVolume.cpp" />
+    <ClCompile Include="Copter.cpp" />
+    <ClCompile Include="CopterController.cpp" />
     <ClCompile Include="DebugWindow.cpp" />
     <ClCompile Include="FlowManager.cpp" />
     <ClCompile Include="GrassCollideStatic.cpp" />
@@ -435,8 +437,10 @@
     <ClCompile Include="PhysMath.cpp" />
     <ClCompile Include="PhysPatch.cpp" />
     <ClCompile Include="plane.cpp" />
+    <ClCompile Include="ShadowMapping.cpp" />
     <ClCompile Include="StateManager.cpp" />
     <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="VelocityMap.cpp" />
     <ClCompile Include="Wind.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -454,6 +458,8 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="ConvexVolume.h" />
+    <ClInclude Include="Copter.h" />
+    <ClInclude Include="CopterController.h" />
     <ClInclude Include="DebugWindow.h" />
     <ClInclude Include="fixedvector.h" />
     <ClInclude Include="FlowManager.h" />
@@ -470,13 +476,16 @@
     <ClInclude Include="maths.h" />
     <ClInclude Include="memdebug.h" />
     <ClInclude Include="mesh.h" />
+    <ClInclude Include="mtxfrustum.h" />
     <ClInclude Include="NewDel.h" />
     <ClInclude Include="ObjArray.h" />
     <ClInclude Include="PhysMath.h" />
     <ClInclude Include="PhysPatch.h" />
     <ClInclude Include="plane.h" />
+    <ClInclude Include="ShadowMapping.h" />
     <ClInclude Include="StateManager.h" />
     <ClInclude Include="Terrain.h" />
+    <ClInclude Include="VelocityMap.h" />
     <ClInclude Include="Wind.h" />
     <ClInclude Include="xtmfrustum.h" />
   </ItemGroup>
