@@ -5,7 +5,7 @@
 
 void CreateVertex( float3 a_vPos, float2 a_vTexCoord, float a_fLightParam, uint a_uTexIndex, float a_fDissolve, float2 a_vWorldTC, inout PSIn Vertex)
 {
-    //Vertex.vShadowPos   = mul( float4(a_vPos, 1.0), g_mLightViewProj);    
+    Vertex.vShadowPos   = mul( float4(a_vPos, 1.0), g_mLightViewProj);    
     Vertex.vPos         = mul( float4(a_vPos, 1.0), g_mViewProj);    
     Vertex.vTexCoord.xy = a_vTexCoord;
     Vertex.vTexCoord.z  = FogValue(length(Vertex.vPos.xyz));

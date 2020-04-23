@@ -88,6 +88,36 @@
     <ClCompile Include="StateManager.cpp">
       <Filter>Grass\Render\System</Filter>
     </ClCompile>
+    <ClCompile Include="AxesFanFlow.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugWindow.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="AxesFan.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="FlowManager.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="GrassCollideStatic.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="NewDel.cpp">
+      <Filter>Grass\Render\System</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowMapping.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="VelocityMap.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="CopterController.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="Copter.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="includes.h" />
@@ -159,6 +189,42 @@
     </ClInclude>
     <ClInclude Include="StateManager.h">
       <Filter>Grass\Render\System</Filter>
+    </ClInclude>
+    <ClInclude Include="AxesFanFlow.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugWindow.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="AxesFan.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="FlowManager.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="GrassCollideStatic.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="memdebug.h">
+      <Filter>Grass\Render\System</Filter>
+    </ClInclude>
+    <ClInclude Include="NewDel.h">
+      <Filter>Grass\Render\System</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowMapping.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="mtxfrustum.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="VelocityMap.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="CopterController.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Copter.h">
+      <Filter>Grass\Render\C++</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

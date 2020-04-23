@@ -6,6 +6,11 @@ cbuffer cEveryFrame
     float4x4 g_mWorld;
     float4x4 g_mViewProj;
     float4x4 g_mInvCamView;
+    
+    float4x4 g_mPrevWorld;
+    float4x4 g_mPrevViewProj;
+    float4x4 g_mPrevInvCamView;
+
     float4x4 g_mLightViewProj;
     float4x4 g_mNormalMatrix;
     float    g_fTime;
@@ -41,9 +46,10 @@ cbuffer cImmutable
 //--------------------------------------------------------------------------------------
 // Texture and samplers
 //--------------------------------------------------------------------------------------
+Texture2D g_txScene;
+Texture2D g_txVelocityMap;
 Texture2D g_txShadowMap;
 Texture2D g_txGrassDiffuse;
-Texture2D g_txSandDiffuse;
 Texture2D g_txMeshDiffuse;
 Texture2D g_txSeatingT1;
 Texture2D g_txSeatingT2;
@@ -51,15 +57,16 @@ Texture2D g_txSeatingT3;
 Texture2D g_txHeightMap;
 Texture2D g_txLightMap;
 Texture2D g_txSkyBox;
-Texture2D g_txGrassColor;
+Texture2D g_txTerrGrass;
+Texture2D g_txSandDiffuse;
 
 // Mesh textures
 Texture2D g_txMeshMapKd;
 Texture2D g_txMeshMapKs;
 
-#include "Shaders/Samplers.fx"
-#include "Shaders/Fog.fx"
-#include "Shaders/States.fx"
+#include "Samplers.fx"
+#include "Fog.fx"
+#include "States.fx"
 
 
 //--------------------------------------------------------------------------------------
@@ -77,8 +84,10 @@ struct TerrVSIn
 struct TerrPSIn
 {
     float4 vPos      : SV_Position;
-    //float4 vShadowPos: TEXCOORD0;
-    float4 vTexCoord : TEXCOORD1;
+
+    float4 vShadowPos     : TEXCOORD0;
+    float4 vTexCoord      : TEXCOORD1;
+
     //float3 vNormal   : NORMAL;
 };
 
@@ -103,6 +112,14 @@ struct PSCarIn
     float3 world_pos : TEXCOORD1;
     float3 norm : NORMAL;
     float2 tex : TEXTURE0;
+};
+
+struct BlurPSIn
+{
+   float4 vPos : SV_Position;
+
+   float4 vPosition : POSITION0;
+   float4 vPrevPosition : POSITION1;
 };
 
 //--------------------------------------------------------------------------------------
@@ -187,12 +204,55 @@ TerrPSIn MeshVSMain( TerrVSIn Input )
     return Output;    
 }
 
-float4 MeshPSMain( TerrPSIn Input ): SV_Target
+float4 MeshPSMain (TerrPSIn Input): SV_Target
 {
-    float4 vTexel = g_txMeshDiffuse.Sample(g_samLinear, Input.vTexCoord.xy );
-    return vTexel;
+    //float4 vTexel = g_txMeshDiffuse.Sample(g_samLinear, Input.vTexCoord.xy );
+    return float4(1, 1, 1, 1);
+    //return vTexel;
 }
 
+float4 MeshPSMainBlured( TerrPSIn Input ): SV_Target
+{
+    float2 texelSize = (1.0 / 1600.0, 1.0 / 900.0);
+    float2 screenTexCoords = Input.vPos * texelSize;
+    screenTexCoords.x /= (1600.0 / 900.0);  // bug ??
+
+    float2 velocity = g_txVelocityMap.Sample(g_samLinear, screenTexCoords).xy;
+    velocity = pow(velocity * 2 - 1, 3.0);
+    velocity *= 0.1; //uVelocityScale;
+
+    float speed = length(velocity / texelSize);
+    int nSamples = clamp(int(speed), 1, 4);
+    
+    float4 oResult = g_txScene.Sample(g_samLinear, screenTexCoords);
+    for (int i = 1; i < nSamples; ++i) {
+       float2 offset = velocity * (float(i) / float(nSamples - 1) - 0.5);
+       oResult += g_txScene.Sample(g_samLinear, screenTexCoords + offset);
+    }
+    oResult /= float(nSamples);
+    
+    return oResult;
+}
+
+/* Blur shaders */
+BlurPSIn MeshVSBlur( TerrVSIn Input )
+{
+    BlurPSIn Output;
+    Output.vPosition = mul(mul(float4(Input.vPos, 1.0), g_mWorld), g_mViewProj);
+    Output.vPrevPosition = mul(mul(float4(Input.vPos, 1.0), g_mPrevWorld), g_mPrevViewProj);
+
+    Output.vPos = Output.vPosition;
+    return Output;    
+}
+
+
+float4 MeshPSBlur( BlurPSIn Input ): SV_Target
+{
+    float2 a = (Input.vPosition.xy / Input.vPosition.w) * 0.5 + 0.5;
+    float2 b = (Input.vPrevPosition.xy / Input.vPrevPosition.w) * 0.5 + 0.5;
+    float2 oVelocity = pow(abs(a - b), 1 / 3.0) * sign(a - b) * 0.5 + 0.5;
+    return float4(oVelocity.x, oVelocity.y, 0, 1);
+}
 
 /* Terrain shaders */
 
@@ -214,40 +274,45 @@ float4 MeshPSMain( TerrPSIn Input ): SV_Target
 TerrPSIn TerrainVSMain( TerrVSIn Input )
 {
     TerrPSIn Output;
-    float fY			= g_txHeightMap.SampleLevel(g_samLinear, Input.vTexCoord, 0).a * g_fHeightScale;
-    float4 vWorldPos	= float4(Input.vPos + float3(0.0, fY, 0.0), 1.0);
-    Output.vPos         = mul(vWorldPos, g_mViewProj);
-    Output.vTexCoord.xy = Input.vTexCoord;
-    Output.vTexCoord.z  = FogValue(length(vWorldPos - g_mInvCamView[3].xyz));
-    Output.vTexCoord.w  = length(vWorldPos - g_mInvCamView[3].xyz);
-    
+    float fY			 = g_txHeightMap.SampleLevel(g_samLinear, Input.vTexCoord, 0).a * g_fHeightScale;
+    float4 vWorldPos	 = float4(Input.vPos + float3(0.0, fY, 0.0), 1.0);
+    Output.vPos          = mul(vWorldPos, g_mViewProj);
+    Output.vTexCoord.xy  = Input.vTexCoord;
+    Output.vTexCoord.z   = FogValue(length(vWorldPos - g_mInvCamView[3].xyz));
+    Output.vTexCoord.w   = length(vWorldPos - g_mInvCamView[3].xyz);
+    Output.vShadowPos   = mul( vWorldPos, g_mLightViewProj);    
+
     return Output;
 }
 
 float GetAlphaCoef(float2 vTexCoord)
 {
-    float3 vAlpha =  float3(g_txSeatingT1.Sample(g_samLinear, vTexCoord).r,
-                            g_txSeatingT2.Sample(g_samLinear, vTexCoord).r,
-                            g_txSeatingT3.Sample(g_samLinear, vTexCoord).r);
+    float vAlpha =  g_txSeatingT1.Sample(g_samLinear, vTexCoord).r;
     return clamp(length(vAlpha), 0.0, 1.0);                            
 }
 
 float4 TerrainPSMain( TerrPSIn Input ): SV_Target
 {
+    float shadowCoef = ShadowCoef(Input.vShadowPos);
+    //return shadowCoef;
+
     float2 fDot = g_txLightMap.Sample(g_samLinear, Input.vTexCoord.xy).rg;
-    float3 vTexel = g_txGrassDiffuse.Sample(g_samLinear, Input.vTexCoord.xy * 0.5*g_fTerrTile).xyz;
-    vTexel *=  g_vTerrRGB;
-    float3 vGrassColor = g_txGrassColor.Sample(g_samLinear, Input.vTexCoord.xy).xyz;
+  
+    float3 vGrassColor = g_txTerrGrass.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
+    vGrassColor *= float3(0.22, 0.25, 0.00);
+    
+    float3 vSandColor = g_txSandDiffuse.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
+    vSandColor *= float3(0.37, 0.37, 0.28);
 
-	float fTexDist = min(Input.vTexCoord.w/140.f, 1.0);
-	
-	//float3(0.04, 0.1, 0.01) - previous color	
-    float3 vL = lerp(vGrassColor, vTexel, fTexDist) * max(0.8, (2.0 + 5.0 * fDot.y) * 0.5);
+    float alphaValue = GetAlphaCoef(Input.vTexCoord.xy);    
+    float3 blendColor = (alphaValue * vGrassColor) + ((1.0 - alphaValue) * vSandColor);
 
+    float3 vL = blendColor * max(0.8, (2.0 + 5.0 * fDot.y) * 0.5);
 	float fLimDist = clamp((Input.vTexCoord.w - 140.0) / 20.0, 0.0, 1.0);
-//    return lerp(float4(fDot.x * g_vTerrSpec, 1.0), g_vFogColor, Input.vTexCoord.z);
-    return lerp(float4(fDot.x * fLimDist* g_vTerrSpec + (1.0 - fDot.x * fLimDist) * vL, 1.0), g_vFogColor, Input.vTexCoord.z);
 
+    float4 color = lerp(float4(fDot.x * fLimDist * g_vTerrSpec + (1.0 - fDot.x * fLimDist) * vL, 1.0), g_vFogColor, Input.vTexCoord.z);
+    color.xyz = color.xyz * shadowCoef;
+    return color;
 }
 
 /* Light Map Shaders */
@@ -280,30 +345,49 @@ technique10 Render
 {    
     pass RenderTerrainPass
     {
-        SetVertexShader( CompileShader( vs_4_0, TerrainVSMain() ) );
+        SetVertexShader( CompileShader( vs_5_0, TerrainVSMain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, TerrainPSMain() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );
         SetDepthStencilState( EnableDepthTestWrite, 0 );
-        //SetRasterizerState( EnableMSAACulling );
+        SetRasterizerState( EnableMSAACulling );
     }  
 
     pass RenderMeshPass
     {
-        SetVertexShader( CompileShader( vs_4_0, MeshVSMain() ) );
+        SetVertexShader( CompileShader( vs_5_0, MeshVSMain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, MeshPSMain() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
-        //SetRasterizerState( EnableMSAA );
+        SetRasterizerState( EnableMSAA );
+    }
+
+    pass RenderMeshPassBlured
+    {
+        SetVertexShader( CompileShader( vs_5_0, MeshVSMain() ) );
+        SetGeometryShader( NULL );
+        SetPixelShader( CompileShader( ps_4_0, MeshPSMainBlured() ) ); 
+        SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
+        SetRasterizerState( EnableMSAA );
     }
 
     pass RenderLightMapPass
     {
-        SetVertexShader( CompileShader( vs_4_0, LightMapVSMain() ) );
+        SetVertexShader( CompileShader( vs_5_0, LightMapVSMain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, LightMapPSMain() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
-        //SetRasterizerState( EnableMSAA );
+        SetRasterizerState( EnableMSAA );
+    }
+
+    
+    pass RenderVelocityPass
+    {
+        SetVertexShader( CompileShader( vs_4_0, MeshVSBlur() ) );
+        SetGeometryShader( NULL );
+        SetPixelShader( CompileShader( ps_4_0, MeshPSBlur() ) ); 
+        SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
+        SetRasterizerState( EnableMSAA );
     }
 }
 
@@ -311,7 +395,7 @@ technique10 RenderSkyBox
 {
 	pass RenderPass
     {
-        SetVertexShader( CompileShader( vs_4_0, VSSkymain() ) );
+        SetVertexShader( CompileShader( vs_5_0, VSSkymain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, PSSkymain() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
@@ -322,9 +406,9 @@ technique10 RenderCar
 {
 	pass RenderPass
     {
-        SetVertexShader( CompileShader( vs_4_0, VSCarmain() ) );
+        SetVertexShader( CompileShader( vs_5_0, VSCarmain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, PSCarmain0() ) ); 
-        //SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
+        SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
     }	
 }

@@ -46,9 +46,9 @@ Texture2D g_txLightMap;
 Texture2D g_txSkyBox;
 Texture2D g_txGrassColor;
 
-#include "Shaders/Samplers.fx"
-#include "Shaders/Fog.fx"
-#include "Shaders/States.fx"
+#include "Samplers.fx"
+#include "Fog.fx"
+#include "States.fx"
 
 
 //--------------------------------------------------------------------------------------

@@ -13,7 +13,7 @@ struct TerrainVertex
 struct TerrainHeightData
 {
     float        *pData;
-	XMFLOAT3     *pNormals;
+   XMFLOAT3     *pNormals;
     UINT          uHeight;
     UINT          uWidth;
     float         fHeight;
@@ -22,10 +22,10 @@ struct TerrainHeightData
     void     ConvertFrom        (const ScratchImage* a_image, const TexMetadata* a_info);
     void     CalcNormals        (float a_fHeightScale, float a_fDistBtwVertices);
     float    GetHeight          (float a_fX, float a_fY) const;
-	XMFLOAT3 GetNormal		    (float a_fX, float a_fY) const;
+   XMFLOAT3 GetNormal          (float a_fX, float a_fY) const;
     float    GetHeight3x3       (float a_fX, float a_fY) const;
     
-	TerrainHeightData        (void);
+   TerrainHeightData        (void);
     ~TerrainHeightData       (void);
 };
 
@@ -47,7 +47,7 @@ private:
     ID3DX11EffectPass                   *m_pPass;
     ID3DX11EffectPass                   *m_pLightMapPass;
     ID3D11Device                        *m_pD3DDevice;
-	ID3D11DeviceContext					*m_pD3DDeviceCtx;
+    ID3D11DeviceContext                 *m_pD3DDeviceCtx;
     ID3D11InputLayout                   *m_pInputLayout;
     ID3D11Buffer                        *m_pVertexBuffer;
     ID3D11Buffer                        *m_pQuadVertexBuffer;
@@ -64,11 +64,12 @@ private:
 public:
     Terrain                                  (ID3D11Device *a_pD3DDevice, ID3D11DeviceContext * a_pD3DDeviceCtx, ID3DX11Effect *a_pEffect, float a_fSize);
     ~Terrain                                 (void);
-											  
+                                   
     void  BuildHeightMap                     (float a_fHeightScale );
     ID3D11ShaderResourceView  *LightMapSRV   (void);
     ID3D11ShaderResourceView  *HeightMapSRV  (void);
     TerrainHeightData         *HeightDataPtr (void);//unsafe!
     void UpdateLightMap                      (void);
     void Render                              (void);
+    void ApplyPass                           (void);
 };

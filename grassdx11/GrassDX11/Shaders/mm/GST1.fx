@@ -1,4 +1,4 @@
-#include "Shaders/GSFunc.fx"
+#include "GSFunc.fx"
 
 inline void PtTo2Vertex(float3 vPt, float3 vOffs, float vTCy, float vNy, float2 vTexindTexcrdX, float2 a_vWorldTC, float3 a_vColor, float a_fNoise,  float a_fDissolve,
 	inout TriangleStream< PSIn > TriStream)

@@ -64,19 +64,21 @@ inline float LodAlphaOffset(float4 a_vWorldPt)
  */
 inline float4 CalcTransparency( float a_fBaseAlpha, float4 a_vFirstPt, out float a_fDissolve, out uint a_uNumVertices )
 {
-/*
-	float2 vUV = (a_vFirstPt.xz / g_fTerrRadius) * 0.5 + 0.5;
-	if (GetSeatingInfo(vUV) < 0.1)
-		return 0.0;
-*/
+    float2 vUV = (a_vFirstPt.xz / g_fTerrRadius) * 0.5 + 0.5;
+	if (GetSeatingInfo(vUV) < 0.5) {
+		a_fDissolve = 0.0;
+        a_uNumVertices = 0;
+        return float4(0, 0, 0, 0);
+    }
+
     float fDist = length(a_vFirstPt.xyz - g_mInvCamView[3].xyz);
 	a_uNumVertices = 7;
 
-    if (fDist > 30.0)
-       a_uNumVertices = 4;
-	if (fDist > 35.0)
-	   a_uNumVertices = 3;
     if (fDist > 40.0)
+       a_uNumVertices = 4;
+	if (fDist > 50.0)
+	   a_uNumVertices = 3;
+    if (fDist > 60.0)
        a_uNumVertices = 2;
 /*
     if (fDist > 0.5)
@@ -98,12 +100,21 @@ inline float4 CalcTransparency( float a_fBaseAlpha, float4 a_vFirstPt, out float
 inline float3 CalcWind( float3 a_vPos, int a_iSegmentIndex )
 {
     float2 vTexCoord = ((a_vPos.xz / g_fTerrRadius) * 0.5 + 0.5 )*g_fWindTexTile;
-	float3 vValue = g_txWindTex.SampleLevel(g_samLinear, float3(vTexCoord, a_iSegmentIndex), 0).rgb;// - 1.0).xyz; 
-    //float3 vWind = (vValue);
+    float2 vTexCoordForFlow = ((a_vPos.xz / g_fTerrRadius) * 0.5 + 0.5);
+	float3 vValue = g_txWindTex.SampleLevel(g_samLinear, float3(vTexCoord, 0), 0).rgb;// - 1.0).xyz; 
+    
     float3 vWind = (vValue) * g_fWindStrength;
-//    float3 vWind = float3(0.0, 0.0, 0.0);
+    //float3 vWind = float3(0.0, 0.0, 0.0);
+    //return vWind;
+    
+    float3 vAxesFlow = float3(0.0, 0.0, 0.0);
 
-    return vWind;
+    return g_txAxesFanFlow.SampleLevel(g_samLinear, float3(vTexCoordForFlow, 0), 0).rgb;
+
+    for (int i = 0; i < 30; i++) {
+       vAxesFlow += 1.0 / (4.5 * (30 - i)) * g_txAxesFanFlow.SampleLevel(g_samLinear, float3(vTexCoordForFlow, i), 0).rgb;
+    }
+    return vAxesFlow + vWind;
 }
 
 #endif

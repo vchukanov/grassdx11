@@ -6,6 +6,7 @@ SamplerState g_samShadow
     Filter   = MIN_MAG_LINEAR_MIP_POINT;
     AddressU = Border;
     AddressV = Border;
+    BorderColor = float4(1, 1, 1, 1);
 };
 
 SamplerState g_samAniso
@@ -33,18 +34,18 @@ SamplerState g_samPoint
 float ShadowCoef(float4 vShadowTexCoord)
 {
     vShadowTexCoord    = vShadowTexCoord / vShadowTexCoord.w;
-    if (abs(vShadowTexCoord.y) > 1.0)
-        return 1.0;
+    if (abs(vShadowTexCoord.z) > 1.0)
+        return 0.7;
     vShadowTexCoord.y  = -vShadowTexCoord.y;
     vShadowTexCoord.xy = vShadowTexCoord.xy * 0.5 + float2(0.5, 0.5);
     float fDepth = g_txShadowMap.Sample(g_samShadow, vShadowTexCoord.xy).r;
     float fPixelZ = vShadowTexCoord.z * 0.5 + 0.5;
-    if (fDepth+0.0005 < fPixelZ)
+    if (fDepth + 0.0005 < fPixelZ)
     {
-        return 0.4;
+        return 0.2;
     }
     
-    return 1.0;
+    return 0.7;
 }
 
 #endif

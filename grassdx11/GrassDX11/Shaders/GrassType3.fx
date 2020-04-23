@@ -18,6 +18,11 @@ cbuffer cEveryFrame
 {
     float4x4 g_mWorld;
     float4x4 g_mViewProj;
+    
+    float4x4 g_mPrevWorld;
+    float4x4 g_mPrevViewProj;
+    float4x4 g_mPrevInvCamView;
+
     float4x4 g_mLightViewProj;
     float4x4 g_mInvCamView;
     float4x4 g_mView;
@@ -55,8 +60,13 @@ struct GrassSubType
     float3 vHardnessSegment;
     float3 vMassSegment; 
     float2 vSizes; //x = segment width, y = segment height
+    
+    float2 pad0;
+
     uint   uTexIndex;
     uint   uTopTexIndex;
+    
+    float2 pad1;
 };
 
 cbuffer cGrassSubTypes
@@ -70,6 +80,7 @@ cbuffer cGrassSubTypes
 Texture2DArray g_txGrassDiffuseArray;
 Texture2DArray g_txTopDiffuseArray;
 Texture2DArray g_txWindTex;
+Texture2DArray g_txAxesFanFlow;
 Texture2D      g_txSeatingMap;
 Texture2D      g_txIndexMap;
 Texture2D      g_txNoise;
@@ -78,8 +89,8 @@ Texture2D      g_txShadowMap;
 Texture2D      g_txTerrainLightMap;
 Texture2D      g_txGrassColor;
 
-#include "Shaders/Samplers.fx"
-#include "Shaders/States.fx"
+#include "Samplers.fx"
+#include "States.fx"
 
 
 //--------------------------------------------------------------------------------------
@@ -87,7 +98,7 @@ Texture2D      g_txGrassColor;
 //--------------------------------------------------------------------------------------
 
 /* Grass input structures */
-#include "Shaders/VSIn.fx"
+#include "VSIn.fx"
 
 /* Grass input structures */
 struct GSIn
@@ -106,7 +117,7 @@ struct GSIn
 struct PSIn
 {
     float4 vPos                       : SV_Position;
-    //float4 vShadowPos                 : TEXCOORD0;
+    float4 vShadowPos                 : TEXCOORD0;
     float4 vTexCoord                  : TEXCOORD1;
     nointerpolation float2 vWorldTC   : TEXCOORD2;
     float  fLightParam                : NORMALY;
@@ -117,9 +128,9 @@ struct PSIn
 };
 
 /* Grass shaders */
-#include "Shaders/EnableSeating.fx"
-#include "Shaders/EnableSubTypes.fx"
-#include "Shaders/Lod.fx"
+#include "EnableSeating.fx"
+#include "EnableSubTypes.fx"
+#include "Lod.fx"
 
 
 float3x3 MatrixIdentity()
@@ -306,6 +317,16 @@ GSIn CalcWindAnimation( float3 a_vBladePos, float3 a_vRotAxe, float3 a_vYRotAxe 
     
     a_vBladePos += transpose(mM_T[3])[1] * fScale*fSegLength;
     Output.vPos3 = a_vBladePos;
+
+    float fY = g_txHeightMap.SampleLevel(g_samLinear, (Output.vPos3.xz / g_fTerrRadius) * 0.5 + 0.5, 0).a * g_fHeightScale;    
+    if (Output.vPos3.y <= fY)
+      Output.vPos3.y = fY + 0.01;
+    
+    if (Output.vPos2.y <= fY)
+      Output.vPos2.y = fY + 0.01;
+    
+    if (Output.vPos1.y <= fY)
+      Output.vPos1.y = fY + 0.01;
     
     return Output;
 }
@@ -387,7 +408,7 @@ GSIn PhysVSMain( PhysVSIn Input )
     return Output;
 }
 
-#include "Shaders/GSFunc.fx"
+#include "GSFunc.fx"
 //CreateVertex( float3 a_vPos, float2 a_vTexCoord, float a_fLightParam, uint a_uTexIndex, float a_fDissolve, float2 a_vWorldTC, inout PSIn Vertex)
 void MakeTop( float3 vCenter, float3 vX, float3 vY, float3 vZ, uint uTypeIndex, float a_fDissolve, inout TriangleStream< PSIn > TriStream )
 {
@@ -538,8 +559,6 @@ void GSGrassMain( point GSIn Input[1], inout TriangleStream< PSIn > TriStream )
 /*
 float4 InstPSMain( PSIn Input ) : SV_Target
 {        
-
-	return float4(2.0, 1.0, 1.0, 1.0);
   	//float fLimDist = (Input.vTexCoord.w - 75.f)/10.f;
 	float fNoise = g_txNoise.Sample(g_samLinear, Input.vTexCoord.xy).r;
 	
@@ -581,8 +600,6 @@ float4 InstPSMain( PSIn Input ) : SV_Target
 */
 float4 InstPSMain( PSIn Input ) : SV_Target
 {        
-
-	return float4(2.0, 1.0, 1.0, 1.0);
   if (Input.fDissolve < 0.0) clip(-1);
   /*	float fLimDist = (Input.vTexCoord.w - 75.f)/10.f;
     float fNoise = g_txNoise.Sample(g_samLinear, Input.vTexCoord.xy).r;
@@ -596,6 +613,8 @@ float4 InstPSMain( PSIn Input ) : SV_Target
 			clip(Input.fDissolve - fNoise);
 	}
 	*/
+    float fShadowCoef = ShadowCoef(Input.vShadowPos);
+
 	float fL = max(0.17, (1.0 + 5.0 * Input.vTerrSpec.y)*0.6);
     float3 vT = float3(0.04, 0.1, 0.01) * max(0.8, (2.0 + 5.0f* Input.vTerrSpec.y)*0.5);
 //	float3 vT = g_vTerrRGB * max(0.8, (2.0 + 5.0f* Input.vTerrSpec.y)*0.5);
@@ -624,20 +643,24 @@ float4 InstPSMain( PSIn Input ) : SV_Target
 		vC3 = (1.0 - fLimDist1)*vC3 +  fLimDist1*vT;
 	}	
   //  return float4(vC3, vTexel.a);
-   return lerp(float4(vC3, vTexel.a * Input.fDissolve), g_vFogColor, Input.vTexCoord.z);
-     
+    float4 color = lerp(float4(vC3, vTexel.a * Input.fDissolve), g_vFogColor, Input.vTexCoord.z);
+    
+    color.xyz = color.xyz * fShadowCoef;
+    return color;
 }
-//float4 ShadowPSMain( PSIn Input, out float fDepth: SV_Depth ) : SV_Target
-//{   
-//    float fAlpha;
-//    if (Input.bIsTop)
-//        fAlpha = g_txTopDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, Input.uIndex)).a;    
-//    else
-//        fAlpha = g_txGrassDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, Input.uIndex)).a;
-//    clip(fAlpha - 0.001);
-//    fDepth = Input.vShadowPos.z / Input.vShadowPos.w * 0.5 + 0.5;
-//    return float4(0.0, 0.0, 0.0, 1.0);
-//}
+
+
+float4 ShadowPSMain( PSIn Input, out float fDepth: SV_Depth ) : SV_Target
+{   
+    float fAlpha;
+    if (Input.bIsTop)
+        fAlpha = g_txTopDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, Input.uIndex)).a;    
+    else
+        fAlpha = g_txGrassDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, Input.uIndex)).a;
+    clip(fAlpha - 0.001);
+    fDepth = Input.vShadowPos.z / Input.vShadowPos.w * 0.5 + 0.5;
+    return float4(0.0, 0.0, 0.0, 1.0);
+}
 
 technique10 RenderGrass
 {
@@ -675,7 +698,7 @@ technique10 RenderGrass
     }
 
     /* Shadow passes */
-    /*pass ShadowPass
+    pass ShadowPass
     {        
         SetVertexShader( CompileShader( vs_4_0, InstVSMain() ) );
         SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
@@ -687,5 +710,5 @@ technique10 RenderGrass
         SetVertexShader( CompileShader( vs_4_0, PhysVSMain() ) );
         SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
         SetPixelShader( CompileShader( ps_4_0, ShadowPSMain() ) );
-    }*/
+    }
 }
