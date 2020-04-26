@@ -46,10 +46,11 @@ cbuffer cImmutable
 //--------------------------------------------------------------------------------------
 // Texture and samplers
 //--------------------------------------------------------------------------------------
+Texture2D g_txHack;
+Texture2D g_txHack1;
 Texture2D g_txScene;
 Texture2D g_txVelocityMap;
 Texture2D g_txShadowMap;
-Texture2D g_txGrassDiffuse;
 Texture2D g_txMeshDiffuse;
 Texture2D g_txSeatingT1;
 Texture2D g_txSeatingT2;
@@ -206,9 +207,9 @@ TerrPSIn MeshVSMain( TerrVSIn Input )
 
 float4 MeshPSMain (TerrPSIn Input): SV_Target
 {
-    //float4 vTexel = g_txMeshDiffuse.Sample(g_samLinear, Input.vTexCoord.xy );
-    return float4(1, 1, 1, 1);
-    //return vTexel;
+    float4 vTexel = g_txMeshDiffuse.Sample(g_samLinear, Input.vTexCoord.xy );
+    //return float4(1, 1, 1, 1);
+    return vTexel;
 }
 
 float4 MeshPSMainBlured( TerrPSIn Input ): SV_Target

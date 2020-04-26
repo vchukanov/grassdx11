@@ -42,7 +42,7 @@ public:
    int CreateAxesFan (const XMMATRIX& initialTransform);
 
    void Update          (float a_fElapsedTime, float a_fTime);
-   void RenderFans      (bool isVelPass = false);
+   void RenderFans      (bool isVelPass = false, bool isBlured = false);
  
    ID3D11ShaderResourceView* GetFlowSRV (void);
 

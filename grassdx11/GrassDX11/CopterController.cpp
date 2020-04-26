@@ -93,10 +93,10 @@ void CopterController::UpdateInput (void)
    }
 
    if (up == UP) {
-      torque += 2;
+      torque += 1;
    }
 
    if (down == DOWN) {
-      torque -= 2;
+      torque -= 1;
    }
 }
