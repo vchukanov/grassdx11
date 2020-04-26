@@ -19,9 +19,6 @@
 #include "DebugWindow.h"
 
 
-#pragma comment(lib, "Effects11d.lib")
-#pragma comment(lib, "DirectXTex.lib")
-
 #define MAX_NUM_MESHES 1
 
 //--------------------------------------------------------------------------------------

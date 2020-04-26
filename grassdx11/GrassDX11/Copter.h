@@ -4,6 +4,8 @@
 
 #include "includes.h"
 #include "FlowManager.h"
+#include "ModelLoader.h"
+
 
 class Copter {
 
@@ -54,6 +56,10 @@ public:
    std::vector<int> fanIds;
 
    FlowManager* flowManager;
+   
+   ModelLoader* copterModel;
+   
+   float x = -2.1, y = 0, z = -2.1;
 };
 
 #endif

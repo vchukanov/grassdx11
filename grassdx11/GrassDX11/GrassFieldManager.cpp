@@ -556,7 +556,7 @@ void GrassFieldManager::Render(Copter* copter)
       m_pGrassTypes[2]->Render(false);
    }
 
-   ID3D11ShaderResourceView* pVelSRV = NULL;
+   /*ID3D11ShaderResourceView* pVelSRV = NULL;
    ID3D11ShaderResourceView* pSceneSRV = NULL;
    {
       m_pSceneTex->BeginVelocityMap();
@@ -565,23 +565,24 @@ void GrassFieldManager::Render(Copter* copter)
       m_pGrassTypes[0]->Render(false);
       m_pGrassTypes[2]->Render(false);
       copter->Render();
-      m_pFlowManager->RenderFans();
+      m_pFlowManager->RenderFans(false, false);
       
       pSceneSRV = m_pSceneTex->EndVelocityMap();
-      m_pSceneTxESRV[GrassTypeNum]->SetResource(pSceneSRV);
 
       m_pVelocityMap->BeginVelocityMap();
       m_pFlowManager->RenderFans(true);
       pVelSRV = m_pVelocityMap->EndVelocityMap();
-      m_pVelocityMapESRV[GrassTypeNum]->SetResource(pVelSRV);
-   }
+   }*/
 
    copter->Render();
-   m_pFlowManager->RenderFans();
+   //m_pSceneTxESRV[GrassTypeNum]->SetResource(pSceneSRV);
+   //m_pVelocityMapESRV[GrassTypeNum]->SetResource(pVelSRV);
 
-   m_pVelocityMapESRV[GrassTypeNum]->SetResource(NULL);
+   m_pFlowManager->RenderFans(false, false);
+
+   //m_pVelocityMapESRV[GrassTypeNum]->SetResource(NULL);
+   //m_pSceneTxESRV[GrassTypeNum]->SetResource(NULL);
    m_pShadowMapESRV[GrassTypeNum]->SetResource(NULL);
-   m_pSceneTxESRV[GrassTypeNum]->SetResource(NULL);
 }
 
 void GrassFieldManager::Update (float3 a_vCamDir, float3 a_vCamPos, Mesh* a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime, float a_fTime)
