@@ -11,11 +11,13 @@ using namespace std;
 #include <vector>
 #include <d3d11_1.h>
 #include <DirectXMath.h>
+#include <d3dx11effect.h>
 using namespace DirectX;
 
 struct VERTEX {
 	FLOAT X, Y, Z;
 	XMFLOAT2 texcoord;
+   XMFLOAT3 normal;
 };
 
 struct Texture {
@@ -26,10 +28,10 @@ struct Texture {
 
 class MeshAssimp {
 public:
-	vector<VERTEX> vertices;
-	vector<UINT> indices;
+	vector<VERTEX>  vertices;
+	vector<UINT>    indices;
 	vector<Texture> textures;
-	ID3D11Device *dev;
+	ID3D11Device   *dev;
 
    MeshAssimp(ID3D11Device *dev, vector<VERTEX> vertices, vector<UINT> indices, vector<Texture> textures)
 	{
@@ -42,7 +44,7 @@ public:
 		this->setupMesh(dev);
 	}
 
-	void Draw(ID3D11DeviceContext *devcon)
+	void Draw(ID3D11DeviceContext *devcon, ID3DX11EffectPass* pass, ID3DX11EffectShaderResourceVariable * texESRV)
 	{
 		UINT stride = sizeof(VERTEX);
 		UINT offset = 0;
@@ -50,7 +52,9 @@ public:
 		devcon->IASetVertexBuffers(0, 1, &VertexBuffer, &stride, &offset);
 		devcon->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-		devcon->PSSetShaderResources(0, 1, &textures[0].texture);
+      texESRV->SetResource(textures[0].texture);
+      pass->Apply(0, devcon);
+		//devcon->PSSetShaderResources(0, 1, &textures[0].texture);
 
 		devcon->DrawIndexed(indices.size(), 0, 0);
    }
@@ -66,7 +70,7 @@ private:
 
 	/*  Functions    */
 	// Initializes all the buffer objects/arrays
-	bool setupMesh(ID3D11Device *dev)
+	bool setupMesh (ID3D11Device *dev)
 	{
 		HRESULT hr;
 
