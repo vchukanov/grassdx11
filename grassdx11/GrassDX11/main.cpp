@@ -381,6 +381,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    V_RETURN(pd3dDevice->CreateInputLayout(SkyBoxLayout, iNumElements, PassDesc.pIAInputSignature,
       PassDesc.IAInputSignatureSize, &g_pSkyVertexLayout));
    g_MeshSkybox.Create(pd3dDevice, L"resources\\skysphere.sdkmesh");
+   g_pSkyBoxESRV->SetResource(nullptr);
 
    /*Loading colors*/
    InFile.open("config/colors.ini");
@@ -435,10 +436,10 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetWind()->GetMap(), 10);
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pShadowMapping->m_pSRV, 0.1 / 4);
-   g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pSceneTex->GetShaderResourceView(), 0.5);
+   //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pSceneTex->GetShaderResourceView(), 0.5);
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, terr->HeightMapSRV(), 1);
 
-   //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->m_pAxesFanFlow->m_shaderResourceView, 1);
+   g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->m_pAxesFanFlow->m_shaderResourceView, 1);
    g_dbgWin->ToggleRender();
 
    return S_OK;
@@ -624,6 +625,7 @@ void RenderGrass(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dDeviceCtx, X
    pd3dDeviceCtx->IASetInputLayout(g_pSkyVertexLayout);
    g_pSkyboxPass->Apply(0, pd3dDeviceCtx);
    g_MeshSkybox.Render(pd3dDeviceCtx, 0);
+   g_pSkyBoxESRV->SetResource(g_MeshSkybox.GetMaterial(0)->pDiffuseRV11);
 }
 
 

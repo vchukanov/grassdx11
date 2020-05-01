@@ -62,7 +62,7 @@ float                               g_fGrassDiffuse = 10.0f;
 //phys
 float                               g_fMass = 1.0;//0.2450f; //0.230f;
 float                               g_fHardness = 1.0f;
-float                               g_fWindStrength = 0.0f;//0.0616f;
+float                               g_fWindStrength = 0.3016f;
 float                               g_fWindStrengthDefault = 1.0f;
 float                               g_fWindBias = 0.4370f;
 float                               g_fWindScale = 4.96f;

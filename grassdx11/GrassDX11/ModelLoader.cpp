@@ -31,11 +31,11 @@ bool ModelLoader::Load(HWND hwnd, ID3D11Device * dev, ID3D11DeviceContext * devc
 	return true;
 }
 
-void ModelLoader::Draw(ID3D11DeviceContext * devcon)
+void ModelLoader::Draw(ID3D11DeviceContext * devcon, ID3DX11EffectPass * pass, ID3DX11EffectShaderResourceVariable * texESRV)
 {
 	for (int i = 0; i < meshes.size(); i++)
 	{
-		meshes[i].Draw(devcon);
+		meshes[i].Draw(devcon, pass, texESRV);
 	}
 }
 
@@ -65,6 +65,10 @@ MeshAssimp ModelLoader::processMesh(aiMesh * mesh, const aiScene * scene)
 		vertex.Y = mesh->mVertices[i].y;
 		vertex.Z = mesh->mVertices[i].z;
 
+      vertex.normal.x = mesh->mNormals[i].x;
+      vertex.normal.y = mesh->mNormals[i].y;
+      vertex.normal.z = mesh->mNormals[i].z;
+
 		if (mesh->mTextureCoords[0])
 		{
 			vertex.texcoord.x = (float)mesh->mTextureCoords[0][i].x;
@@ -88,6 +92,8 @@ MeshAssimp ModelLoader::processMesh(aiMesh * mesh, const aiScene * scene)
 
 		vector<Texture> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+
+      //material->Get();
 	}
 
 	return MeshAssimp(dev, vertices, indices, textures);
@@ -100,8 +106,7 @@ vector<Texture> ModelLoader::loadMaterialTextures(aiMaterial * mat, aiTextureTyp
 	{
 		aiString str;
 		mat->GetTexture(type, i, &str);
-      str = "Texture.png";
-		// Check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
+      // Check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
 		bool skip = false;
 		for (UINT j = 0; j < textures_loaded.size(); j++)
 		{

@@ -29,12 +29,16 @@ cbuffer cUserControlled
     float  g_fTerrTile;
     float  g_fHeightScale;
     float3 g_vTerrSpec = float3(202.0/255.0, 218.0/255.0, 50.0/255.0);
+    
+    float3 ambientLightColor    = float3(1, 1, 0.8);
+    float  ambientLightStrength = 1;
+
 };
 
 cbuffer cRarely
 {
-    float g_fTerrRadius;
-    float g_fGrassRadius;
+    float  g_fTerrRadius;
+    float  g_fGrassRadius;
     float2 g_vPixSize = float2(0.0039, 0.0039);
 };
 
@@ -46,12 +50,10 @@ cbuffer cImmutable
 //--------------------------------------------------------------------------------------
 // Texture and samplers
 //--------------------------------------------------------------------------------------
-Texture2D g_txHack;
-Texture2D g_txHack1;
+Texture2D g_txMeshDiffuse;
 Texture2D g_txScene;
 Texture2D g_txVelocityMap;
 Texture2D g_txShadowMap;
-Texture2D g_txMeshDiffuse;
 Texture2D g_txSeatingT1;
 Texture2D g_txSeatingT2;
 Texture2D g_txSeatingT3;
@@ -96,10 +98,10 @@ struct TerrPSIn
 
 struct VSSceneIn
 {
-    float3 pos : POSITION;
+    float3 pos  : POSITION;
     float3 norm : NORMAL;
-    float2 tex : TEXTURE0;
-};
+    float2 tex  : TEXTURE0;
+}; 
 
 struct PSSceneIn
 {
@@ -114,6 +116,23 @@ struct PSCarIn
     float3 norm : NORMAL;
     float2 tex : TEXTURE0;
 };
+
+
+struct MeshVSIn
+{
+   float3 vPos      : POSITION;
+   float2 vTexCoord : TEXCOORD;
+   float3 vNormal   : NORMAL;
+};
+
+struct MeshPSIn
+{
+   float4 vPos      : SV_Position;
+   float3 vWorldPos : POSITION;
+   float4 vTexCoord : TEXCOORD;
+   float3 vNormal   : NORMAL;
+};
+
 
 struct BlurPSIn
 {
@@ -197,19 +216,63 @@ float4 PSCarmain0(PSCarIn Input): SV_Target0
 
 
 /* Mesh shaders */
-TerrPSIn MeshVSMain( TerrVSIn Input )
+MeshPSIn MeshVSMain( MeshVSIn Input )
 {
-    TerrPSIn Output;
+    MeshPSIn Output;
     Output.vPos         = mul(mul(float4(Input.vPos, 1.0), g_mWorld), g_mViewProj);
     Output.vTexCoord.xy = Input.vTexCoord;
+    Output.vNormal      = normalize(mul(float4(Input.vNormal, 0.0), g_mWorld));
+    Output.vWorldPos    = mul(float4(Input.vPos, 1.0), g_mWorld);
     return Output;    
 }
 
-float4 MeshPSMain (TerrPSIn Input): SV_Target
+float4 MeshPSMain (MeshPSIn Input): SV_Target
 {
-    float4 vTexel = g_txMeshDiffuse.Sample(g_samLinear, Input.vTexCoord.xy );
-    //return float4(1, 1, 1, 1);
-    return vTexel;
+    float3 sampleColor = g_txMeshDiffuse.Sample(g_samLinear, Input.vTexCoord.xy);
+    float3 ambientLight = float3(0.1, 0.1, 0.1);//ambientLightColor * ambientLightStrength;
+    float3 appliedLight = ambientLight;
+
+    float3 diffuseLightIntensity = max(dot(-vLightDir, Input.vNormal), 0);
+    float3 diffuseLight = diffuseLightIntensity /** fLightStrength * fLightColor*/;
+
+    appliedLight += diffuseLight;
+    float3 finalColor = sampleColor * appliedLight;
+
+    //return float4(finalColor, 1);
+
+    float3 eye_dir = normalize(g_mInvCamView[3].xyz - Input.vWorldPos);
+
+   /* float4 ka, kd, ks;
+    
+    ka = float4(g_vKa, 1.0f);
+	
+    if (g_vKd.x != 0 || g_vKd.y != 0 || g_vKd.z != 0)
+        kd = float4(g_vKd, 1.0f);
+    else
+        kd = g_txMeshMapKd.Sample(g_samLinear, Input.vTexCoord);
+        
+    if (g_vKs.x != 0 || g_vKs.y != 0 || g_vKs.z != 0)
+        ks = float4(g_vKs, 1.0f);
+    else
+        ks = g_txMeshMapKs.Sample(g_samLinear, Input.vTexCoord);
+    */
+
+    float3 half = normalize(eye_dir - vLightDir);
+    float3 refl = normalize(reflect(eye_dir, Input.vNormal));
+    float2 sphere_tex_coords;
+    
+    sphere_tex_coords.x = refl.x / 2 + 0.5;
+    sphere_tex_coords.y = refl.y / 2 + 0.5;
+
+    float3 Ir = g_txSkyBox.Sample(g_samLinear, sphere_tex_coords).xyz;
+    Ir *= clamp(dot(Input.vNormal, float3(0, 1, 0)), 0, 1);
+
+    return float4(finalColor + Ir, 1);
+    //float Ia = 0.3, Id = 0.2, Is = 1.1;
+
+    /*return float4(Ia * ka.xyz * kd.xyz, kd.w) +
+        float4(Id * kd.xyz * max(dot(-vLightDir, Input.vNormal), 0), kd.w) +
+        float4(ks.xyz * (Is * pow(max(dot(half, Input.vNormal), 0.0f), g_nNs) + Ir), 0.0f);*/
 }
 
 float4 MeshPSMainBlured( TerrPSIn Input ): SV_Target
@@ -363,14 +426,14 @@ technique10 Render
         SetRasterizerState( EnableMSAA );
     }
 
-    pass RenderMeshPassBlured
+    /*pass RenderMeshPassBlured
     {
         SetVertexShader( CompileShader( vs_5_0, MeshVSMain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, MeshPSMainBlured() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
         SetRasterizerState( EnableMSAA );
-    }
+    }*/
 
     pass RenderLightMapPass
     {
