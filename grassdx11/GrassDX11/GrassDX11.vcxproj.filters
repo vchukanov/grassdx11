@@ -130,6 +130,9 @@
     <ClCompile Include="Car.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="TexturesMixer.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="includes.h" />
@@ -249,6 +252,12 @@
     </ClInclude>
     <ClInclude Include="Car.h">
       <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="TexturesMixer.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="AirData.h">
+      <Filter>Grass\Render\C++</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

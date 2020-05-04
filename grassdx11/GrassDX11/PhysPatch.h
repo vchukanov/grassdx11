@@ -7,6 +7,7 @@
 #include "PhysMath.h"
 #include "GrassProperties.h"
 #include "Terrain.h"
+#include "AirData.h"
 
 #include <omp.h>
 
@@ -85,6 +86,7 @@ public:
 
    static float fTerrRadius;
    static const WindData* pWindData;
+   static const AirData* pAirData;
    static float fHeightScale;
    static const TerrainHeightData* pHeightData;
 

@@ -1,5 +1,6 @@
 #include "AxesFanFlow.h"
 
+#include "includes.h"
 
 AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DDeviceCtx, int textureWidth, int textureHeight, float a_fTerrRadius)
 {
@@ -20,7 +21,7 @@ AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DD
    textureDesc.Width = textureWidth;
    textureDesc.Height = textureHeight;
    textureDesc.MipLevels = 1;
-   textureDesc.ArraySize = HISTORY_TEX_CNT;
+   textureDesc.ArraySize = 1;
    textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
    textureDesc.SampleDesc.Count = 1;
    textureDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -49,7 +50,7 @@ AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DD
    shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
    shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
    shaderResourceViewDesc.Texture2D.MipLevels = 1;
-   shaderResourceViewDesc.Texture2DArray.ArraySize = HISTORY_TEX_CNT;
+   shaderResourceViewDesc.Texture2DArray.ArraySize = 1;
    shaderResourceViewDesc.Texture2DArray.FirstArraySlice = 0;
 
    // Create the shader resource view.
@@ -198,7 +199,7 @@ void AxesFanFlow::CopyField (void)
 }
 
 
-void AxesFanFlow::EndMakeFlowTexture (void)
+void AxesFanFlow::EndMakeFlowTexture(void)
 {
    /* Reverting changes */
    m_pD3DDeviceCtx->OMSetRenderTargets(1, &m_pOrigRTV, m_pOrigDSV);
@@ -207,23 +208,6 @@ void AxesFanFlow::EndMakeFlowTexture (void)
    SAFE_RELEASE(m_pOrigRTV);
    SAFE_RELEASE(m_pOrigDSV);
    SAFE_RELEASE(m_pOrigRS);
-
-   MakeTextHistory();
-}
-
-
-void AxesFanFlow::MakeTextHistory (void)
-{
-   for (int i = (HISTORY_TEX_CNT - 2); i >= 0; i--) {
-      m_pD3DDeviceCtx->CopySubresourceRegion(
-         m_renderTargetTexture,
-         D3D11CalcSubresource(0, i + 1, 1),
-         0, 0, 0, 
-         m_renderTargetTexture,
-         D3D11CalcSubresource(0, i, 1), 
-         NULL
-      );
-   }
 }
 
 
@@ -261,7 +245,7 @@ void AxesFanFlow::CreateInputLayout(void)
 {
    D3D11_INPUT_ELEMENT_DESC InputDesc[] =
    {
-      { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0 , D3D11_INPUT_PER_VERTEX_DATA, 0},
+      { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0},
       { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
    };
    D3DX11_PASS_DESC PassDesc;

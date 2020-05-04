@@ -65,6 +65,7 @@ XMVECTOR WindData::GetValue(const XMVECTOR& a_vTexCoord, const float a_fWindTexT
       uHX = uWidth - 1;
    if (uHY > uHeight - 1)
       uHY = uHeight - 1;
+
    XMFLOAT3 fLL = vWindData[uWidth * uLY + uLX];
    XMFLOAT3 fHL = vWindData[uWidth * uHY + uLX];
    XMFLOAT3 fLR = vWindData[uWidth * uLY + uHX];
@@ -247,8 +248,7 @@ void WindData::WindCopy(ID3D11Texture2D* a_pDestTex, ID3D11DeviceContext* a_pDev
          }
       }
 
-      a_pDeviceCtx->UpdateSubresource(a_pDestTex,
-         D3D11CalcSubresource(0, segment, 1), &dest_region, (const void*)pTexels, (UINT)row_pitch, 0);
+      a_pDeviceCtx->UpdateSubresource(a_pDestTex, D3D11CalcSubresource(0, segment, 1), &dest_region, (const void*)pTexels, (UINT)row_pitch, 0);
    }
 }
 
@@ -354,7 +354,7 @@ static float CurTime = 0.f;
 static float Bound = TimeCont[0];
 
 
-void WindData::UpdateWindTex(D3D11_MAPPED_SUBRESOURCE& a_MappedTex, float a_fElapsed, XMVECTOR a_vCamDir)
+void WindData::UpdateWindTex(float a_fElapsed, XMVECTOR a_vCamDir)
 {
    //    const GrassPropsUnified &props = grassProps[0];
    if (a_fElapsed >= 0.1f)
@@ -386,7 +386,6 @@ void WindData::UpdateWindTex(D3D11_MAPPED_SUBRESOURCE& a_MappedTex, float a_fEla
 
    float3 faRes[3];
    float2 vTexCoord = create(0, 0, 0);
-   float* pTexels = (float*)a_MappedTex.pData;
    XMFLOAT2 vUV;
    XMFLOAT4 vWind;
    float2 fPixHeight;
@@ -411,13 +410,10 @@ void WindData::UpdateWindTex(D3D11_MAPPED_SUBRESOURCE& a_MappedTex, float a_fEla
    float height[3];
 
    for (UINT row = 0; row < uHeight; row++)
-      //   for( UINT row = 0; row < 1; row++ )
    {
-      UINT rowStart = row * a_MappedTex.RowPitch / sizeof(float);
       sety(vTexCoord, float(row) / (fHeight - 1.0f));;
 
       for (UINT col = 0; col < uWidth; col++)
-         //        for( UINT col = 0; col < 1; col++ )
       {
          UINT colStart = col * 4;//RGBA
          setx(vTexCoord, float(col) / (fWidth - 1.0f));;
@@ -641,8 +637,6 @@ Wind::Wind(ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx)
    m_pD3DDevice->CreateTexture2D(&m_WindTexStagingDesc, 0, &m_pWindTexStaging);
 #pragma endregion
 
-   /*m_pWindTexESRV = a_pGrassEffect->GetVariableByName("g_txWindTex")->AsShaderResource();
-   m_pWindTexESRV->SetResource(m_pWindTexSRV);*/
 
 #pragma region depth stencil texture
    m_pDepthTex = NULL;
@@ -800,24 +794,13 @@ void Wind::MakeWindMap()
    SAFE_RELEASE(pOrigDS);
 }
 
-void Wind::MakeWindTex(float a_fElapsed, XMVECTOR a_vCamDir)
+void Wind::MakeWindTex (float a_fElapsed, XMVECTOR a_vCamDir)
 {
-   /*
-   D3D11_MAPPED_SURESOURCE MappedTexture;
-   m_WindData.UpdateWindTex(MappedTexture, a_fElapsed, a_vCamDir);
-   m_pWindTex->Map(D3D10CalcSubresource(0, 0, 1), D3D10_MAP_WRITE_DISCARD, 0, &MappedTexture);
-   //    m_WindData.UpdateWindTex(MappedTexture, a_fElapsed);
-   WindCopy(MappedTexture);
-   m_pWindTex->Unmap(D3D10CalcSubresource(0, 0, 1));
-   */
-
-   D3D11_MAPPED_SUBRESOURCE MappedTexture;
-
-   m_WindData.UpdateWindTex(MappedTexture, a_fElapsed, a_vCamDir);
+   m_WindData.UpdateWindTex(a_fElapsed, a_vCamDir);
    m_WindData.WindCopy(m_pWindTex, m_pD3DDeviceCtx);
 }
 
-void Wind::Update(float a_fElapsed, XMVECTOR a_vCamDir)
+void Wind::Update (float a_fElapsed, XMVECTOR a_vCamDir)
 {
    m_fTime += a_fElapsed;
    m_pTimeESV->SetFloat(m_fTime);
@@ -825,7 +808,7 @@ void Wind::Update(float a_fElapsed, XMVECTOR a_vCamDir)
 }
 
 
-void Wind::CreateVertexBuffer(void)
+void Wind::CreateVertexBuffer (void)
 {
    /* Initializing vertices */
    QuadVertex Vertices[4];
@@ -855,12 +838,12 @@ void Wind::CreateVertexBuffer(void)
 }
 
 
-void Wind::CreateInputLayout(void)
+void Wind::CreateInputLayout (void)
 {
    D3D11_INPUT_ELEMENT_DESC InputDesc[] =
    {
-       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0 , D3D11_INPUT_PER_VERTEX_DATA, 0},
-       { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0},
+       { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
    };
    D3DX11_PASS_DESC PassDesc;
    m_pWindMapPass->GetDesc(&PassDesc);
@@ -871,7 +854,7 @@ void Wind::CreateInputLayout(void)
 }
 
 
-ID3D11ShaderResourceView* Wind::GetMap(void)
+ID3D11ShaderResourceView* Wind::GetMap (void)
 {
    return m_pWindTexSRV;
 }

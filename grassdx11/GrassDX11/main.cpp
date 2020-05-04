@@ -461,7 +461,6 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    g_pGrassField->SetGrassAmbient(g_fGrassAmbient);
    g_pGrassField->SetWindStrength(g_fWindStrength);
    g_pGrassField->SetWindSpeed(g_fWindTexSpeed);
-   //g_pGrassField->SetHeightScale(g_fHeightScale);
    g_pGrassField->SetQuality(g_fQuality);
    g_pGrassField->SetLowGrassDiffuse(vGrassSpecular);
    g_pGrassField->SetFogColor(vFogColor);
@@ -495,9 +494,9 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pShadowMapping->m_pSRV, 0.1 / 4);
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pSceneTex->GetShaderResourceView(), 0.5);
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, terr->HeightMapSRV(), 1);
-
-   g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->m_pAxesFanFlow->m_shaderResourceView, 1);
-   //g_dbgWin->ToggleRender();
+   g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pMixer->m_shaderResourceView, 1);
+   //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->m_pAxesFanFlow->m_shaderResourceView, 1);
+   g_dbgWin->ToggleRender();
 
 
    return S_OK;
