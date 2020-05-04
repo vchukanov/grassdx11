@@ -488,13 +488,8 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    
    copter = new Copter(pd3dDevice, pd3dImmediateContext, g_pGrassField->m_pSceneEffect, g_pGrassField->GetFlowManager());
    copterController.SetOwner(copter);
-   /*{
-      g_pMeshes[0] = new Car(pd3dDevice, pd3dImmediateContext, g_pGrassField->SceneEffect(),
-         create(0, 0, 0, 0),
-         terr, height_scale, grass_radius,
-         g_fCarFrontWidth, g_fCarHeight, g_fCarLength, 0.0f);
-      g_fNumOfMeshes = 1;
-   }*/
+
+   InitCarMesh();
 
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetWind()->GetMap(), 10);
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pShadowMapping->m_pSRV, 0.1 / 4);
@@ -518,9 +513,9 @@ static float fTimeRot[5] = { 3.0f, 4.0f, 10.0f, 11.0f, 1000.0f };
 static float fF[5] = { 0.0f, 0.0001f, 0.0f, -0.0001f, 0.0f }, fw = 0.0f;
 static int Indx = 0;
 
-void UpdateMeshes(float a_fElapsedTime)
+void UpdateMeshes (float a_fElapsedTime)
 {
-   if (GetCameraType() == CAMERA_MESH)
+  // if (GetCameraType() == CAMERA_MESH)
    {
      
       // Rotate car
@@ -1277,7 +1272,6 @@ void ToggleToTerrainCamera (void)
 void ToggleToMeshCamera (void) {
    BeforeCameraChange();
 
-   InitCarMesh();
    float height_scale;
    float grass_radius;
    Terrain* const terr = g_pGrassField->GetTerrain(&height_scale, &grass_radius);
