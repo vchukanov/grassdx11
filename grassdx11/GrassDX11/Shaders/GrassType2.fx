@@ -17,8 +17,10 @@ cbuffer cEveryFrame
     float4x4 g_mLightViewProj;
     float4x4 g_mViewProj;
 
+    
     float4x4 g_mPrevWorld;
     float4x4 g_mPrevViewProj;
+    float4x4 g_mPrevInvCamView;
 
     float4x4 g_mInvCamView;
     float4x4 g_mView;
@@ -34,7 +36,6 @@ cbuffer cUserControlled
     float g_fGrassDiffuse;
     float g_fGrassLodBias;
     float g_fGrassSubScatterGamma;
-    float g_fWindStrength;
     float g_fWindTexTile;
     float g_fMass;
     float g_fHeightScale;
@@ -72,7 +73,7 @@ cbuffer cGrassSubTypes
 // Texture and samplers
 //--------------------------------------------------------------------------------------
 Texture2DArray g_txGrassDiffuseArray;
-Texture2DArray g_txWindTex;
+Texture2DArray g_txAirTex;
 Texture2D      g_txSeatingMap;
 Texture2D      g_txIndexMap;
 Texture2D      g_txNoise;
@@ -184,18 +185,8 @@ float3x3 MakeRotateMtx( float3 a_vAxe )
                     ));
 
 }
-/*
-float3 CalcWind( float3 a_vPos )
-{
-    float2 vTexCoord = ((a_vPos.xz / g_fGrassRadius) * 0.5 + 0.5 )  * g_fWindTexTile;
-	float2 dU = float2(1 / 1024, 0.0);
-	float2 dV = float2(0.0, 1 / 1024);
-	float3 vValue = g_txWindTex.SampleLevel(g_samLinear, vTexCoord, 0).rgb; 
-    float3 vWind = (vValue) * g_fWindStrength;// / 4.0; 
 
-    return vWind;
-}
-*/
+
 /* sub-function for calculating ONLY grass blade pts */
 GSIn CalcWindAnimation( float3 a_vBladePos, float3 a_vRotAxe, float3 a_vYRotAxe )
 {

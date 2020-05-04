@@ -130,7 +130,7 @@ GrassManager::GrassManager(GrassInitState& a_pInitState, GrassTracker* a_pGrassT
       { "mTransform"   , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
       { "mTransform"   , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
       { "mTransform"   , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-      //{ "uOnEdge"      , 0, DXGI_FORMAT_R32_UINT          , 1, 64, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+      //{ "uOnEdge"      , 0, DXGI_FORMAT_R32_UINT          , 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
    };
    int iNumElements = sizeof(TransformLayout) / sizeof(D3D11_INPUT_ELEMENT_DESC);
 
@@ -284,13 +284,6 @@ void GrassManager::SetLowGrassDiffuse(float4& a_vValue)
 {
    if (m_pLowGrassDiffuseEVV)
       m_pLowGrassDiffuseEVV->SetFloatVector((float*)& a_vValue);
-}
-
-void GrassManager::SetWindStrength(float a_fWindStrength)
-{
-   m_fWindStrength = a_fWindStrength;
-   PhysPatch::windStrength = a_fWindStrength;
-   m_pWindStrengthESV->SetFloat(m_fWindStrength);
 }
 
 void GrassManager::SetHeightDataPtr(const TerrainHeightData* a_pHeightData)

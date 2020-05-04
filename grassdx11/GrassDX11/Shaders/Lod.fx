@@ -30,18 +30,18 @@ inline void ScreenClip(float4 a_vWorldPt1, float4 a_vWorldPt2, inout float a_fTr
 
 inline float LodAlphaOffset(float4 a_vWorldPt)
 {
-	float3 vViewPos     = mul(a_vWorldPt, g_mView).xyz;
-    float fBladeDist        = length(vViewPos);
-	if (fBladeDist < 0.1) return 0.0;
-//	else return 1.0;
+	float3 vViewPos = mul(a_vWorldPt, g_mView).xyz;
+    float fBladeDist = length(vViewPos);
+	if (fBladeDist < 0.1) 
+        return 0.0;
 
     float fLerpCoef1 = (fBladeDist+0.1) /g_fGrassRadius;
     fLerpCoef1 *= fLerpCoef1;
    
     float2 vTexCoord    = ((a_vWorldPt.xz / g_fTerrRadius) * 0.5 + 0.5 );
     float3 vNormal = CalcTerrNormal(vTexCoord).xyz;
-	float3 vV = g_mInvCamView[3].xyz - a_vWorldPt.xyz; //vViewPos/fBladeDist;
-	float tmp = 0.43; //= 0.44 + 0.1 * vV.y/(5.0 + abs(vV.y));
+	float3 vV = g_mInvCamView[3].xyz - a_vWorldPt.xyz; 
+	float tmp = 0.43; 
 	if (vV.y<0.0) tmp += 0.1 * vV.y/(5.0 + abs(vV.y));
 	vV = normalize(vV);
 	float fdot = dot(vV, vNormal);
@@ -49,14 +49,14 @@ inline float LodAlphaOffset(float4 a_vWorldPt)
 	if (fdot<0) fdot*=-0.4;
 	float t = 1.f - fdot;
 	float h = g_mInvCamView[3].y;
-	if (h < 17.0f)  h= 0.0f;
+	if (h < 17.0f)  
+        h= 0.0f;
 	else
-	{
 		h = (h-17.0f)/50.0f;
-//		h = h*h;
-	}
-	if ((a_vWorldPt.y > 6.0)&&(t > 0.92)) return (0.2 + h);
-	else return (tmp *(1.0+3.0*fLerpCoef1)+h);
+	if ((a_vWorldPt.y > 6.0)&&(t > 0.92)) 
+        return (0.2 + h);
+	else 
+        return (tmp *(1.0+3.0*fLerpCoef1)+h);
 }
 
 /*
@@ -99,17 +99,8 @@ inline float4 CalcTransparency( float a_fBaseAlpha, float4 a_vFirstPt, out float
 
 inline float3 CalcWind( float3 a_vPos, int a_iSegmentIndex )
 {
-    float2 vTexCoord = ((a_vPos.xz / g_fTerrRadius) * 0.5 + 0.5 )*g_fWindTexTile;
-    float2 vTexCoordForFlow = ((a_vPos.xz / g_fTerrRadius) * 0.5 + 0.5);
-	float3 vValue = g_txWindTex.SampleLevel(g_samLinear, float3(vTexCoord, 0), 0).rgb;// - 1.0).xyz; 
-    
-    float3 vWind = (vValue) * g_fWindStrength;
-    //float3 vWind = float3(0.0, 0.0, 0.0);
-    //return vWind;
-    
-    float3 vAxesFlow = float3(0.0, 0.0, 0.0);
-
-    return g_txAxesFanFlow.SampleLevel(g_samLinear, float3(vTexCoordForFlow, 0), 0).rgb + vWind / (length(vAxesFlow + 1));
+    float2 vTexCoord = ((a_vPos.xz / g_fTerrRadius) * 0.5 + 0.5 );
+    return g_txAirTex.SampleLevel(g_samLinear, float3(vTexCoord, a_iSegmentIndex), 0).rgb;
 }
 
 #endif

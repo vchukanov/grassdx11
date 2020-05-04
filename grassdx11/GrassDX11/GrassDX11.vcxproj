@@ -461,6 +461,7 @@
     <ClCompile Include="StateManager.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
+    <ClCompile Include="TexturesMixer.cpp" />
     <ClCompile Include="VelocityMap.cpp" />
     <ClCompile Include="Wind.cpp" />
   </ItemGroup>
@@ -474,6 +475,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aabb.h" />
+    <ClInclude Include="AirData.h" />
     <ClInclude Include="AxesFan.h" />
     <ClInclude Include="AxesFanFlow.h" />
     <ClInclude Include="camera.h" />
@@ -510,6 +512,7 @@
     <ClInclude Include="StateManager.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="TextureLoader.h" />
+    <ClInclude Include="TexturesMixer.h" />
     <ClInclude Include="VelocityMap.h" />
     <ClInclude Include="Wind.h" />
     <ClInclude Include="xtmfrustum.h" />

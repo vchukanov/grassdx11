@@ -37,7 +37,6 @@ cbuffer cUserControlled
     float g_fGrassDiffuse;
     float g_fGrassLodBias;
     float g_fGrassSubScatterGamma;
-    float g_fWindStrength;
     float g_fWindTexTile;
     float g_fMass;
     float g_fHeightScale;
@@ -79,8 +78,7 @@ cbuffer cGrassSubTypes
 //--------------------------------------------------------------------------------------
 Texture2DArray g_txGrassDiffuseArray;
 Texture2DArray g_txTopDiffuseArray;
-Texture2DArray g_txWindTex;
-Texture2DArray g_txAxesFanFlow;
+Texture2DArray g_txAirTex;
 Texture2D      g_txSeatingMap;
 Texture2D      g_txIndexMap;
 Texture2D      g_txNoise;

@@ -138,8 +138,6 @@ public:
    void SetGrassLodBias    (float a_fGrassLodBias);
    void SetSubScatterGamma (float a_fGrassSubScatterGamma);
    void SetGrassAmbient    (float a_fGrassAmbient);
-   void SetWindStrength    (float a_fWindStrength);
-   void SetWindSpeed       (float a_fWindSpeed);
    void SetQuality         (float a_fQuality);
    void SetLowGrassDiffuse (float4 &a_vValue);
 

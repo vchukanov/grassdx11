@@ -18,6 +18,10 @@
 #include "VelocityMap.h"
 #include "Copter.h"
 
+#include "TexturesMixer.h"
+#include "AirData.h"
+
+
 enum
 {
    GrassTypeNum = 3
@@ -51,7 +55,10 @@ public:
 
    FlowManager                   *m_pFlowManager;
    std::vector<int>               fansIds;
-   ID3DX11Effect*                 m_pSceneEffect;
+   ID3DX11Effect                 *m_pSceneEffect;
+
+   TexturesMixer *m_pMixer;
+   AirData       *m_pAirData;
 
 private:
    GrassManager               *m_pGrassTypes[GrassTypeNum];
@@ -75,6 +82,7 @@ private:
    ID3DX11EffectShaderResourceVariable *m_pShadowMapESRV[GrassTypeNum + 1];
    ID3DX11EffectShaderResourceVariable* m_pVelocityMapESRV[GrassTypeNum + 1];
    ID3DX11EffectShaderResourceVariable* m_pSceneTxESRV[GrassTypeNum + 1];
+   ID3DX11EffectShaderResourceVariable* m_pAirTxESRV[GrassTypeNum + 1];
 
    ID3DX11EffectVectorVariable *m_pLightDirEVV[GrassTypeNum + 1];
    ID3DX11EffectVectorVariable *m_pTerrRGBEVV[3];

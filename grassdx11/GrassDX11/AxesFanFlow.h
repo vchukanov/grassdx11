@@ -2,8 +2,6 @@
 
 #include "includes.h"
 
-#define HISTORY_TEX_CNT 1
-
 struct AxesFanFlowVertex
 {
    XMFLOAT3 vPos;
@@ -40,8 +38,6 @@ public:
 private:
    void SetRenderTarget   (ID3D11DepthStencilView* pRT);
    void ClearRenderTarget (ID3D11DepthStencilView* pDSV);
-
-   void MakeTextHistory (void);
 
    void CreateVertexBuffer (void);
    void CreateInputLayout  (void);
