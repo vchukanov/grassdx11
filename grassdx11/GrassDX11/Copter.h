@@ -14,6 +14,7 @@ public:
 
    void Render              (void); 
    void UpdateFromTransform (const XMMATRIX& transform);
+   void UpdateScale         (float newScale);
 
 private:
    void CreateInputLayout(void);
@@ -38,6 +39,8 @@ public:
    FlowManager *flowManager;
    
    ModelLoader *copterModel;
+
+   float scale;
 };
 
 #endif

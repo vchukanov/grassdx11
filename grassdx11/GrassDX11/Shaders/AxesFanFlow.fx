@@ -8,7 +8,6 @@ cbuffer cAxesFanSettings
     float  g_fMaxFlowStrength; // unused
 
     float  g_fFanRadius; 
-    float  g_fDeltaSlices;
     float  g_fShift;
 
     float  g_fAngleSpeed; // 0.f .. 100.f

@@ -85,8 +85,7 @@ AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DD
    m_pHeightScale = m_pEffect->GetVariableByName("g_fHeightScale")->AsScalar();
    
    m_pMaxFlowStrengthESV = m_pEffect->GetVariableByName("g_fMaxFlowStrength")->AsScalar();;
-   m_pFanRadiusESV = m_pEffect->GetVariableByName("g_fFanRadius")->AsScalar();;
-   m_pDeltaSlicesESV = m_pEffect->GetVariableByName("g_fDeltaSlices")->AsScalar();;
+   m_pFanRadiusESV = m_pEffect->GetVariableByName("g_fFanRadius")->AsScalar();
    m_pShiftESV = m_pEffect->GetVariableByName("g_fShift")->AsScalar();
    m_pAngleSpeedESV = m_pEffect->GetVariableByName("g_fAngleSpeed")->AsScalar();
 

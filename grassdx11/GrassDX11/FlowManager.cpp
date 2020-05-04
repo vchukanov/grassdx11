@@ -24,18 +24,16 @@ FlowManager::~FlowManager(void)
 }
 
 
-int FlowManager::CreateAxesFan (const XMMATRIX& initialTransform_)
+int FlowManager::CreateAxesFan (void)
 {
    const float bladeSize = 10.0f;
    const int   bladesNum = 2;
-
  
    AxesFanDesc fan;
    fan.pFlowManager = this;
    fan.pAxesFanFlow = m_pAxesFanFlow;
    fan.pAxesFan = new AxesFan(m_pD3DDevice, m_pD3DDeviceCtx, m_Effect, &fan);
-   XMStoreFloat4x4(&fan.initialTransform, initialTransform_);
-
+   
    fans.push_back(fan);
    return fans.size() - 1;
 }

@@ -88,9 +88,8 @@ float                               g_fWindScale = 4.96f;
 
 float                               g_fMaxFlowStrength = 0.0562;
 float                               g_fFanRadius = 20;
-float                               g_fDeltaSlices = 0.005;
 float                               g_fAngleSpeed = 100;
-float                               g_fShift = 0.005;
+float                               g_fCopterScale = 1.0f;
 XMFLOAT3                            g_vDir = XMFLOAT3(0.0f, -1.0f, 0.0f);
 //phys
 
@@ -162,8 +161,8 @@ enum IDC_HUD
 
    IDC_FIX_CAMERA,
 
-   IDC_GRASS_SHIFT_LABEL,
-   IDC_GRASS_SHIFT_SLYDER,
+   IDC_COPTER_SCALE_LABEL,
+   IDC_COPTER_SCALE_SLYDER,
 
    IDC_TERR_RGB_LABEL,
    IDC_TERR_R_SLYDER,
