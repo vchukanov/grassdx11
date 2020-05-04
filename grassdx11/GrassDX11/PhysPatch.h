@@ -56,10 +56,9 @@ public:
    void Reinit(void);
 
 
-   void SetTransform (const XMMATRIX* a_pMtx);
+   void SetTransform (const XMFLOAT4X4* a_pMtx);
                      
    float3 PosToWorld (const float3& v);
-   float3 DirToWorld (const float3& v);
 
    void  IASetPhysVertexBuffer0(void);
    void  IASetAnimVertexBuffer0(void);
@@ -150,9 +149,8 @@ private:
    PhysPatch::BladePhysData* bladePhysData;
 
    //static Perlin perlin;
-   const XMMATRIX* m_pTransform;
-   XMMATRIX        m_InvTransform;
-   bool            animationPass;
+   const XMFLOAT4X4  *m_pTransform;
+   bool              animationPass;
 
    /* directx11 variables */
    ID3D11Buffer* m_pPhysVertexBuffer;

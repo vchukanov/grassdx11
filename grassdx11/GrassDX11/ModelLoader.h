@@ -13,7 +13,7 @@
 
 #include "MeshAssimp.h"
 #include "TextureLoader.h"
-
+#include "aabb.h"
 
 using namespace DirectX;
 
@@ -26,12 +26,14 @@ public:
 	bool Load(HWND hwnd, ID3D11Device* dev, ID3D11DeviceContext* devcon, std::string filename);
 	void Draw(ID3D11DeviceContext* devcon, ID3DX11EffectPass* pass, ID3DX11EffectShaderResourceVariable* texESRV);
 
-	void Close();
+	void  Close(void);
+   const std::vector<AABB>& GetBoundBoxes(void) { return boundBoxes; }
 private:
 	ID3D11Device           *dev;
 	ID3D11DeviceContext    *devcon;
 	std::vector<MeshAssimp> meshes;
 	std::string             directory;
+   std::vector<AABB>       boundBoxes;
 	vector<Texture>         textures_loaded;
 	HWND                    hwnd;
 

@@ -127,6 +127,9 @@
     <ClCompile Include="TextureLoader.cpp">
       <Filter>Assimp</Filter>
     </ClCompile>
+    <ClCompile Include="Car.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="includes.h" />
@@ -242,6 +245,9 @@
       <Filter>Assimp</Filter>
     </ClInclude>
     <ClInclude Include="mesh.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Car.h">
       <Filter>Mesh</Filter>
     </ClInclude>
   </ItemGroup>

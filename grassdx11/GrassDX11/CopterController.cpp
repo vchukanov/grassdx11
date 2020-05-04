@@ -59,7 +59,7 @@ void CopterController::UpdateCamera (void)
    XMMATRIX rot = XMMatrixRotationY(yaw);
    toCam = XMVector3Transform(toCam, rot);
 
-   if (!fixCam)
+   if (fixCam)
       cam->SetViewParams(position + toCam, position);
 }
 

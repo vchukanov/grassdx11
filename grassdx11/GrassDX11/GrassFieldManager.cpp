@@ -81,7 +81,7 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
    /* ...and lots of variables... */
    ID3DX11EffectShaderResourceVariable* pESRV;
    ID3D11ShaderResourceView* pHeightMapSRV = m_pTerrain->HeightMapSRV();
-   XMVECTOR vLightDir = create(0.3f, -1.0f, 0.f);
+   XMVECTOR vLightDir = create(0.3f, -0.8f, 0.f);
    m_pShadowMapping->UpdateLightDir(vLightDir);
 
    for (int i = 0; i < GrassTypeNum; i++)
@@ -607,6 +607,6 @@ ID3DX11Effect* GrassFieldManager::SceneEffect(void)
 void GrassFieldManager::ClearGrassPools(void)
 {
    for (int i = 0; i < GrassTypeNum; i++)
-      if (m_pGrassTypes[i] != NULL)
+      if (m_pGrassTypes[i] != NULL && i != 1)
          m_pGrassTypes[i]->ClearGrassPools();
 }

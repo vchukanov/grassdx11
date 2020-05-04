@@ -44,6 +44,7 @@ std::string textype;
 MeshAssimp ModelLoader::processMesh(aiMesh * mesh, const aiScene * scene)
 {
 	// Data to fill
+   vector<XMFLOAT3> points;
 	vector<VERTEX> vertices;
 	vector<UINT> indices;
 	vector<Texture> textures;
@@ -76,6 +77,7 @@ MeshAssimp ModelLoader::processMesh(aiMesh * mesh, const aiScene * scene)
 		}
 
 		vertices.push_back(vertex);
+      points.push_back(XMFLOAT3(vertex.X, vertex.Y, vertex.Z));
 	}
 
 	for (UINT i = 0; i < mesh->mNumFaces; i++)
@@ -95,6 +97,9 @@ MeshAssimp ModelLoader::processMesh(aiMesh * mesh, const aiScene * scene)
 
       //material->Get();
 	}
+   AABB boundBox;
+   boundBox.Calculate(points.size(), &points[0], sizeof(XMFLOAT3));
+   boundBoxes.push_back(boundBox);
 
 	return MeshAssimp(dev, vertices, indices, textures);
 }

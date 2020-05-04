@@ -275,6 +275,13 @@ float4 MeshPSMain (MeshPSIn Input): SV_Target
         float4(ks.xyz * (Is * pow(max(dot(half, Input.vNormal), 0.0f), g_nNs) + Ir), 0.0f);*/
 }
 
+
+
+float4 MeshPSMainDbg (MeshPSIn Input): SV_Target
+{
+    return float4(1, 0, 0, 0.5);
+}
+
 float4 MeshPSMainBlured( TerrPSIn Input ): SV_Target
 {
     float2 texelSize = (1.0 / 1600.0, 1.0 / 900.0);
@@ -422,6 +429,15 @@ technique10 Render
         SetVertexShader( CompileShader( vs_5_0, MeshVSMain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, MeshPSMain() ) ); 
+        SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
+        SetRasterizerState( EnableMSAA );
+    }
+
+    pass RenderMeshPassDbg
+    {
+        SetVertexShader( CompileShader( vs_5_0, MeshVSMain() ) );
+        SetGeometryShader( NULL );
+        SetPixelShader( CompileShader( ps_4_0, MeshPSMainDbg() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
         SetRasterizerState( EnableMSAA );
     }
