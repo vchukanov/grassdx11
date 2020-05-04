@@ -14,7 +14,6 @@ class AxesFanFlow {
 public:
    AxesFanFlow  (ID3D11Device* pD3DDevice, ID3D11DeviceContext* pD3DDeviceCtx, int textureWidth, int textureHeight, float a_fTerrRadius);
    ~AxesFanFlow (void);
-
    
    ID3D11ShaderResourceView* GetShaderResourceView (void);
 
