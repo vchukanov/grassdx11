@@ -481,12 +481,13 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    
    g_Camera = new LandscapeCamera(g_fCameraHeight, terr, height_scale, grass_radius);
    copterController.SetupCamera(g_Camera);
+   copterController.InitHeightCtrl(terr, grass_radius, height_scale);
 
    g_Camera->SetViewParams(XMLoadFloat3(&g_vCameraEyeStart), XMLoadFloat3(&g_vCameraAtStart));
    g_Camera->SetScalers(0.01f, g_fCameraSpeed /* g_fMeter*/);
    
    copter = new Copter(pd3dDevice, pd3dImmediateContext, g_pGrassField->m_pSceneEffect, g_pGrassField->GetFlowManager());
-
+   copterController.SetOwner(copter);
    /*{
       g_pMeshes[0] = new Car(pd3dDevice, pd3dImmediateContext, g_pGrassField->SceneEffect(),
          create(0, 0, 0, 0),
