@@ -56,6 +56,8 @@ public:
    void UpdateCamera  (void);
 
    void ToggleFixCam (void) { fixCam = !fixCam; }
+   void UnfixCam     (void) { fixCam = false; }
+   void FixCam       (void) { fixCam = true; }
 
 private:
    void UpdateInput (void);
@@ -83,7 +85,7 @@ public:
    float pitch = 0;
    float yaw = 0;
 
-   bool fixCam = true;
+   bool fixCam = false;
 
 public:
    float4x4            transform;

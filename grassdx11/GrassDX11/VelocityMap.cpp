@@ -56,7 +56,7 @@ VelocityMap::~VelocityMap(void)
 {
    SAFE_RELEASE(m_shaderResourceView);
    SAFE_RELEASE(m_renderTargetView);
-   m_renderTargetTexture->Release();   //HACK:  m_renderTargetTexture refcount is 2??
+   //m_renderTargetTexture->Release();   //HACK:  m_renderTargetTexture refcount is 2??
    SAFE_RELEASE(m_renderTargetTexture);
 }
 

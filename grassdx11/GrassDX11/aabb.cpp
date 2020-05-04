@@ -19,6 +19,18 @@ void AABB::Set (const CVec3& vmin, const CVec3& vmax)
 }
 
 
+void AABB::Get(CVec3& vmin, CVec3& vmax)
+{
+   vmin.x = center.x - halfSize.x;
+   vmin.y = center.y - halfSize.y;
+   vmin.z = center.z - halfSize.z;
+
+   vmax.x = center.x + halfSize.x;
+   vmax.y = center.y + halfSize.y;
+   vmax.z = center.z + halfSize.z;
+}
+
+
 void AABB::Calculate (int numPoints, const CVec3* pPoints, int stride)
 {
    CVec3 minV(pPoints[0]);

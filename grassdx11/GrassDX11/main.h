@@ -45,6 +45,7 @@ ID3DX11EffectScalarVariable         *g_pGrassDiffuse = NULL;
 GrassFieldState                      g_GrassInitState;
 GrassFieldManager                   *g_pGrassField;
 Mesh                                *g_pMeshes[MAX_NUM_MESHES];
+int                                  g_fNumOfMeshes = 0;
 
 // Output textures to screen
 DebugWindow                         *g_dbgWin;
@@ -52,6 +53,24 @@ DebugWindow                         *g_dbgWin;
 
 
 XMFLOAT3                            g_MeshVels[MAX_NUM_MESHES];
+
+float                               g_fCarLength     = 5.0f;//3.0;
+float                               g_fCarHeight     = 1.8f;
+float                               g_fCarFrontWidth = 2.8f;
+
+float                               g_fCarRotVel;
+float                               g_fCarRotAccel;
+const float                         g_fCarRotMaxVel = 0.01f;
+const float                         g_fCarRotMinVel = -0.01f;
+const float                         g_fCarRotForce = 0.04f;
+
+const float                         g_fCarMinVelocity = 0.01f;
+const float                         g_fCarMaxVelocity = 0.50f;
+const float                         g_fCarForce = 0.005f;
+float                               g_fCarVelocity = 0.1f;;
+float                               g_fCarAccel;
+float3                              g_vCarDir = create(0.0f, 0.0f, 1.0f);
+
 
 /* Grass global variables */
 float                               g_fGrassLodBias = 0.0f;//0.02f;//0.35f;//0.1f;
@@ -163,6 +182,8 @@ enum IDC_HUD
    IDC_TOGGLE_RENDERING_GRASS,
    IDC_TOGGLE_RENDERING_DBG_WIN,
    IDC_TOGGLE_DBG_WIN_SLICE,
+   
+   IDC_CAMERA_TYPE,
 
    IDC_SAMPLE_COUNT
 };

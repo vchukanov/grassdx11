@@ -8,6 +8,8 @@
 #include "SDKmisc.h"
 #include "SDKmesh.h"
 
+#include "DXUTcamera.h"
+
 #include "main.h"
 
 #include "camera.h"
@@ -16,13 +18,22 @@
 #include "CopterController.h"
 #include "Copter.h"
 
+#include "Car.h"
+
 #pragma warning( disable : 4100 )
 
 using namespace DirectX;
 
+/* Camera types */
+#define CAMERA_NORMAL 0
+#define CAMERA_TERRAIN 1
+#define CAMERA_MESH 2
+#define CAMERA_COPTER 3
+
 //--------------------------------------------------------------------------------------
 // Global variables
 //--------------------------------------------------------------------------------------
+
 CFirstPersonCamera          *g_Camera;               // A model viewing camera
 
 CDXUTDialogResourceManager  g_DialogResourceManager; // manager for shared resources of dialogs
@@ -33,6 +44,12 @@ CDXUTDialog                 g_SampleUI;             // dialog for sample specifi
 
 Copter                    *copter;
 CopterController           copterController;
+
+int  GetCameraType         (void);
+void ToggleToMeshCamera    (void);
+void ToggleToTerrainCamera (void);
+void ToggleToNormalCamera  (void);
+void InitCarMesh           (void);
 
 //--------------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
@@ -62,6 +79,7 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     DXUTSetCallbackD3D11FrameRender( OnD3D11FrameRender );
 
     InitApp();
+
     DXUTInit( true, true, nullptr ); // Parse the command line, show msgboxes on error, no extra command line params
     DXUTSetCursorSettings( true, true );
     DXUTCreateWindow( L"GrassDX11" );
@@ -74,6 +92,31 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
     return DXUTGetExitCode();
 }
+
+
+void InitMeshes (ID3D11Device* dev, ID3D11DeviceContext* devcon)
+{
+   XMFLOAT4 vPosAndRad;
+
+   vPosAndRad.x = 0.0f;
+   vPosAndRad.z = 0.0f;
+   vPosAndRad.w = 1.2f;
+   vPosAndRad.y = 0.0f;
+
+   g_fNumOfMeshes = 0;
+
+   //ID3D10Device* pd3dDevice = DXUTGetD3D10Device();
+   //float height_scale, grass_radius;
+   //Terrain * const terr = g_pGrassField->GetTerrain(&height_scale, &grass_radius);
+   //
+   //g_pMeshes[0] = new Car(dev, devcon, g_pGrassField->SceneEffect(),
+   //    create(0, 0, 0, 0),
+   //    terr, height_scale, grass_radius,
+   //    g_fCarFrontWidth, g_fCarHeight, g_fCarLength, 0.0f);
+   //g_fNumOfMeshes = 1;
+
+}
+
 
 
 //--------------------------------------------------------------------------------------
@@ -136,6 +179,18 @@ void InitApp()
    g_HUD.AddSlider(IDC_FLOW_DIR_X_SLYDER, 20, iY += iYo, 135, 22, -100, 100, (int)(g_vDir.x * 100));
    g_HUD.AddSlider(IDC_FLOW_DIR_Y_SLYDER, 20, iY += iYo, 135, 22, -100, 100, (int)(g_vDir.y * 100));
    g_HUD.AddSlider(IDC_FLOW_DIR_Z_SLYDER, 20, iY += iYo, 135, 22, -100, 100, (int)(g_vDir.z * 100));
+
+   CDXUTComboBox* pComboBox = NULL;
+   g_HUD.AddStatic(IDC_STATIC, L"Camera Type", 20, iY += iYo, 105, 25);
+   g_HUD.AddComboBox(IDC_CAMERA_TYPE, 20, iY += iYo, 140, 24, VK_F4, false, &pComboBox);
+   if (pComboBox)
+   {
+      pComboBox->SetDropHeight(40);
+      pComboBox->AddItem(L"Normal  camera", IntToPtr(CAMERA_NORMAL));
+      pComboBox->AddItem(L"Terrain camera", IntToPtr(CAMERA_TERRAIN));
+      pComboBox->AddItem(L"Mesh    camera", IntToPtr(CAMERA_MESH));
+      pComboBox->AddItem(L"Copter  camera", IntToPtr(CAMERA_COPTER));
+   }
 
    g_SampleUI.SetCallback( OnGUIEvent ); iY = 10;
 }
@@ -412,8 +467,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    g_pGrassField->SetFogColor(vFogColor);
    g_pGrassField->SetWindBias(g_fWindBias);
    g_pGrassField->SetWindScale(g_fWindScale);
-
-
+   
    // Setup the camera's view parameters
    float height_scale, grass_radius;
    Terrain* const terr = g_pGrassField->GetTerrain(&height_scale, &grass_radius);
@@ -434,16 +488,93 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    
    copter = new Copter(pd3dDevice, pd3dImmediateContext, g_pGrassField->m_pSceneEffect, g_pGrassField->GetFlowManager());
 
+   /*{
+      g_pMeshes[0] = new Car(pd3dDevice, pd3dImmediateContext, g_pGrassField->SceneEffect(),
+         create(0, 0, 0, 0),
+         terr, height_scale, grass_radius,
+         g_fCarFrontWidth, g_fCarHeight, g_fCarLength, 0.0f);
+      g_fNumOfMeshes = 1;
+   }*/
+
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetWind()->GetMap(), 10);
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pShadowMapping->m_pSRV, 0.1 / 4);
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pSceneTex->GetShaderResourceView(), 0.5);
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, terr->HeightMapSRV(), 1);
 
    g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->m_pAxesFanFlow->m_shaderResourceView, 1);
-   g_dbgWin->ToggleRender();
+   //g_dbgWin->ToggleRender();
+
 
    return S_OK;
 }
+
+
+
+//
+static XMFLOAT4 pos(18.0f, 0.0f, 8.0f, 0.0f);
+static XMFLOAT3 vCarDir(0.0f, 0.0f, 1.0f);
+static float fFi = 0.0f, fTimeEmul = 0.0f;
+static float fTimeRot[5] = { 3.0f, 4.0f, 10.0f, 11.0f, 1000.0f };
+static float fF[5] = { 0.0f, 0.0001f, 0.0f, -0.0001f, 0.0f }, fw = 0.0f;
+static int Indx = 0;
+
+void UpdateMeshes(float a_fElapsedTime)
+{
+   if (GetCameraType() == CAMERA_MESH)
+   {
+     
+      // Rotate car
+      float d = powf(0.98f, a_fElapsedTime * 10.0f);
+      if (d > 0.98f) d = 0.98f;
+      if (fabs(g_fCarRotAccel) > 0.0001)
+      {
+         g_fCarRotVel += g_fCarRotAccel * a_fElapsedTime;
+         g_fCarRotVel *= d;
+         if (g_fCarRotVel > 7.0f * g_fCarVelocity * g_fCarRotMaxVel) 
+            g_fCarRotVel = 7.0f * g_fCarVelocity * g_fCarRotMaxVel;
+         if (g_fCarRotVel < 7.0f * g_fCarVelocity * g_fCarRotMinVel) 
+            g_fCarRotVel = 7.0f * g_fCarVelocity * g_fCarRotMinVel;
+      }
+      else
+      {
+         if (g_fCarRotVel > 0.0001)
+         {
+            g_fCarRotVel -= g_fCarRotForce * a_fElapsedTime;
+            g_fCarRotVel *= d;
+            if (g_fCarRotVel < 0.0f) g_fCarRotVel = 0.0f;
+         } 
+         else
+            if (g_fCarRotVel < 0.0001)
+            {
+               g_fCarRotVel += g_fCarRotForce * a_fElapsedTime;
+               g_fCarRotVel *= d;
+               if (g_fCarRotVel > 0.0f) g_fCarRotVel = 0.0f;
+            }
+      }
+      float3x3 mrot;
+      mrot = XMMatrixRotationY(g_fCarRotVel);
+      g_vCarDir = XMVector3TransformCoord(g_vCarDir, mrot);
+
+      sety(g_vCarDir, 0.0);
+      g_vCarDir = normalize(g_vCarDir);
+
+      // Update car velocity
+      g_fCarVelocity += g_fCarAccel;
+      if (g_fCarVelocity < g_fCarMinVelocity)
+         g_fCarVelocity = g_fCarMinVelocity;
+      else if (g_fCarVelocity > g_fCarMaxVelocity)
+         g_fCarVelocity = g_fCarMaxVelocity;
+
+      // Update car pos
+      for (UINT i = 0; i < g_fNumOfMeshes; i++)
+      {
+         pos.x += getx(g_vCarDir) * g_fCarVelocity;
+         pos.z += getz(g_vCarDir) * g_fCarVelocity;
+         g_pMeshes[i]->SetPosAndRadius(pos);
+      }
+   }
+}
+
 
 
 //--------------------------------------------------------------------------------------
@@ -602,6 +733,8 @@ void RenderGrass(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dDeviceCtx, X
    g_pGrassField->SetViewMtx(mView);
    g_pGrassField->SetProjMtx(mProj);
 
+
+   UpdateMeshes(a_fElapsedTime);
    // Draw Grass
    XMVECTOR vCamDir = g_Camera->GetLookAtPt() - g_Camera->GetEyePt();
    //if (g_RotCamController.isFixed) {
@@ -610,8 +743,14 @@ void RenderGrass(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dDeviceCtx, X
    //   g_pGrassField->GetFlowManager()->fans[0].position = xpos;
    //}
 
-   g_pGrassField->Update(vCamDir, g_Camera->GetEyePt(), g_pMeshes, 0/*g_fNumOfMeshes*/, a_fElapsedTime, g_fTime);
+   g_pGrassField->Update(vCamDir, g_Camera->GetEyePt(), g_pMeshes, g_fNumOfMeshes, a_fElapsedTime, g_fTime);
    g_pGrassField->Render(copter);
+
+   for (auto* mesh : g_pMeshes) {
+      if (mesh != nullptr) {
+         mesh->Render();
+      }
+   }
    
    pd3dDeviceCtx->IASetInputLayout(g_pSkyVertexLayout);
    g_pSkyViewProjEMV->SetMatrix((float*)& mViewProj);
@@ -741,13 +880,13 @@ void CALLBACK OnD3D11ReleasingSwapChain( void* pUserContext )
 //--------------------------------------------------------------------------------------
 // Release D3D11 resources created in OnD3D11CreateDevice 
 //--------------------------------------------------------------------------------------
-void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
+void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 {
    g_DialogResourceManager.OnD3D11DestroyDevice();
    g_SettingsDlg.OnD3D11DestroyDevice();
    DXUTGetGlobalResourceCache().OnDestroyDevice();
 
-   SAFE_DELETE( g_pTxtHelper );
+   SAFE_DELETE(g_pTxtHelper);
 
    SAFE_RELEASE(g_pRenderTarget);
    SAFE_RELEASE(g_pRTRV);
@@ -757,7 +896,7 @@ void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
    SAFE_RELEASE(g_depthStencilStateDisabled);
    SAFE_RELEASE(g_depthStencilStateEnabled);
 
-    // Delete additional render resources here...
+   // Delete additional render resources here...
    SAFE_DELETE(g_Camera);
    SAFE_DELETE(g_dbgWin);
    SAFE_DELETE(g_pGrassField);
@@ -766,6 +905,10 @@ void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
    SAFE_RELEASE(g_pSkyVertexLayout);
    g_MeshSkybox.Destroy();
 
+   for (int i = 0; i < g_fNumOfMeshes; i++) {
+      SAFE_DELETE(g_pMeshes[i]);
+   }
+   g_fNumOfMeshes = 0;
    //PrintMemoryLeaks(L"mem.txt");
 }
 
@@ -874,13 +1017,40 @@ void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserC
       case 221://]
          copterController.OnTorque();
          break;
+      case VK_NUMPAD7:
+         ToggleToNormalCamera();
+         break;
+      case VK_DIVIDE:
+         ToggleToTerrainCamera();
+         break;
       case VK_ADD:
+         ToggleToNormalCamera();
          copterController.ToggleFixCam();
+         break;
+      case VK_MULTIPLY:
+         ToggleToMeshCamera();
+         break;
+      case VK_LEFT:
+         g_fCarRotAccel = -g_fCarRotForce;
+         break;
+      case VK_RIGHT:
+         g_fCarRotAccel = g_fCarRotForce;
+         break;
+      case VK_UP:
+         g_fCarAccel = g_fCarForce;
+         break;
+      case VK_DOWN:
+         g_fCarAccel = -g_fCarForce * 2;
          break;
       }
    }
    else
    {
+      if (nChar == VK_RIGHT || nChar == VK_LEFT)
+         g_fCarRotAccel = 0;
+      else if (nChar == VK_UP || nChar == VK_DOWN)
+         g_fCarAccel = 0;//-g_fCarForce;
+
       switch (nChar)
       {
       case 74: //j
@@ -921,116 +1091,214 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
    switch( nControlID )
    {
-      case IDC_CHANGEDEVICE:
-         g_SettingsDlg.SetActive(!g_SettingsDlg.IsActive());
+       case IDC_CHANGEDEVICE:
+          g_SettingsDlg.SetActive(!g_SettingsDlg.IsActive());
+          break;
+      
+      case IDC_TOGGLE_WIREFRAME:
+         GetGlobalStateManager().ToggleWireframe();
          break;
-
-     case IDC_TOGGLE_WIREFRAME:
-        GetGlobalStateManager().ToggleWireframe();
-        break;
-     
-     case IDC_TOGGLE_RENDERING_GRASS:
-        g_pGrassField->ToggleRenderingGrass();
-        break;
-
-     case IDC_TOGGLE_RENDERING_DBG_WIN:
-        g_dbgWin->ToggleRender();
-        break;
-
-     case IDC_TOGGLE_DBG_WIN_SLICE:
-        g_dbgWin->ToggleSlice();
-        break;
-
-     //case IDC_FIX_CAMERA:
-     //   g_RotCamController.isFixed = !g_RotCamController.isFixed;
-     //   if (g_RotCamController.isFixed) {
-     //      XMFLOAT3 position = g_pGrassField->GetFlowManager()->fans[0].position;
-     //      XM_TO_V(position, pos, 3);
-     //      g_RotCamController.delta = pos - g_Camera->GetEyePt();
-     //   }
-     //   break;
-
-     case IDC_GRASS_WIND_FORCE_SLYDER:
-     {
-        g_fWindStrength = (float)g_HUD.GetSlider(IDC_GRASS_WIND_FORCE_SLYDER)->GetValue() / 10000.0f;
-        swprintf_s(sStr, MAX_PATH, L"Wind Strength: %.4f", g_fWindStrength);
-        g_HUD.GetStatic(IDC_GRASS_WIND_LABEL)->SetText(sStr);
-        g_pGrassField->SetWindStrength(g_fWindStrength);
-        break;
-     }
-
-     case IDC_GRASS_MAX_FLOW_STRENGTH_SLYDER:
-     {
-        g_fMaxFlowStrength = (float)g_HUD.GetSlider(IDC_GRASS_MAX_FLOW_STRENGTH_SLYDER)->GetValue() / 1000.0f;
-        swprintf_s(sStr, MAX_PATH, L"Flow Horiz Strength: %.4f", g_fMaxFlowStrength);
-        g_HUD.GetStatic(IDC_GRASS_MAX_FLOW_STRENGTH_LABEL)->SetText(sStr);
-        g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxFlowStrength);
-        break;
-     }
-
-     case IDC_FAN_RADIUS_SLYDER:
-     {
-        g_fFanRadius = (float)g_HUD.GetSlider(IDC_FAN_RADIUS_SLYDER)->GetValue() / 100.0f;
-        swprintf_s(sStr, MAX_PATH, L"Fan Radius: %.4f", g_fFanRadius * 2);
-        g_HUD.GetStatic(IDC_FAN_RADIUS_LABEL)->SetText(sStr);
-        g_pGrassField->GetFlowManager()->fans[0].radius = g_fFanRadius;
-        break;
-     }
-
-     case IDC_CAM_SPEED_SCALE_SLYDER:
-     {
-        g_fCameraSpeed = (float)g_HUD.GetSlider(IDC_CAM_SPEED_SCALE_SLYDER)->GetValue() / 1000.0f;
-        swprintf_s(sStr, MAX_PATH, L"Cam speed scale: %.4f", g_fCameraSpeed * 60);
-        g_HUD.GetStatic(IDC_CAM_SPEED_SCALE_LABEL)->SetText(sStr);
-        g_Camera->SetScalers(0.01, g_fCameraSpeed * 60);
-        break;
-     }
-
-
-     case IDC_GRASS_SHIFT_SLYDER:
-     {
-        g_fShift = (float)g_HUD.GetSlider(IDC_GRASS_SHIFT_SLYDER)->GetValue() / 10000.0f;
-        swprintf_s(sStr, MAX_PATH, L"Flow Shift: %.4f", g_fShift);
-        g_HUD.GetStatic(IDC_GRASS_SHIFT_LABEL)->SetText(sStr);
-        g_pGrassField->GetFlowManager()->SetShift(g_fShift);
-        break;
-     }
-
-     case IDC_FAN_ANGLE_SPEED_SLYDER:
-     {
-        g_fAngleSpeed = (float)g_HUD.GetSlider(IDC_FAN_ANGLE_SPEED_SLYDER)->GetValue();
-        swprintf_s(sStr, MAX_PATH, L"Angle Speed: %.4f", g_fAngleSpeed);
-        g_HUD.GetStatic(IDC_FAN_ANGLE_SPEED_LABEL)->SetText(sStr);
-        g_pGrassField->GetFlowManager()->fans[0].angleSpeed = g_fAngleSpeed;
-        break;
-     }
-
-
-     case IDC_TERR_R_SLYDER:
-     case IDC_TERR_G_SLYDER:
-     case IDC_TERR_B_SLYDER:
-     {
-        g_vTerrRGB.x = (float)g_HUD.GetSlider(IDC_TERR_R_SLYDER)->GetValue() / 200.0f;
-        g_vTerrRGB.y = (float)g_HUD.GetSlider(IDC_TERR_G_SLYDER)->GetValue() / 200.0f;
-        g_vTerrRGB.z = (float)g_HUD.GetSlider(IDC_TERR_B_SLYDER)->GetValue() / 200.0f;
-        swprintf_s(sStr, MAX_PATH, L"Diffuse: (%.2f,%.2f,%.2f)", g_vTerrRGB.x, g_vTerrRGB.y, g_vTerrRGB.z);
-        g_HUD.GetStatic(IDC_TERR_RGB_LABEL)->SetText(sStr);
-        XM_TO_V(g_vTerrRGB, vTerrRGB, 3);
-        g_pGrassField->SetTerrRGB(vTerrRGB);
-        break;
-     }
-
-     //case IDC_FLOW_DIR_X_SLYDER:
-     //case IDC_FLOW_DIR_Y_SLYDER:
-     //case IDC_FLOW_DIR_Z_SLYDER:
-     //{
-     //   g_vDir.x = (float)g_HUD.GetSlider(IDC_FLOW_DIR_X_SLYDER)->GetValue() / 100.0f;
-     //   g_vDir.y = (float)g_HUD.GetSlider(IDC_FLOW_DIR_Y_SLYDER)->GetValue() / 100.0f;
-     //   g_vDir.z = (float)g_HUD.GetSlider(IDC_FLOW_DIR_Z_SLYDER)->GetValue() / 100.0f;
-     //   swprintf_s(sStr, MAX_PATH, L"Dir: (%.2f,%.2f,%.2f)", g_vDir.x, g_vDir.y, g_vDir.z);
-     //   g_HUD.GetStatic(IDC_FLOW_DIR_LABEL)->SetText(sStr);
-     //   g_pGrassField->m_pFlowManager->fans[0].direction = g_vDir;
-     //   break;
-     //}
+      
+      case IDC_TOGGLE_RENDERING_GRASS:
+         g_pGrassField->ToggleRenderingGrass();
+         break;
+      
+      case IDC_TOGGLE_RENDERING_DBG_WIN:
+         g_dbgWin->ToggleRender();
+         break;
+      
+      case IDC_TOGGLE_DBG_WIN_SLICE:
+         g_dbgWin->ToggleSlice();
+         break;
+      
+      //case IDC_FIX_CAMERA:
+      //   g_RotCamController.isFixed = !g_RotCamController.isFixed;
+      //   if (g_RotCamController.isFixed) {
+      //      XMFLOAT3 position = g_pGrassField->GetFlowManager()->fans[0].position;
+      //      XM_TO_V(position, pos, 3);
+      //      g_RotCamController.delta = pos - g_Camera->GetEyePt();
+      //   }
+      //   break;
+      
+      case IDC_GRASS_WIND_FORCE_SLYDER:
+      {
+         g_fWindStrength = (float)g_HUD.GetSlider(IDC_GRASS_WIND_FORCE_SLYDER)->GetValue() / 10000.0f;
+         swprintf_s(sStr, MAX_PATH, L"Wind Strength: %.4f", g_fWindStrength);
+         g_HUD.GetStatic(IDC_GRASS_WIND_LABEL)->SetText(sStr);
+         g_pGrassField->SetWindStrength(g_fWindStrength);
+         break;
+      }
+      
+      case IDC_GRASS_MAX_FLOW_STRENGTH_SLYDER:
+      {
+         g_fMaxFlowStrength = (float)g_HUD.GetSlider(IDC_GRASS_MAX_FLOW_STRENGTH_SLYDER)->GetValue() / 1000.0f;
+         swprintf_s(sStr, MAX_PATH, L"Flow Horiz Strength: %.4f", g_fMaxFlowStrength);
+         g_HUD.GetStatic(IDC_GRASS_MAX_FLOW_STRENGTH_LABEL)->SetText(sStr);
+         g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxFlowStrength);
+         break;
+      }
+      
+      case IDC_FAN_RADIUS_SLYDER:
+      {
+         g_fFanRadius = (float)g_HUD.GetSlider(IDC_FAN_RADIUS_SLYDER)->GetValue() / 100.0f;
+         swprintf_s(sStr, MAX_PATH, L"Fan Radius: %.4f", g_fFanRadius * 2);
+         g_HUD.GetStatic(IDC_FAN_RADIUS_LABEL)->SetText(sStr);
+         g_pGrassField->GetFlowManager()->fans[0].radius = g_fFanRadius;
+         break;
+      }
+      
+      case IDC_CAM_SPEED_SCALE_SLYDER:
+      {
+         g_fCameraSpeed = (float)g_HUD.GetSlider(IDC_CAM_SPEED_SCALE_SLYDER)->GetValue() / 1000.0f;
+         swprintf_s(sStr, MAX_PATH, L"Cam speed scale: %.4f", g_fCameraSpeed * 60);
+         g_HUD.GetStatic(IDC_CAM_SPEED_SCALE_LABEL)->SetText(sStr);
+         g_Camera->SetScalers(0.01, g_fCameraSpeed * 60);
+         break;
+      }
+      
+      
+      case IDC_GRASS_SHIFT_SLYDER:
+      {
+         g_fShift = (float)g_HUD.GetSlider(IDC_GRASS_SHIFT_SLYDER)->GetValue() / 10000.0f;
+         swprintf_s(sStr, MAX_PATH, L"Flow Shift: %.4f", g_fShift);
+         g_HUD.GetStatic(IDC_GRASS_SHIFT_LABEL)->SetText(sStr);
+         g_pGrassField->GetFlowManager()->SetShift(g_fShift);
+         break;
+      }
+      
+      case IDC_FAN_ANGLE_SPEED_SLYDER:
+      {
+         g_fAngleSpeed = (float)g_HUD.GetSlider(IDC_FAN_ANGLE_SPEED_SLYDER)->GetValue();
+         swprintf_s(sStr, MAX_PATH, L"Angle Speed: %.4f", g_fAngleSpeed);
+         g_HUD.GetStatic(IDC_FAN_ANGLE_SPEED_LABEL)->SetText(sStr);
+         g_pGrassField->GetFlowManager()->fans[0].angleSpeed = g_fAngleSpeed;
+         break;
+      }
+      
+      
+      case IDC_TERR_R_SLYDER:
+      case IDC_TERR_G_SLYDER:
+      case IDC_TERR_B_SLYDER:
+      {
+         g_vTerrRGB.x = (float)g_HUD.GetSlider(IDC_TERR_R_SLYDER)->GetValue() / 200.0f;
+         g_vTerrRGB.y = (float)g_HUD.GetSlider(IDC_TERR_G_SLYDER)->GetValue() / 200.0f;
+         g_vTerrRGB.z = (float)g_HUD.GetSlider(IDC_TERR_B_SLYDER)->GetValue() / 200.0f;
+         swprintf_s(sStr, MAX_PATH, L"Diffuse: (%.2f,%.2f,%.2f)", g_vTerrRGB.x, g_vTerrRGB.y, g_vTerrRGB.z);
+         g_HUD.GetStatic(IDC_TERR_RGB_LABEL)->SetText(sStr);
+         XM_TO_V(g_vTerrRGB, vTerrRGB, 3);
+         g_pGrassField->SetTerrRGB(vTerrRGB);
+         break;
+      }
+      
+      //case IDC_FLOW_DIR_X_SLYDER:
+      //case IDC_FLOW_DIR_Y_SLYDER:
+      //case IDC_FLOW_DIR_Z_SLYDER:
+      //{
+      //   g_vDir.x = (float)g_HUD.GetSlider(IDC_FLOW_DIR_X_SLYDER)->GetValue() / 100.0f;
+      //   g_vDir.y = (float)g_HUD.GetSlider(IDC_FLOW_DIR_Y_SLYDER)->GetValue() / 100.0f;
+      //   g_vDir.z = (float)g_HUD.GetSlider(IDC_FLOW_DIR_Z_SLYDER)->GetValue() / 100.0f;
+      //   swprintf_s(sStr, MAX_PATH, L"Dir: (%.2f,%.2f,%.2f)", g_vDir.x, g_vDir.y, g_vDir.z);
+      //   g_HUD.GetStatic(IDC_FLOW_DIR_LABEL)->SetText(sStr);
+      //   g_pGrassField->m_pFlowManager->fans[0].direction = g_vDir;
+      //   break;
+      //}
    }
+}
+
+
+void InitCarMesh (void) 
+{
+   float height_scale;
+   float grass_radius;
+   Terrain* const terr = g_pGrassField->GetTerrain(&height_scale, &grass_radius);
+
+   if (g_fNumOfMeshes == 0)
+   {
+      ID3D11Device* pd3dDevice = DXUTGetD3D11Device();
+      ID3D11DeviceContext* pd3dDeviceCtx = DXUTGetD3D11DeviceContext();
+
+      g_pMeshes[0] = new Car(pd3dDevice, pd3dDeviceCtx, g_pGrassField->SceneEffect(),
+         create(0, 0, 0, 0),
+         terr, height_scale, grass_radius,
+         g_fCarFrontWidth, g_fCarHeight, g_fCarLength, 0.0f);
+      g_fNumOfMeshes = 1;
+
+      UpdateMeshes(0.01f);
+   }
+}
+
+
+void BeforeCameraChange(void)
+{
+   if (g_Camera != NULL)
+      SAFE_DELETE(g_Camera);
+
+   copterController.UnfixCam();
+}
+
+
+void AfterCameraChange (void)
+{
+   copterController.SetupCamera(g_Camera);
+   g_Camera->SetProjParams(60.4f * (3.14159f / 180.0f), 1.33f, 0.1f, 1000.0f /*g_fMeter*/);
+   g_Camera->SetViewParams(XMLoadFloat3(&g_vCameraEyeStart), XMLoadFloat3(&g_vCameraAtStart));
+   g_Camera->SetScalers(0.01f, g_fCameraSpeed);
+}
+
+
+void ToggleToNormalCamera (void)
+{
+   BeforeCameraChange();
+
+   float height_scale;
+   float grass_radius;
+   Terrain* const terr = g_pGrassField->GetTerrain(&height_scale, &grass_radius);
+
+   g_Camera = new LandscapeCamera(g_fCameraHeight, terr, height_scale, grass_radius);
+   AfterCameraChange();
+}
+
+
+void ToggleToTerrainCamera (void)
+{
+   BeforeCameraChange();
+
+   float height_scale;
+   float grass_radius;
+   Terrain* const terr = g_pGrassField->GetTerrain(&height_scale, &grass_radius);
+
+   g_Camera = new HeightCamera(g_fCameraHeight,
+      std::pair<float, float>(g_fCameraHeightMin, g_fCameraHeightMax),
+      terr, height_scale, grass_radius);
+   AfterCameraChange();
+}
+
+
+void ToggleToMeshCamera (void) {
+   BeforeCameraChange();
+
+   InitCarMesh();
+   float height_scale;
+   float grass_radius;
+   Terrain* const terr = g_pGrassField->GetTerrain(&height_scale, &grass_radius);
+
+   g_Camera = new MeshCamera(g_fCameraMeshDist,
+      std::pair<float, float>(g_fCameraMeshDistMin, g_fCameraMeshDistMax),
+      g_fCameraHeight,
+      std::pair<float, float>(g_fCameraHeightMin, g_fCameraHeightMax),
+      g_pMeshes[0], terr, height_scale, grass_radius);
+   AfterCameraChange();
+}
+
+
+int GetCameraType (void) 
+{
+   if (dynamic_cast<MeshCamera*>(g_Camera) != NULL)
+      return CAMERA_MESH;
+
+   if (dynamic_cast<LandscapeCamera*>(g_Camera) != NULL)
+      return CAMERA_NORMAL;
+
+   if (dynamic_cast<HeightCamera*>(g_Camera) != NULL)
+      return CAMERA_TERRAIN;
 }

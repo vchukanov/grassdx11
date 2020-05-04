@@ -26,7 +26,7 @@ Mesh::Mesh (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID
    XMStoreFloat4x4(&m_mTransform, newTransform);
 
    m_pTransformEMV = a_pEffect->GetVariableByName("g_mWorld")->AsMatrix();
-   CreateInputLayout();
+   //CreateInputLayout();
 
    XMStoreFloat4x4(&m_mRotation, XMMatrixIdentity());
    m_Angle = 0;
@@ -34,9 +34,9 @@ Mesh::Mesh (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID
 
 Mesh::~Mesh()
 {
-   SAFE_RELEASE(m_pInputLayout);
-   SAFE_RELEASE(m_pVertexBuffer);
-   SAFE_RELEASE(m_pIndexBuffer);
+   //SAFE_RELEASE(m_pInputLayout);
+   //SAFE_RELEASE(m_pVertexBuffer);
+   //SAFE_RELEASE(m_pIndexBuffer);
    SAFE_RELEASE(m_pTextureSRV);
 }
 

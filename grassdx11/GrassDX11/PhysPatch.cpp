@@ -6,6 +6,7 @@ PhysPatch::PhysPatch(GrassPatch* a_pGrassPatch)
 {
    m_pBasePatch = a_pGrassPatch;
    m_pD3DDevice = a_pGrassPatch->GetD3DDevicePtr();
+   m_pD3DDeviceCtx = a_pGrassPatch->GetD3DDeviceCtxPtr();
    m_dwVertexStride[0] = sizeof(VertexPhysData);
    m_dwVertexStride[1] = sizeof(VertexAnimData);
    m_dwVertexOffset = 0;
@@ -195,15 +196,15 @@ void PhysPatch::UpdateBuffer(void)
    VertexPhysData* vpd;
    VertexAnimData* vad;
    /* updating buffer */
-   D3D11_MAPPED_SUBRESOURCE* pPhysVertices = NULL;
-   D3D11_MAPPED_SUBRESOURCE* pAnimVertices = NULL;
+   D3D11_MAPPED_SUBRESOURCE pPhysVertices;
+   D3D11_MAPPED_SUBRESOURCE pAnimVertices;
    m_dwVerticesCount[0] = m_dwVerticesCount[1] = 0;
 
-   m_pD3DDeviceCtx->Map(m_pPhysVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, pPhysVertices);
-   m_pD3DDeviceCtx->Map(m_pAnimVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, pAnimVertices);
+   m_pD3DDeviceCtx->Map(m_pPhysVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &pPhysVertices);
+   m_pD3DDeviceCtx->Map(m_pAnimVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &pAnimVertices);
 
-   vpd = (VertexPhysData*)pPhysVertices->pData;
-   vad = (VertexAnimData*)pAnimVertices->pData;
+   vpd = (VertexPhysData*)pPhysVertices.pData;
+   vad = (VertexAnimData*)pAnimVertices.pData;
    for (i = 0; i < numBlades; i++)
    {
       bp = bladePhysData + i;
@@ -238,26 +239,16 @@ void PhysPatch::UpdateBuffer(void)
 }
 
 
-void PhysPatch::SetTransform(const XMMATRIX* a_pMtx)
+void PhysPatch::SetTransform (const XMFLOAT4X4* a_pMtx)
 {
    m_pTransform = a_pMtx;
 }
 
 
-float3 PhysPatch::PosToWorld(const float3& v)
+float3 PhysPatch::PosToWorld (const float3& v)
 {
-   float3 res;
-   res = XMVector3TransformCoord(v, *m_pTransform);
-   return res;
-}
-
-
-float3 PhysPatch::DirToWorld(const float3& v)
-{
-   float4 Temp = create(getx(v), gety(v), getz(v), 0.0f);
-   float4 res;
-   res = XMVector4Transform(Temp, *m_pTransform);
-   return *(float3*)(float*)(&res);
+   XM_TO_M(*m_pTransform, tr);
+   return XMVector3TransformCoord(v, tr);
 }
 
 
@@ -307,6 +298,8 @@ float3 GetDw(float3x3& T, float3x3& R, float3& fw, float3& sum, float3& w, float
    g = Hardness * MakeRotationVector(R);
    return (m_f - g) * invJ;
 }
+
+
 void CalcTR(float3x3& Tres, float3x3& Rres, float3x3& T, float3x3& T_1, float3x3& R, float3& psi)
 {
    Rres = XMMatrixMultiply(R, MakeRotationMatrix(psi));
@@ -631,7 +624,8 @@ void PhysPatch::UpdatePhysics(const float3& viewPos, float physLodDst, bool coll
       }
       if (near_car)
       {
-         float3 vNormal, vDist;
+         float3 vNormal = create(0, 0, 0);
+         float3 vDist = create(0, 0, 0); 
          int OldbrokenFlag = bp->brokenFlag;
 
          bp->brokenFlag = a_pMeshes[0]->IsBottom(bp->position[0], vDist);

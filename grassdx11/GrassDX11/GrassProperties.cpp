@@ -1,5 +1,6 @@
 #include "GrassProperties.h"
 #include "PhysMath.h"
+#include "common.h"
 
 #include <fstream>
 
@@ -7,7 +8,7 @@ void ReadToCoord (XMVECTOR& v, DWORD coord, std::ifstream& f)
 {
    float val;
    f >> val;
-   setcoord(v, coord, val);
+   setcoord(v, coord, val * com::frand(0.9, 1.1));
 }
 
 void GrassProps1::Read (std::ifstream& a_ifIn)

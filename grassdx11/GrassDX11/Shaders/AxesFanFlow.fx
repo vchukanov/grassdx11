@@ -275,7 +275,7 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
    float3 radialFlow_m = vm_k * radial_m;
 
    radial = normalize(queryPoint - fanPoint);
-   float time = g_fTime;
+   float time = g_fTime * 2;
    
    float randRadialMagn = fbm((time + 20145) + In.vsPos.xy * 100) - 0.1; 
    float randDistMagn = fbm((time + 2144) - In.vsPos.xy * 100) - 0.1;

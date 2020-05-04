@@ -8,12 +8,12 @@ struct GrassPatchExt
 {
    bool inFirstLod;
 
-    PhysPatch  Patch;
-    XMMATRIX   Transform;
-    float      fLifeTime;
-    bool       bIsDead;
-    UINT       uMeshIndex;
-   bool       isVisible;
+    PhysPatch      Patch;
+    XMFLOAT4X4     Transform;
+    float          fLifeTime;
+    bool           bIsDead;
+    UINT           uMeshIndex;
+    bool           isVisible;
     GrassPatchExt *pNext;
     GrassPatchExt *pPrev;
     GrassPatchExt ( GrassPatch *a_pPatch );

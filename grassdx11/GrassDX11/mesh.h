@@ -6,7 +6,8 @@
 struct MeshVertex
 {   
     XMFLOAT3 vPos;
-   XMFLOAT2 vTexCoord;
+    XMFLOAT2 vTexCoord;
+    XMFLOAT3 vNormal;
 };
 
 
@@ -14,18 +15,18 @@ class Mesh
 {
 protected:
    ///* Just a simple textured sphere */
-   ID3DX11EffectShaderResourceVariable *m_pTextureESRV;
-   ID3D11ShaderResourceView            *m_pTextureSRV;
-   ID3DX11EffectMatrixVariable         *m_pTransformEMV;
-   ID3DX11EffectPass                   *m_pPass;
-   ID3D11Device                        *m_pD3DDevice;
-   ID3D11DeviceContext                 *m_pD3DDeviceCtx;
-   ID3D11InputLayout                   *m_pInputLayout;
-   ID3D11Buffer                        *m_pVertexBuffer;
+   ID3DX11EffectShaderResourceVariable *m_pTextureESRV  = NULL;
+   ID3D11ShaderResourceView            *m_pTextureSRV   = NULL;
+   ID3DX11EffectMatrixVariable         *m_pTransformEMV = NULL;
+   ID3DX11EffectPass                   *m_pPass         = NULL;
+   ID3D11Device                        *m_pD3DDevice    = NULL;
+   ID3D11DeviceContext                 *m_pD3DDeviceCtx = NULL;
+   ID3D11InputLayout                   *m_pInputLayout  = NULL;
+   ID3D11Buffer                        *m_pVertexBuffer = NULL;
    UINT                                 m_uVertexCount;
    UINT                                 m_uVertexStride;
    UINT                                 m_uVertexOffset;
-   ID3D11Buffer                        *m_pIndexBuffer;
+   ID3D11Buffer                        *m_pIndexBuffer  = NULL;
    UINT                                 m_uIndexCount;
    UINT                                 m_uIndexStride;
    UINT                                 m_uIndexOffset;

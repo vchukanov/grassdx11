@@ -68,7 +68,6 @@ public:
 
    ID3DX11EffectScalarVariable* m_fScaleESV;
 
-
    ModelLoader* wingModel;
 };
 
