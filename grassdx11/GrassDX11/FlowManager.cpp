@@ -9,7 +9,7 @@ FlowManager::FlowManager (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3
    , m_NoiseSRV(a_NoiseSRV)
 {
    m_pAxesFanFlow = new AxesFanFlow(m_pD3DDevice, m_pD3DDeviceCtx, FLOW_TEX_SIZE, FLOW_TEX_SIZE, m_fTerrRadius);
-   m_pAxesFanFlow->SetRingsNumber(16);
+   m_pAxesFanFlow->SetRingsNumber(6);
 }
 
 
@@ -128,12 +128,14 @@ void AxesFanDesc::UpdateFromTransform (const XMMATRIX& transform)
    tr *= transform;
 
    XMVECTOR scale, pos, quatr;
-   XMMatrixDecompose(&scale, &quatr, &pos, tr);
-   
+   XMMatrixDecompose(&scale, &quatr, &pos, transform);
    XMMATRIX rot = XMMatrixRotationQuaternion(quatr);
-   XMVECTOR down = create(0, -1, 0);
    
-   XMVECTOR dir = XMVector3Transform(down, rot);
+   XMVECTOR down = create(0, -1, 0);
+   XMVECTOR dir = normalize(XMVector3Transform(down, rot));
+
+   XMMatrixDecompose(&scale, &quatr, &pos, tr);
+
    XMStoreFloat3(&direction, dir);
    XMStoreFloat3(&position, pos);
 
