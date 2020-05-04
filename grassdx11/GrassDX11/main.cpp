@@ -152,9 +152,9 @@ void InitApp()
    g_HUD.AddStatic(IDC_FAN_RADIUS_LABEL, sStr, 20, iY += iYo, 180, 22);
    g_HUD.AddSlider(IDC_FAN_RADIUS_SLYDER, 20, iY += iYo, 185, 22, 0, 1000, (int)(g_fFanRadius * 1000));
 
-   swprintf_s(sStr, MAX_PATH, L"Flow Shift: %.4f", g_fShift);
-   g_HUD.AddStatic(IDC_GRASS_SHIFT_LABEL, sStr, 20, iY += iYo, 180, 22);
-   g_HUD.AddSlider(IDC_GRASS_SHIFT_SLYDER, 20, iY += iYo, 185, 22, 0, 1000, (int)(g_fShift * 1000));
+   swprintf_s(sStr, MAX_PATH, L"Copter scale: %.4f", g_fCopterScale);
+   g_HUD.AddStatic(IDC_COPTER_SCALE_LABEL, sStr, 20, iY += iYo, 180, 22);
+   g_HUD.AddSlider(IDC_COPTER_SCALE_SLYDER, 20, iY += iYo, 185, 22, 0, 1000, (int)(g_fCopterScale * 10000));
 
    swprintf_s(sStr, MAX_PATH, L"Angle speed: %.4f", g_fAngleSpeed);
    g_HUD.AddStatic(IDC_FAN_ANGLE_SPEED_LABEL, sStr, 20, iY += iYo, 180, 22);
@@ -474,8 +474,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    
    // Setup global flow parameters (some of them unused, just for debug)
    g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxFlowStrength);
-   g_pGrassField->GetFlowManager()->SetDeltaSlices(g_fDeltaSlices);
-   g_pGrassField->GetFlowManager()->SetShift(g_fShift);
+   g_pGrassField->GetFlowManager()->SetShift(0.005f);
    g_pGrassField->GetFlowManager()->m_pAxesFanFlow->SetHeightMap(terr->HeightMapSRV());
    g_pGrassField->GetFlowManager()->m_pAxesFanFlow->SetHeightScale(g_fHeightScale);
    //InitMeshes(pd3dDevice);
@@ -1157,12 +1156,12 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
       }
       
       
-      case IDC_GRASS_SHIFT_SLYDER:
+      case IDC_COPTER_SCALE_SLYDER:
       {
-         g_fShift = (float)g_HUD.GetSlider(IDC_GRASS_SHIFT_SLYDER)->GetValue() / 10000.0f;
-         swprintf_s(sStr, MAX_PATH, L"Flow Shift: %.4f", g_fShift);
-         g_HUD.GetStatic(IDC_GRASS_SHIFT_LABEL)->SetText(sStr);
-         g_pGrassField->GetFlowManager()->SetShift(g_fShift);
+         g_fCopterScale = (float)g_HUD.GetSlider(IDC_COPTER_SCALE_SLYDER)->GetValue() / 100.0f;
+         swprintf_s(sStr, MAX_PATH, L"Copter scale: %.4f", g_fCopterScale);
+         g_HUD.GetStatic(IDC_COPTER_SCALE_LABEL)->SetText(sStr);
+         copter->UpdateScale(g_fCopterScale);
          break;
       }
       
