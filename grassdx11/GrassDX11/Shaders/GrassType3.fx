@@ -643,7 +643,10 @@ float4 InstPSMain( PSIn Input ) : SV_Target
   //  return float4(vC3, vTexel.a);
     float4 color = lerp(float4(vC3, vTexel.a * Input.fDissolve), g_vFogColor, Input.vTexCoord.z);
     
-    color.xyz = color.xyz * fShadowCoef;
+    if (!Input.bIsTop) { // hack
+        color.xyz = color.xyz * fShadowCoef;
+    }
+
     return color;
 }
 

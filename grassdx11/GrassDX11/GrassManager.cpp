@@ -142,11 +142,13 @@ GrassManager::GrassManager(GrassInitState& a_pInitState, GrassTracker* a_pGrassT
       m_pLowGrassDiffuseEVV = NULL;
    if (m_bUseLowGrass)
    {
-      m_pLowGrassPass = m_pEffect->GetTechniqueByName("RenderLowGrass")->GetPassByIndex(0);
+      m_pLowGrassPass = m_pEffect->GetTechniqueByName("RenderLowGrass")->GetPassByName("RenderLowGrass");
+      m_pShadowLowGrassPass = m_pEffect->GetTechniqueByName("RenderLowGrass")->GetPassByName("ShadowLowGrass");
       m_pLowGrassDiffuseEVV = m_pEffect->GetVariableByName("g_vLowGrassDiffuse")->AsVector();
-   }
-   else
+   } else {
       m_pLowGrassPass = NULL;
+      m_pShadowLowGrassPass = NULL;
+   }
 
    D3DX11_PASS_DESC RenderLod0PassDesc;
    m_pRenderPass->GetDesc(&RenderLod0PassDesc);
@@ -321,13 +323,13 @@ void GrassManager::Render(bool a_bShadowPass)
       m_pShadowPass->Apply(0, m_GrassState.pD3DDeviceCtx);
       m_GrassLod[0]->IASetVertexBuffers();
       m_GrassState.pD3DDeviceCtx->DrawInstanced(m_GrassLod[0]->VerticesCount(), m_GrassLod[0]->GetTransformsCount(), 0, 0);
-      if (m_bUseLowGrass)
-      {
-         m_pLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
-         m_GrassState.pD3DDeviceCtx->DrawInstanced(m_GrassLod[0]->VerticesCount(), m_GrassLod[0]->GetTransformsCount(), 0, 0);
-         m_pAxesFanFlowESRV->SetResource(NULL);
-         m_pLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
-      }
+      //if (m_bUseLowGrass)
+      //{
+      //   m_pShadowLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
+      //   m_GrassState.pD3DDeviceCtx->DrawInstanced(m_GrassLod[0]->VerticesCount(), m_GrassLod[0]->GetTransformsCount(), 0, 0);
+      //   m_pAxesFanFlowESRV->SetResource(NULL);
+      //   m_pShadowLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
+      //}
 
       m_pAxesFanFlowESRV->SetResource(NULL);
       m_pShadowPass->Apply(0, m_GrassState.pD3DDeviceCtx);

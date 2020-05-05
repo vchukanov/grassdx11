@@ -26,6 +26,8 @@ GrassPool::GrassPool (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDev
    {
       m_pLowGrassPhysPass = a_pEffect->GetTechniqueByName("RenderLowGrass")->GetPassByName("PhysLowGrass");
       m_pLowGrassAnimPass = a_pEffect->GetTechniqueByName("RenderLowGrass")->GetPassByName("AnimLowGrass");
+      m_pShadowLowGrassPhysPass = a_pEffect->GetTechniqueByName("RenderLowGrass")->GetPassByName("ShadowLowPhysGrass");
+      m_pShadowLowGrassAnimPass = a_pEffect->GetTechniqueByName("RenderLowGrass")->GetPassByName("ShadowLowAnimGrass");
    }
 
    const D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
@@ -418,7 +420,12 @@ void GrassPool::Render(bool a_bShadowPass)
    m_pD3DDeviceCtx->IASetInputLayout(m_pPhysInputLayout);
    if (m_bUseLowGrass)
    {
-      m_pLowGrassPhysPass->Apply(0, m_pD3DDeviceCtx);
+      if (a_bShadowPass) {
+         return;
+         //m_pShadowLowGrassPhysPass->Apply(0, m_pD3DDeviceCtx);
+      } else {
+         m_pLowGrassPhysPass->Apply(0, m_pD3DDeviceCtx);
+      }
       for (i = 0; i < m_iPatchCount; i++)
       {
          if (!m_pPatches[i]->bIsDead)
@@ -448,7 +455,13 @@ void GrassPool::Render(bool a_bShadowPass)
    m_pD3DDeviceCtx->IASetInputLayout(m_pAnimInputLayout);
    if (m_bUseLowGrass)
    {
-      m_pLowGrassAnimPass->Apply(0, m_pD3DDeviceCtx);
+      if (a_bShadowPass) {
+         return; 
+         //m_pShadowLowGrassAnimPass->Apply(0, m_pD3DDeviceCtx);
+      } else {
+         m_pLowGrassAnimPass->Apply(0, m_pD3DDeviceCtx);
+      }
+
       for (i = 0; i < m_iPatchCount; i++)
       {
          if (!m_pPatches[i]->bIsDead)

@@ -530,12 +530,13 @@ void GrassFieldManager::Render(Copter* copter, Car* car)
     }
     copter->Render();
     m_pFlowManager->RenderFans();
-    car->Render();
+    if (car != NULL) {
+       car->Render();
+    }
 
     SetViewMtx(tmp);
 
-
-    //m_pTerrain->Render();
+    m_pTerrain->Render();
     ID3D11ShaderResourceView *pSRV = m_pShadowMapping->EndShadowMapPass( );
  
     /* Camera viewproj */
@@ -583,7 +584,9 @@ void GrassFieldManager::Render(Copter* copter, Car* car)
 
    copter->Render();
    m_pFlowManager->RenderFans(false, false);
-   car->Render();
+   if (car != NULL) {
+      car->Render();
+   }
 
    //m_pVelocityMapESRV[GrassTypeNum]->SetResource(NULL);
    //m_pSceneTxESRV[GrassTypeNum]->SetResource(NULL);

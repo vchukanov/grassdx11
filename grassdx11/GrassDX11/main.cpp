@@ -496,7 +496,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, terr->HeightMapSRV(), 1);
    g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->m_pMixer->m_shaderResourceView, 1);
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->m_pAxesFanFlow->m_shaderResourceView, 1);
-   g_dbgWin->ToggleRender();
+   //g_dbgWin->ToggleRender();
 
 
    return S_OK;
@@ -845,9 +845,9 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
    SAFE_RELEASE(pOrigDS);
 
    DXUT_BeginPerfEvent( DXUT_PERFEVENTCOLOR, L"HUD / Stats" );
-   g_HUD.OnRender( fElapsedTime );
-   g_SampleUI.OnRender( fElapsedTime );
-   RenderText();
+   //g_HUD.OnRender( fElapsedTime );
+   //g_SampleUI.OnRender( fElapsedTime );
+   //RenderText();
    DXUT_EndPerfEvent();
 
    static ULONGLONG timefirst = GetTickCount64();
@@ -1130,8 +1130,8 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
          g_fMaxFlowStrength = (float)g_HUD.GetSlider(IDC_GRASS_MAX_FLOW_STRENGTH_SLYDER)->GetValue() / 1000.0f;
          swprintf_s(sStr, MAX_PATH, L"Flow Horiz Strength: %.4f", g_fMaxFlowStrength);
          g_HUD.GetStatic(IDC_GRASS_MAX_FLOW_STRENGTH_LABEL)->SetText(sStr);
-         //g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxFlowStrength);
-         ((Car*)g_pMeshes[0])->param = g_fMaxFlowStrength;
+         g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxFlowStrength);
+         //((Car*)g_pMeshes[0])->param = g_fMaxFlowStrength;
          break;
       }
       
@@ -1141,6 +1141,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
          swprintf_s(sStr, MAX_PATH, L"Fan Radius: %.4f", g_fFanRadius * 2);
          g_HUD.GetStatic(IDC_FAN_RADIUS_LABEL)->SetText(sStr);
          g_pGrassField->GetFlowManager()->fans[0].radius = g_fFanRadius;
+         g_pGrassField->GetFlowManager()->fans[1].radius = g_fFanRadius;
+         g_pGrassField->GetFlowManager()->fans[2].radius = g_fFanRadius;
+         g_pGrassField->GetFlowManager()->fans[3].radius = g_fFanRadius;
          break;
       }
       
@@ -1169,6 +1172,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
          swprintf_s(sStr, MAX_PATH, L"Angle Speed: %.4f", g_fAngleSpeed);
          g_HUD.GetStatic(IDC_FAN_ANGLE_SPEED_LABEL)->SetText(sStr);
          g_pGrassField->GetFlowManager()->fans[0].angleSpeed = g_fAngleSpeed;
+         g_pGrassField->GetFlowManager()->fans[1].angleSpeed = g_fAngleSpeed;
+         g_pGrassField->GetFlowManager()->fans[2].angleSpeed = g_fAngleSpeed;
+         g_pGrassField->GetFlowManager()->fans[3].angleSpeed = g_fAngleSpeed;
          break;
       }
       
@@ -1183,7 +1189,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
          swprintf_s(sStr, MAX_PATH, L"Diffuse: (%.2f,%.2f,%.2f)", g_vTerrRGB.x, g_vTerrRGB.y, g_vTerrRGB.z);
          g_HUD.GetStatic(IDC_TERR_RGB_LABEL)->SetText(sStr);
          XM_TO_V(g_vTerrRGB, vTerrRGB, 3);
-         g_pGrassField->SetTerrRGB(vTerrRGB);
+         setw(vTerrRGB, 1);
+         //g_pGrassField->SetTerrRGB(vTerrRGB);
+         g_pGrassField->SetLowGrassDiffuse(vTerrRGB);
          break;
       }
       
@@ -1219,7 +1227,7 @@ void InitCarMesh (void)
          terr, height_scale, grass_radius,
          g_fCarFrontWidth, g_fCarHeight, g_fCarLength, 0.0f);
       g_fNumOfMeshes = 1;
-
+      
       UpdateMeshes(0.01f);
    }
 }
