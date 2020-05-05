@@ -39,7 +39,6 @@ cbuffer cUserControlled
     float g_fGrassDiffuse;
     float g_fGrassLodBias;
     float g_fGrassSubScatterGamma;
-    float g_fWindStrength;
     float g_fWindTexTile;
     float g_fMass;
     float g_fHeightScale;
@@ -521,6 +520,13 @@ technique10 RenderGrass
     pass ShadowPhysicsPass
     {
         SetVertexShader( CompileShader( vs_4_0, PhysVSMain() ) );
+        SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
+        SetPixelShader( CompileShader( ps_4_0, ShadowPSMain() ) );
+    }
+
+    pass ShadowAnimPass
+    {
+        SetVertexShader( CompileShader( vs_4_0, AnimVSMain() ) );
         SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
         SetPixelShader( CompileShader( ps_4_0, ShadowPSMain() ) );
     }

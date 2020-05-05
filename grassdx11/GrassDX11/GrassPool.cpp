@@ -19,7 +19,9 @@ GrassPool::GrassPool (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDev
    m_bUseLowGrass = a_bUseLowGrass;
    m_pRenderAnimPass = a_pEffect->GetTechniqueByName("RenderGrass")->GetPassByName("RenderAnimPass");
    m_pRenderPhysPass = a_pEffect->GetTechniqueByName("RenderGrass")->GetPassByName("RenderPhysPass");
-   m_pShadowPass = a_pEffect->GetTechniqueByName("RenderGrass")->GetPassByName("ShadowPhysicsPass");
+   m_pShadowPassPhys = a_pEffect->GetTechniqueByName("RenderGrass")->GetPassByName("ShadowPhysicsPass");
+   m_pShadowPassAnim = a_pEffect->GetTechniqueByName("RenderGrass")->GetPassByName("ShadowAnimPass");
+
    if (m_bUseLowGrass)
    {
       m_pLowGrassPhysPass = a_pEffect->GetTechniqueByName("RenderLowGrass")->GetPassByName("PhysLowGrass");
@@ -426,7 +428,13 @@ void GrassPool::Render(bool a_bShadowPass)
          }
       }
    }
-   m_pRenderPhysPass->Apply(0, m_pD3DDeviceCtx);
+   
+   if (a_bShadowPass) {
+      m_pShadowPassPhys->Apply(0, m_pD3DDeviceCtx);
+   } else {
+      m_pRenderPhysPass->Apply(0, m_pD3DDeviceCtx);
+   }
+
    for (i = 0; i < m_iPatchCount; i++)
    {
       if (!m_pPatches[i]->bIsDead)
@@ -451,7 +459,12 @@ void GrassPool::Render(bool a_bShadowPass)
       }
    }
 
-   m_pRenderAnimPass->Apply(0, m_pD3DDeviceCtx);
+   if (a_bShadowPass) {
+      m_pShadowPassAnim->Apply(0, m_pD3DDeviceCtx);
+   } else {
+      m_pRenderAnimPass->Apply(0, m_pD3DDeviceCtx);
+   }
+
    for (i = 0; i < m_iPatchCount; i++)
    {
       if (!m_pPatches[i]->bIsDead)

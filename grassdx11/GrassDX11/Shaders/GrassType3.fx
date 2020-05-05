@@ -709,4 +709,11 @@ technique10 RenderGrass
         SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
         SetPixelShader( CompileShader( ps_4_0, ShadowPSMain() ) );
     }
+
+    pass ShadowAnimPass
+    {
+        SetVertexShader( CompileShader( vs_4_0, AnimVSMain() ) );
+        SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
+        SetPixelShader( CompileShader( ps_4_0, ShadowPSMain() ) );
+    }
 }
