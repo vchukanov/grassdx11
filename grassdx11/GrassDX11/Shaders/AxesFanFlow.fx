@@ -301,10 +301,10 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
    
    float3 randComp = normalize(cross(normalFlow, radialFlow));
    randComp *= sqrt(length(normalFlow) * length(radialFlow));
-   randComp *= 4;
+   randComp *= 3;
    float3 randComp_m = normalize(cross(normalFlow_m, radialFlow_m));
    randComp_m *= sqrt(length(normalFlow) * length(radialFlow));
-   randComp *= 4;
+   randComp *= 3;
    
    float3 staticFlow = normalFlow * randMagn + normalFlow_m * randMagn
       + radialFlow * randMagn1 + radialFlow_m * randMagn1
@@ -313,8 +313,8 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
    float3 flow = staticFlow;
    
    flow = clamp(flow, -0.0275, 0.0275);
-   flow /= GetLandscapeDamping(queryPoint, fanPoint);
    
+   //flow /= GetLandscapeDamping(queryPoint, fanPoint);  // Eat fps then scene has several propellers   
    
    Out.xz = flow.yx;
    Out.z = -Out.z;

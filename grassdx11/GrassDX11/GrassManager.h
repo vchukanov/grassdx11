@@ -81,6 +81,7 @@ private:
    ID3DX11Effect                       *m_pEffect;
    ID3DX11EffectPass                   *m_pRenderPass;
    ID3DX11EffectPass                   *m_pLowGrassPass;
+   ID3DX11EffectPass                   *m_pShadowLowGrassPass;
    bool                                 m_bUseLowGrass;
    ID3DX11EffectPass                   *m_pShadowPass;
    ID3D11Texture2D                     *m_pDiffuseTex;

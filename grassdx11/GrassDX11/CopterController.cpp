@@ -23,7 +23,7 @@ void CopterController::InitHeightCtrl (Terrain* terr, float grassR, float height
 
 void CopterController::UpdatePhysics(void)
 {
-   const float dt = 0.5;
+   const float dt = 0.35;
 
    UpdateInput();
 
