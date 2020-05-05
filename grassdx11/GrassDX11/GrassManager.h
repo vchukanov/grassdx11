@@ -146,7 +146,6 @@ public:
    void AddSubType         (const GrassPropsUnified &a_SubTypeData);
    void ClearSubTypes      (void);
 
-
    void ApplyRenderPass (void) { m_pRenderPass->Apply(0, m_GrassState.pD3DDeviceCtx); }
 
    ID3DX11Effect* GetEffect (void);

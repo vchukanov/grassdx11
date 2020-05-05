@@ -45,8 +45,8 @@ Car::Car (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3D
    m_pPlanes[3] = new Plane(a_pD3DDevice, a_pD3DDeviceCtx, a_pEffect, m_vPosAndRadius, m_fPlaneWidth, m_fPlaneHeight, INVALID_DIST, INVALID_DIST);
 
    /* just one technique in effect */
-   ID3DX11EffectTechnique* pTechnique = a_pEffect->GetTechniqueByName("RenderCar");
-   m_pPass = pTechnique->GetPassByIndex(0);
+   ID3DX11EffectTechnique* pTechnique = a_pEffect->GetTechniqueByIndex(0);
+   m_pPass = pTechnique->GetPassByName("RenderMeshPass");
 
    // Setup shader variables
    //m_pMeshMapKdESRV = a_pEffect->GetVariableByName("g_txMeshMapKd")->AsShaderResource();
@@ -63,7 +63,9 @@ Car::Car (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3D
    CreateInputLayout();
 
    carModel = new ModelLoader;
-   if (!carModel->Load(0, m_pD3DDevice, m_pD3DDeviceCtx, "resources/Copter/wing.fbx"))
+   //if (!carModel->Load(0, m_pD3DDevice, m_pD3DDeviceCtx, "resources/SuperCar/obj/carFordtest.obj"))
+   //   assert(false);
+   if (!carModel->Load(0, m_pD3DDevice, m_pD3DDeviceCtx, "resources/Car/car_low/source/car_low.fbx"))
       assert(false);
 }
 
@@ -81,9 +83,9 @@ void Car::CreateInputLayout(void)
 {
    const D3D11_INPUT_ELEMENT_DESC InputDesc[] =
    {
-       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-       { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-       { "TEXTURE", 0, DXGI_FORMAT_R32G32_FLOAT,     0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+       { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+       { "TEXTURE",  0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
    };
    D3DX11_PASS_DESC PassDesc;
    m_pPass->GetDesc(&PassDesc);
@@ -95,20 +97,46 @@ void Car::CreateInputLayout(void)
 
 void Car::Render(void)
 {
-
    m_pD3DDeviceCtx->IASetInputLayout(m_pInputLayout);
-   m_pTransformEMV->SetMatrix((float*)& m_mTransform);
-//   m_pNormalMatrixEMV->SetMatrix((float*)& m_mNormalMatrix);
+ 
+   //m_pNormalMatrixEMV->SetMatrix((float*)& m_mNormalMatrix);
    if (GetGlobalStateManager().UseWireframe())
       GetGlobalStateManager().SetRasterizerState("EnableMSAACulling_Wire");
    else
       GetGlobalStateManager().SetRasterizerState("EnableMSAACulling");
 
-   for (auto* plane : m_pPlanes) {
-      plane->Render();
-   }
+   XMVECTOR trnsl, quatr, scale;
+   XMMATRIX tr = XMLoadFloat4x4(&m_mTransform);
+   XMMatrixDecompose(&scale, &quatr, &trnsl, tr);
 
-   //carModel->Draw(m_pD3DDeviceCtx, m_pPass, m_pTexESRV);
+   tr = XMMatrixScaling(4.43, 4.43, 4.43) *
+      XMMatrixRotationX(PI / 2) *
+      XMMatrixRotationY(PI) *
+      XMMatrixTranslation(0, -1.4050, 0) *
+      XMMatrixTranslation(0, 0, -m_fCarLength) *
+      XMMatrixRotationQuaternion(quatr) *
+      XMMatrixTranslationFromVector(trnsl) *
+      XMMatrixIdentity(); 
+
+   /*tr = XMMatrixScaling(1, 1, 1) *
+      //XMMatrixRotationX(PI / 2) *
+      //XMMatrixRotationY(PI) *
+      XMMatrixRotationQuaternion(quatr) *
+      XMMatrixTranslationFromVector(trnsl) *
+      //XMMatrixTranslation(0, -1.4050, 0) *
+      //XMMatrixTranslation(0, 0, -m_fCarLength) *
+      XMMatrixIdentity();*/
+
+   //XMMATRIX initialTr = ;
+   //initialTr *= XMMatrixScaling(0.1, 0.1, 0.01);
+   m_pTransformEMV->SetMatrix((float*)& tr);
+
+   carModel->Draw(m_pD3DDeviceCtx, m_pPass, m_pTexESRV);
+
+   // Debug
+   //for (auto* plane : m_pPlanes) {
+   //   plane->Render();
+   //}
 }
 
 
@@ -284,7 +312,8 @@ void Car::SetPosAndRadius (XMFLOAT4& a_vPosAndRadius)
 
 XMFLOAT4 Car::GetPosAndRadius(void)
 {
-   float r = 1.5f * sqrt(m_fCarLength * m_fCarLength + m_fCarHeight * m_fCarHeight);
+   //float r = 1.5f * sqrt(m_fCarLength * m_fCarLength + m_fCarHeight * m_fCarHeight);
+   float r = m_fCarWidth;
    return XMFLOAT4(m_vPosAndRadius.x, m_vPosAndRadius.y, m_vPosAndRadius.z, r);
    //        max(max(m_fCarBackWidth, m_fCarHeight), m_fCarLength));
 }

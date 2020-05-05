@@ -8,6 +8,8 @@
 class Car : public Mesh
 {
 public:
+   float param = 0;
+
    Car (ID3D11Device* dev, ID3D11DeviceContext* devcon, ID3DX11Effect* a_pEffect, XMVECTOR a_vPosAndRadius,
       Terrain* const a_pTerrain, float a_fHeightScale, float a_fGrassRadius,
       float a_fCarWidth, float a_fCarHeight, float a_fCarLength, float a_fAmplAngle);
