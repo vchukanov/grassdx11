@@ -21,7 +21,7 @@ protected:
    ID3DX11EffectPass                   *m_pPass         = NULL;
    ID3D11Device                        *m_pD3DDevice    = NULL;
    ID3D11DeviceContext                 *m_pD3DDeviceCtx = NULL;
-   ID3D11InputLayout                   *m_pInputLayout  = NULL;
+   ID3D11InputLayout                   *m_pInputLayout;
    ID3D11Buffer                        *m_pVertexBuffer = NULL;
    UINT                                 m_uVertexCount;
    UINT                                 m_uVertexStride;

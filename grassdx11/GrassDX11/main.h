@@ -56,7 +56,7 @@ XMFLOAT3                            g_MeshVels[MAX_NUM_MESHES];
 
 float                               g_fCarLength     = 10.0f;//3.0;
 float                               g_fCarHeight     = 3.f;
-float                               g_fCarFrontWidth = 4.f;
+float                               g_fCarFrontWidth = 3.7f;
 
 float                               g_fCarRotVel;
 float                               g_fCarRotAccel;
