@@ -2,6 +2,7 @@
 
 #include "GrassFieldManager.h"
 #include "GrassTrack.h"
+#include "Car.h"
 
 #include <DDSTextureLoader.h>
 
@@ -478,7 +479,7 @@ Terrain* const GrassFieldManager::GetTerrain(float* a_fHeightScale, float* a_fGr
    return m_pTerrain;
 }
 
-void GrassFieldManager::Render(Copter* copter)
+void GrassFieldManager::Render(Copter* copter, Car* car)
 {
    m_pAirTxESRV[0]->SetResource(m_pMixer->GetShaderResourceView());
    m_pAirTxESRV[2]->SetResource(m_pMixer->GetShaderResourceView());
@@ -529,6 +530,8 @@ void GrassFieldManager::Render(Copter* copter)
     }
     copter->Render();
     m_pFlowManager->RenderFans();
+    car->Render();
+
     SetViewMtx(tmp);
 
 
@@ -575,11 +578,12 @@ void GrassFieldManager::Render(Copter* copter)
    //   pVelSRV = m_pVelocityMap->EndVelocityMap();
    //}
 
-   copter->Render();
    //m_pSceneTxESRV[GrassTypeNum]->SetResource(pSceneSRV);
    //m_pVelocityMapESRV[GrassTypeNum]->SetResource(pVelSRV);
 
+   copter->Render();
    m_pFlowManager->RenderFans(false, false);
+   car->Render();
 
    //m_pVelocityMapESRV[GrassTypeNum]->SetResource(NULL);
    //m_pSceneTxESRV[GrassTypeNum]->SetResource(NULL);

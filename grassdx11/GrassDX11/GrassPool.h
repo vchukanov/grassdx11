@@ -46,7 +46,8 @@ private:
     ID3DX11EffectPass           *m_pRenderPhysPass;
     ID3DX11EffectPass           *m_pLowGrassAnimPass;
     ID3DX11EffectPass           *m_pLowGrassPhysPass;
-    ID3DX11EffectPass           *m_pShadowPass;
+    ID3DX11EffectPass           *m_pShadowPassPhys;
+    ID3DX11EffectPass           *m_pShadowPassAnim;
     ID3D11Device                *m_pD3DDevice;
    ID3D11DeviceContext         *m_pD3DDeviceCtx;
     bool                         m_bUseLowGrass;
