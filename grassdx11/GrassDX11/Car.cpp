@@ -33,6 +33,16 @@ Car::Car (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3D
    m_fPlaneWidth = m_fCarWidth;
    m_fPlaneHeight = m_fCarHeight;
 
+   /* just one technique in effect */
+   ID3DX11EffectTechnique* pTechnique = a_pEffect->GetTechniqueByIndex(0);
+   m_pPass = pTechnique->GetPassByName("RenderMeshPass");
+
+   m_pTransformEMV = a_pEffect->GetVariableByName("g_mWorld")->AsMatrix();
+   m_pTexESRV = a_pEffect->GetVariableByName("g_txMeshDiffuse")->AsShaderResource();
+
+   CreateInputLayout();
+
+
    m_uNumPlanes = 4;
    // Front
    m_pPlanes[0] = new Plane(a_pD3DDevice, a_pD3DDeviceCtx, a_pEffect, m_vPosAndRadius, m_fPlaneWidth, m_fPlaneHeight,
@@ -43,24 +53,6 @@ Car::Car (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3D
    m_pPlanes[2] = new Plane(a_pD3DDevice, a_pD3DDeviceCtx, a_pEffect, m_vPosAndRadius, m_fPlaneLength, m_fPlaneHeight, INVALID_DIST, INVALID_DIST);
    // Back
    m_pPlanes[3] = new Plane(a_pD3DDevice, a_pD3DDeviceCtx, a_pEffect, m_vPosAndRadius, m_fPlaneWidth, m_fPlaneHeight, INVALID_DIST, INVALID_DIST);
-
-   /* just one technique in effect */
-   ID3DX11EffectTechnique* pTechnique = a_pEffect->GetTechniqueByIndex(0);
-   m_pPass = pTechnique->GetPassByName("RenderMeshPass");
-
-   // Setup shader variables
-   //m_pMeshMapKdESRV = a_pEffect->GetVariableByName("g_txMeshMapKd")->AsShaderResource();
-   //m_pMeshMapKsESRV = a_pEffect->GetVariableByName("g_txMeshMapKs")->AsShaderResource();
-   //m_pMaterialCoefsESV[0] = a_pEffect->GetVariableByName("g_vKd")->AsVector();
-   //m_pMaterialCoefsESV[1] = a_pEffect->GetVariableByName("g_vKs")->AsVector();
-   //m_pMaterialCoefsESV[2] = a_pEffect->GetVariableByName("g_vKa")->AsVector();
-   //m_pMaterialShininessESV = a_pEffect->GetVariableByName("g_nNs")->AsScalar();
-   //m_pNormalMatrixEMV = a_pEffect->GetVariableByName("g_mNormalMatrix")->AsMatrix();
-
-   m_pTransformEMV = a_pEffect->GetVariableByName("g_mWorld")->AsMatrix();
-   m_pTexESRV = a_pEffect->GetVariableByName("g_txMeshDiffuse")->AsShaderResource();
-
-   CreateInputLayout();
 
    carModel = new ModelLoader;
    //if (!carModel->Load(0, m_pD3DDevice, m_pD3DDeviceCtx, "resources/SuperCar/obj/carFordtest.obj"))
@@ -84,26 +76,27 @@ void Car::CreateInputLayout(void)
    const D3D11_INPUT_ELEMENT_DESC InputDesc[] =
    {
        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-       { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-       { "TEXTURE",  0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+       { "TEXCOORD",  0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+       { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
    };
    D3DX11_PASS_DESC PassDesc;
    m_pPass->GetDesc(&PassDesc);
    int InputElementsCount = sizeof(InputDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC);
-   m_pD3DDevice->CreateInputLayout(InputDesc, InputElementsCount,
+   HRESULT hr = m_pD3DDevice->CreateInputLayout(InputDesc, InputElementsCount,
       PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize,
       &m_pInputLayout);
 }
 
 void Car::Render(void)
 {
-   m_pD3DDeviceCtx->IASetInputLayout(m_pInputLayout);
- 
    //m_pNormalMatrixEMV->SetMatrix((float*)& m_mNormalMatrix);
-   if (GetGlobalStateManager().UseWireframe())
-      GetGlobalStateManager().SetRasterizerState("EnableMSAACulling_Wire");
-   else
-      GetGlobalStateManager().SetRasterizerState("EnableMSAACulling");
+   //if (GetGlobalStateManager().UseWireframe())
+   //   GetGlobalStateManager().SetRasterizerState("EnableMSAACulling_Wire");
+   //else
+   //   GetGlobalStateManager().SetRasterizerState("EnableMSAACulling");
+
+   m_pD3DDeviceCtx->IASetInputLayout(m_pInputLayout);
+   m_pD3DDeviceCtx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
    XMVECTOR trnsl, quatr, scale;
    XMMATRIX tr = XMLoadFloat4x4(&m_mTransform);
@@ -131,6 +124,7 @@ void Car::Render(void)
    //initialTr *= XMMatrixScaling(0.1, 0.1, 0.01);
    m_pTransformEMV->SetMatrix((float*)& tr);
 
+   m_pPass->Apply(0, m_pD3DDeviceCtx);
    carModel->Draw(m_pD3DDeviceCtx, m_pPass, m_pTexESRV);
 
    // Debug

@@ -446,7 +446,8 @@ void PhysPatch::Animatin(PhysPatch::BladePhysData* bp, float2& vTexCoord, Mesh* 
          bp->T[j] = XMMatrixMultiply(bp->T[j - 1], bp->R[j]);
       }
 
-      w_ = create(0, 0, 0, 0);// pWindData->GetWindValueA(vTexCoord, fWindTexTile, windStrength, j - 1);
+      w_ = pWindData->GetWindValueA(vTexCoord, fWindTexTile, 40, j - 1);
+         //pAirData->GetAirValue(vTexCoord);//create(0, 0, 0, 0);// pWindData->GetWindValueA(vTexCoord, fWindTexTile, windStrength, j - 1);
       sum = g * getcoord(props.vMassSegment, j - 1);
       localSum = XMVector3TransformCoord(sum, bp->T[j]);
       float3 G;
@@ -661,7 +662,7 @@ void PhysPatch::UpdatePhysics(const float3& viewPos, float physLodDst, bool coll
          {
             if (bp->brokenFlag == 0 && bp->NeedPhysics != 2)
             {
-               //Animatin(bp, vTexCoord, a_pMeshes, props);
+               Animatin(bp, vTexCoord, a_pMeshes, props);
             }
          }
       }
