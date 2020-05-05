@@ -54,18 +54,18 @@ DebugWindow                         *g_dbgWin;
 
 XMFLOAT3                            g_MeshVels[MAX_NUM_MESHES];
 
-float                               g_fCarLength     = 5.0f;//3.0;
-float                               g_fCarHeight     = 1.8f;
-float                               g_fCarFrontWidth = 2.8f;
+float                               g_fCarLength     = 10.0f;//3.0;
+float                               g_fCarHeight     = 3.f;
+float                               g_fCarFrontWidth = 4.f;
 
 float                               g_fCarRotVel;
 float                               g_fCarRotAccel;
 const float                         g_fCarRotMaxVel = 0.01f;
 const float                         g_fCarRotMinVel = -0.01f;
-const float                         g_fCarRotForce = 0.04f;
+const float                         g_fCarRotForce = 5.0f;
 
-const float                         g_fCarMinVelocity = 0.01f;
-const float                         g_fCarMaxVelocity = 0.50f;
+const float                         g_fCarMinVelocity = 0.001f;
+const float                         g_fCarMaxVelocity = 1.50f;
 const float                         g_fCarForce = 0.005f;
 float                               g_fCarVelocity = 0.1f;;
 float                               g_fCarAccel;

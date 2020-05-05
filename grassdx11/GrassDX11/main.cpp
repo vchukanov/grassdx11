@@ -566,6 +566,8 @@ void UpdateMeshes (float a_fElapsedTime)
          pos.z += getz(g_vCarDir) * g_fCarVelocity;
          g_pMeshes[i]->SetPosAndRadius(pos);
       }
+
+      g_fCarVelocity *= 0.99;
    }
 }
 
@@ -1024,25 +1026,25 @@ void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserC
       case VK_MULTIPLY:
          ToggleToMeshCamera();
          break;
-      case VK_LEFT:
+      case 70:
          g_fCarRotAccel = -g_fCarRotForce;
          break;
-      case VK_RIGHT:
+      case 72:
          g_fCarRotAccel = g_fCarRotForce;
          break;
-      case VK_UP:
+      case 84:
          g_fCarAccel = g_fCarForce;
          break;
-      case VK_DOWN:
+      case 71:
          g_fCarAccel = -g_fCarForce * 2;
          break;
       }
    }
    else
    {
-      if (nChar == VK_RIGHT || nChar == VK_LEFT)
+      if (nChar == 72 || nChar == 70)
          g_fCarRotAccel = 0;
-      else if (nChar == VK_UP || nChar == VK_DOWN)
+      else if (nChar == 84 || nChar == 71)
          g_fCarAccel = 0;//-g_fCarForce;
 
       switch (nChar)
@@ -1128,7 +1130,8 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
          g_fMaxFlowStrength = (float)g_HUD.GetSlider(IDC_GRASS_MAX_FLOW_STRENGTH_SLYDER)->GetValue() / 1000.0f;
          swprintf_s(sStr, MAX_PATH, L"Flow Horiz Strength: %.4f", g_fMaxFlowStrength);
          g_HUD.GetStatic(IDC_GRASS_MAX_FLOW_STRENGTH_LABEL)->SetText(sStr);
-         g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxFlowStrength);
+         //g_pGrassField->GetFlowManager()->SetMaxHorizFlow(g_fMaxFlowStrength);
+         ((Car*)g_pMeshes[0])->param = g_fMaxFlowStrength;
          break;
       }
       
