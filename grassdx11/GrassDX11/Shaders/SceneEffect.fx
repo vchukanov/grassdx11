@@ -39,7 +39,7 @@ cbuffer cRarely
 {
     float  g_fTerrRadius;
     float  g_fGrassRadius;
-    float2 g_vPixSize = float2(0.0039, 0.0039);
+    float2 g_vPixSize = float2(0.0025, 0.0025);
 };
 
 cbuffer cImmutable
@@ -61,7 +61,15 @@ Texture2D g_txHeightMap;
 Texture2D g_txLightMap;
 Texture2D g_txSkyBox;
 Texture2D g_txTerrGrass;
-Texture2D g_txSandDiffuse;
+
+Texture2D g_txGrassDiffuse;
+Texture2D g_txGrassHeight;
+Texture2D g_txGrassNormal;
+
+Texture2D g_txTerrDiffuse;
+Texture2D g_txTerrHeight;
+Texture2D g_txTerrNormal;
+
 
 // Mesh textures
 Texture2D g_txMeshMapKd;
@@ -82,14 +90,24 @@ struct TerrVSIn
 {
     float3 vPos      : POSITION;
     float2 vTexCoord : TEXCOORD0;
+
+    float3 tangent  : TANGENT;
+    float3 normal   : NORMAL;
+    float3 bitangent : BITANGENT;
 };
 
 struct TerrPSIn
 {
     float4 vPos      : SV_Position;
+    
+    float4 vShadowPos : TEXCOORD0;
+    float4 vTexCoord  : TEXCOORD1;
 
-    float4 vShadowPos     : TEXCOORD0;
-    float4 vTexCoord      : TEXCOORD1;
+    float3 tanLightDir  : POSITION0;
+    float3 tanViewPos   : POSITION1;
+    float3 tanFragPos   : POSITION2;
+
+    float3 worldPos  : POSITION3;
 
     //float3 vNormal   : NORMAL;
 };
@@ -306,7 +324,7 @@ float4 MeshPSMainBlured( TerrPSIn Input ): SV_Target
 }
 
 /* Blur shaders */
-BlurPSIn MeshVSBlur( TerrVSIn Input )
+BlurPSIn MeshVSBlur( MeshVSIn Input )
 {
     BlurPSIn Output;
     Output.vPosition = mul(mul(float4(Input.vPos, 1.0), g_mWorld), g_mViewProj);
@@ -327,19 +345,19 @@ float4 MeshPSBlur( BlurPSIn Input ): SV_Target
 
 /* Terrain shaders */
 
-//float3 CalcNormal(float2 a_vTexCoord)
-//{
-//    const float2 dU = float2(g_vPixSize.x, 0);
-//    const float2 dV = float2(0, g_vPixSize.y);
-//  
-//    float heightC = g_txHeightMap.SampleLevel(g_samLinear, a_vTexCoord, 0).r * g_fHeightScale;
-//    float heightL = g_txHeightMap.SampleLevel(g_samLinear, a_vTexCoord - dU, 0).r * g_fHeightScale;
-//    float heightR = g_txHeightMap.SampleLevel(g_samLinear, a_vTexCoord + dU, 0).r * g_fHeightScale;
-//    float heightT = g_txHeightMap.SampleLevel(g_samLinear, a_vTexCoord - dV, 0).r * g_fHeightScale;
-//    float heightB = g_txHeightMap.SampleLevel(g_samLinear, a_vTexCoord + dV, 0).r * g_fHeightScale;
-//	
-//    return normalize(float3(heightR - heightL, 1.0, heightB - heightT));
-//}
+float3 CalcNormal (float2 a_vTexCoord)
+{
+    const float2 dU = float2(g_vPixSize.x, 0);
+    const float2 dV = float2(0, g_vPixSize.y);
+  
+    float heightC = g_txHeightMap.SampleLevel(g_samLinear, a_vTexCoord, 0).r * g_fHeightScale;
+    float heightL = g_txHeightMap.SampleLevel(g_samLinear, a_vTexCoord - dU, 0).r * g_fHeightScale;
+    float heightR = g_txHeightMap.SampleLevel(g_samLinear, a_vTexCoord + dU, 0).r * g_fHeightScale;
+    float heightT = g_txHeightMap.SampleLevel(g_samLinear, a_vTexCoord - dV, 0).r * g_fHeightScale;
+    float heightB = g_txHeightMap.SampleLevel(g_samLinear, a_vTexCoord + dV, 0).r * g_fHeightScale;
+	
+    return normalize(float3(heightR - heightL, 1.0, heightB - heightT));
+}
 
 
 TerrPSIn TerrainVSMain( TerrVSIn Input )
@@ -348,11 +366,28 @@ TerrPSIn TerrainVSMain( TerrVSIn Input )
     float fY			 = g_txHeightMap.SampleLevel(g_samLinear, Input.vTexCoord, 0).a * g_fHeightScale;
     float4 vWorldPos	 = float4(Input.vPos + float3(0.0, fY, 0.0), 1.0);
     Output.vPos          = mul(vWorldPos, g_mViewProj);
+
+    
+    Output.worldPos = vWorldPos;
+
     Output.vTexCoord.xy  = Input.vTexCoord;
     Output.vTexCoord.z   = FogValue(length(vWorldPos - g_mInvCamView[3].xyz));
     Output.vTexCoord.w   = length(vWorldPos - g_mInvCamView[3].xyz);
     Output.vShadowPos   = mul( vWorldPos, g_mLightViewProj);    
 
+    //float3 T = normalize(float3(model * vec4(aTangent,   0.0)));
+    //float3 B = normalize(float3(model * vec4(aBitangent, 0.0)));
+    //float3 N = normalize(float3(model * vec4(aNormal,    0.0)));
+    float3x3 TBN = float3x3(Input.tangent, Input.bitangent, Input.normal);
+//dbg
+    Output.tanLightDir = Input.bitangent;//mul(vLightDir, TBN);
+    Output.tanViewPos  = mul(g_mInvCamView[3].xyz, TBN);
+    Output.tanFragPos  = mul(Input.vPos + float3(0.0, fY, 0.0), TBN); 
+ /*
+    Output.tanFragPos;
+    Output.tanLightPos;
+    Output.tanViewPos;
+*/
     return Output;
 }
 
@@ -362,28 +397,182 @@ float GetAlphaCoef(float2 vTexCoord)
     return clamp(length(vAlpha), 0.0, 1.0);                            
 }
 
+
+
+float2 reliefPM(float2 inTexCoords, float3 inViewDir, Texture2D heigtTex) {
+    float lastDepthValue;
+
+	float _minLayers = 2.;
+	float _maxLayers = 32.;
+	float _numLayers = lerp(_maxLayers, _minLayers, abs(dot(float3(0., 0., 1.), inViewDir)));
+
+	float deltaDepth = 1./_numLayers;
+	float2 deltaTexcoord = 0.03 * inViewDir.xy/(inViewDir.z * _numLayers);
+
+	float2 currentTexCoords = inTexCoords;
+	float currentLayerDepth = 0.;
+	float currentDepthValue = 1 - heigtTex.Sample(g_samPoint, currentTexCoords);
+
+    [unroll(64)]
+    while (currentDepthValue > currentLayerDepth) {
+		currentLayerDepth += deltaDepth;
+		currentTexCoords -= deltaTexcoord;
+		currentDepthValue = 1 - heigtTex.Sample(g_samPoint, currentTexCoords);
+	}
+
+	deltaTexcoord *= 0.5;
+	deltaDepth *= 0.5;
+	currentTexCoords += deltaTexcoord;
+	currentLayerDepth -= deltaDepth;
+
+	const int _reliefSteps = 5;
+	int currentStep = _reliefSteps;
+
+    [unroll(64)]
+    while (currentStep > 0) {
+		currentDepthValue = 1 - heigtTex.Sample(g_samPoint, currentTexCoords);
+		deltaTexcoord *= 0.5;
+		deltaDepth *= 0.5;
+
+		if (currentDepthValue > currentLayerDepth) {
+			currentTexCoords -= deltaTexcoord;
+			currentLayerDepth += deltaDepth;
+		}
+		else {
+			currentTexCoords += deltaTexcoord;
+			currentLayerDepth -= deltaDepth;
+		}
+		currentStep--;
+	}
+
+	lastDepthValue = currentDepthValue;
+	return currentTexCoords;
+}
+
+
+float2 ParallaxMapping(float2 texCoords, float3 viewDir, Texture2D heigtTex)
+{ 
+    //float height =  g_txTerrHeight.Sample(g_samLinear, texCoords).r;    
+    //float2 p = -viewDir.xy / viewDir.z * (height * g_vTerrRGB.x/*height_scale*/);
+    //return texCoords - p;    
+
+    float minLayers = 0;
+    float maxLayers = 32;
+    float numLayers = lerp(maxLayers, minLayers, abs(dot(float3(0.0, 0.0, 1.0), viewDir)));
+    float layerDepth = 1.0 / numLayers;
+
+    float currentLayerDepth = 0;
+
+    float2 P = viewDir.xy / viewDir.z * g_vTerrRGB.x;
+
+    float2 deltaTexCoords = P / numLayers;
+
+    float2 currentTexCoords = texCoords;
+
+    float currentDepthMapValue =  1 - heigtTex.Sample(g_samLinear, currentTexCoords).r;
+
+    [unroll(32)]
+    while (currentLayerDepth < currentDepthMapValue)
+    {
+        currentTexCoords -= deltaTexCoords;
+        currentDepthMapValue = 1 - heigtTex.Sample(g_samLinear, currentTexCoords).r;
+        currentLayerDepth += layerDepth;
+    }
+
+    float2 prevTexCoords = currentTexCoords + deltaTexCoords;
+    float afterDepth = currentDepthMapValue - currentLayerDepth;
+    float beforeDepth =  1 - heigtTex.Sample(g_samLinear, prevTexCoords).r - currentLayerDepth + layerDepth;
+
+    float weight = afterDepth / (afterDepth - beforeDepth);
+
+    float2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
+
+    return finalTexCoords;
+}
+
+
+float ShadowCalc(float2 texCoord, float3 lightDir)
+{
+    if ( lightDir.z >= 0.0 )
+        return 0.0;
+
+    float minLayers = 0;
+    float maxLayers = 32;
+    float numLayers = lerp(maxLayers, minLayers, abs(dot(float3(0.0, 0.0, 1.0), lightDir)));
+
+    float2 currentTexCoords = texCoord;
+    float currentDepthMapValue = 1 - g_txTerrHeight.Sample(g_samLinear, currentTexCoords).r;
+    float currentLayerDepth = currentDepthMapValue;
+
+    float layerDepth = 1.0 / numLayers;
+    float2 P = lightDir.xy / lightDir.z * g_vTerrRGB.x;
+    float2 deltaTexCoords = P / numLayers;
+
+    [unroll(32)]
+    while (currentLayerDepth <= currentDepthMapValue && currentLayerDepth > 0.0)
+    {
+        currentTexCoords += deltaTexCoords;
+        currentDepthMapValue = 1 - g_txTerrHeight.Sample(g_samLinear, currentTexCoords).r;
+        currentLayerDepth -= layerDepth;
+    }
+
+    float r = currentLayerDepth > currentDepthMapValue ? 0.0 : 1.0;
+    return r;
+}
+
+
+float3 Blend(float4 texture1, float a1, float4 texture2, float a2)
+{
+    /*if (a1 > g_vTerrRGB.y) {
+        if ((texture1.r + texture1.g + texture1.b) / 3 > g_vTerrRGB.z) {
+            return texture1;
+        }
+    }*/ 
+    return (a1 * texture1) + (a2 * texture2);
+}
+
+
 float4 TerrainPSMain( TerrPSIn Input ): SV_Target
 {
-    float shadowCoef = ShadowCoef(Input.vShadowPos);
-    //return shadowCoef;
+    float3 viewDir = normalize(Input.tanViewPos - Input.tanFragPos);
+    // получить смещенные текстурные координаты с помощью Parallax Mapping
+    
+    float alphaValue = GetAlphaCoef(Input.vTexCoord.xy);
 
+    float2 texCoords = Input.vTexCoord * 64;
+    if (alphaValue < 0.5 && length(g_mInvCamView[3].xyz - Input.worldPos) < 50) {
+        texCoords = reliefPM(Input.vTexCoord * 64, viewDir, g_txTerrHeight);
+    }
+    // делаем выборку из использующихся текстур 
+    // с использованием смещенных координат
+    float3 diffuse = g_txTerrDiffuse.Sample(g_samLinear, Input.vTexCoord);
+    float3 normal  = g_txTerrNormal.Sample(g_samLinear, Input.vTexCoord);
+    normal = normalize(normal * 2.0 - 1.0);
+
+    //float dc = max(0.0, dot(-Input.tanLightDir, normal));
+    //float shadow = dc > 0.0 ? ShadowCalc(Input.vTexCoord * 64, Input.tanLightDir) : 0.0;
+
+
+    float shadowCoef = ShadowCoef(Input.vShadowPos);
+    
     float2 fDot = g_txLightMap.Sample(g_samLinear, Input.vTexCoord.xy).rg;
   
     float3 vGrassColor = g_txTerrGrass.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
     vGrassColor *= float3(0.22, 0.25, 0.00);
     
-    float3 vSandColor = g_txSandDiffuse.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
+    float3 vSandColor = g_txTerrDiffuse.Sample(g_samLinear, texCoords).xyz;
     vSandColor *= float3(0.37, 0.37, 0.28);
-
-    float alphaValue = GetAlphaCoef(Input.vTexCoord.xy);    
-    float3 blendColor = (alphaValue * vGrassColor) + ((1.0 - alphaValue) * vSandColor);
+ 
+    //float3 blendColor = (alphaValue * vGrassColor) + ((1.0 - alphaValue) * vSandColor);
+    float3 blendColor = Blend(float4(vGrassColor, 1), alphaValue, float4(vSandColor, 1), 1 - alphaValue);
 
     float3 vL = blendColor * max(0.8, (2.0 + 5.0 * fDot.y) * 0.5);
 	float fLimDist = clamp((Input.vTexCoord.w - 140.0) / 20.0, 0.0, 1.0);
 
     float4 color = lerp(float4(fDot.x * fLimDist * g_vTerrSpec + (1.0 - fDot.x * fLimDist) * vL, 1.0), g_vFogColor, Input.vTexCoord.z);
     color.xyz = color.xyz * shadowCoef;
-    return color;
+
+    return color /** shadow*/;
 }
 
 /* Light Map Shaders */
@@ -406,7 +595,7 @@ float4 LightMapPSMain( TerrPSIn Input ): SV_Target
     float fDot = 1.0 - dot(normalize(g_mInvCamView[3].xyz - vTerrPos), vHeightData.xyz);
     float fLightDot = -dot(vLightDir, vHeightData.xyz);
     fDot *= fDot;  
-	fDot *= fDot;  
+    fDot *= fDot;  
     fDot *= fDot;   
     fDot *= fDot;  
     return float4(fDot, fLightDot, 0.0, 0.0);

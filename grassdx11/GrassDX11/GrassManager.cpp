@@ -413,7 +413,7 @@ float GrassManager::LodAlphaOffset(const XMVECTOR& a_vCamPos, const XMVECTOR& a_
 
 void GrassManager::Update(float4x4& a_mViewProj, float3 a_vCamPos, Mesh* a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime)
 {
-   float physLodDst = m_GrassState.fGrassRadius * 0.2f;
+   float physLodDst = m_GrassState.fGrassRadius * 0.5f;
    float fMaxDist = m_GrassState.fGrassRadius;
    static ConvexVolume cvFrustum;
    cvFrustum.BuildFrustum(a_mViewProj);

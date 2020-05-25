@@ -63,8 +63,7 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
    }
 
    /* Terrain and wind */
-   m_pTerrain = new Terrain(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx, m_pSceneEffect, a_InitState.fTerrRadius);
-   m_pTerrain->BuildHeightMap(a_InitState.fHeightScale);
+   m_pTerrain = new Terrain(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx, m_pSceneEffect, a_InitState.fTerrRadius, a_InitState.fHeightScale);
    m_fTerrRadius = a_InitState.fTerrRadius;
 
    m_pWind = new Wind(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx);
@@ -266,7 +265,8 @@ void GrassFieldManager::Reinit(GrassFieldState& a_InitState)
       a_InitState.InitState[0].pD3DDevice,
       a_InitState.InitState[0].pD3DDeviceCtx,
       m_pSceneEffect,
-      a_InitState.fTerrRadius
+      a_InitState.fTerrRadius,
+      a_InitState.fHeightScale
    );
 }
 
