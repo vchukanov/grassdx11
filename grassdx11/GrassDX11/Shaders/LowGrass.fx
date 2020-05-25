@@ -50,8 +50,8 @@ void GSLowGrassMain( point GSIn In[1], inout TriangleStream< LowGrassPSIn > TriS
         return;
 
     float3 vDelta = In[0].vPos3 - In[0].vPos0;
-    float3 vX = float3(0.8, 0.0, 0.0);
-    float3 vY = float3(vDelta.x, 0.5, vDelta.z);
+    float3 vX = float3(1.2, 0.0, 0.0);
+    float3 vY = float3(vDelta.x, 1.5, vDelta.z);
     float3 vZ = normalize(cross(vX, vY));
     CreateLowGrass(In[0].vPos0, vX, vY, TriStream);
 

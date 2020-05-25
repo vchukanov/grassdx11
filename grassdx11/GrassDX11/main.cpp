@@ -51,6 +51,8 @@ void ToggleToTerrainCamera (void);
 void ToggleToNormalCamera  (void);
 void InitCarMesh           (void);
 
+bool isDbgUiRendered = false;
+
 //--------------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
 // loop. Idle time is used to render the scene.
@@ -219,7 +221,7 @@ void RenderText()
    swprintf(eyeStr, sizeof(eyeStr), L"Eye: X = %f, Y = %f, Z = % f", eye.x, eye.y, eye.z);
 
    WCHAR lookAtStr[100];
-   swprintf(lookAtStr, sizeof(lookAtStr), L"LookAt: X = %f, Y = %f, Z = % f", lookAt.x, lookAt.y, lookAt.z);
+   swprintf(lookAtStr, sizeof(lookAtStr), L"Look to: X = %f, Y = %f, Z = % f", lookAt.x - eye.x, lookAt.y - eye.y, lookAt.z - eye.z);
 
    g_pTxtHelper->DrawTextLine(eyeStr);
    g_pTxtHelper->DrawTextLine(lookAtStr);
@@ -825,7 +827,8 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
    g_dbgWin->SetOrthoMtx(mOrtho);
    g_dbgWin->SetWorldMtx(mWorld);
    
-   g_dbgWin->Render(pd3dImmediateContext, 0, 0);
+   if (isDbgUiRendered)
+      g_dbgWin->Render(pd3dImmediateContext, 100, 100);
    TurnZBufferOn(pd3dImmediateContext);
 
    // Copy it over because we can't resolve on present at the moment
@@ -845,9 +848,12 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
    SAFE_RELEASE(pOrigDS);
 
    DXUT_BeginPerfEvent( DXUT_PERFEVENTCOLOR, L"HUD / Stats" );
-   //g_HUD.OnRender( fElapsedTime );
-   //g_SampleUI.OnRender( fElapsedTime );
-   //RenderText();
+   if (isDbgUiRendered)
+   {
+      g_HUD.OnRender(fElapsedTime);
+      g_SampleUI.OnRender(fElapsedTime);
+      RenderText();
+   }
    DXUT_EndPerfEvent();
 
    static ULONGLONG timefirst = GetTickCount64();
@@ -1013,15 +1019,20 @@ void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserC
       case 221://]
          copterController.OnTorque();
          break;
+      case VK_BACK:
+         isDbgUiRendered = !isDbgUiRendered;
+         break;
       case VK_NUMPAD7:
          ToggleToNormalCamera();
+         copterController.UnfixCam();
          break;
       case VK_DIVIDE:
          ToggleToTerrainCamera();
+         copterController.UnfixCam();
          break;
       case VK_ADD:
          ToggleToNormalCamera();
-         copterController.ToggleFixCam();
+         copterController.FixCam();
          break;
       case VK_MULTIPLY:
          ToggleToMeshCamera();
@@ -1190,8 +1201,8 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
          g_HUD.GetStatic(IDC_TERR_RGB_LABEL)->SetText(sStr);
          XM_TO_V(g_vTerrRGB, vTerrRGB, 3);
          setw(vTerrRGB, 1);
-         //g_pGrassField->SetTerrRGB(vTerrRGB);
-         g_pGrassField->SetLowGrassDiffuse(vTerrRGB);
+         g_pGrassField->SetTerrRGB(vTerrRGB);
+         //g_pGrassField->SetLowGrassDiffuse(vTerrRGB);
          break;
       }
       
@@ -1235,9 +1246,7 @@ void InitCarMesh (void)
 
 void BeforeCameraChange(void)
 {
-   if (g_Camera != NULL)
-      SAFE_DELETE(g_Camera);
-
+   SAFE_DELETE(g_Camera);
    copterController.UnfixCam();
 }
 

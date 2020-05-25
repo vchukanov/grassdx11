@@ -168,7 +168,7 @@ float GetLandscapeDamping (float3 queryPoint, float3 fanCenter)
     float fY = 0;
     float3 landNormal = float3(0, 0, 0);
   
-    [loop]
+    [unroll(32)]
     for (int i = 0; i < stepsCount; i++) {
         landPoint = queryPoint + i * step;
         vHeightData = g_txHeightMap.Sample(g_samLinear, landPoint.xy * 0.5 + 0.5);
@@ -200,7 +200,7 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
    
    float3 fanNormal_m = normalize(getReflectedVec(fanNormal));
    float3 fanPoint_m = getReflectedVec(fanPoint);
-   fanPoint_m.z += fY;
+   fanPoint_m.z += 2 * fY;
    
    float  z = fY + 0.015;
    
@@ -314,7 +314,7 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
    
    flow = clamp(flow, -0.0275, 0.0275);
    
-   //flow /= GetLandscapeDamping(queryPoint, fanPoint);  // Eat fps then scene has several propellers   
+   flow /= GetLandscapeDamping(queryPoint, fanPoint);  // Eat fps then scene has several propellers   
    
    Out.xz = flow.yx;
    Out.z = -Out.z;
