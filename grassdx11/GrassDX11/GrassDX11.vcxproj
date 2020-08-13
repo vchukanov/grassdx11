@@ -432,6 +432,7 @@
     <ClCompile Include="ConvexVolume.cpp" />
     <ClCompile Include="Copter.cpp" />
     <ClCompile Include="CopterController.cpp" />
+    <ClCompile Include="DataTypes.cpp" />
     <ClCompile Include="DebugWindow.cpp" />
     <ClCompile Include="FlowManager.cpp" />
     <ClCompile Include="GrassCollideStatic.cpp" />
@@ -451,6 +452,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="maths.cpp" />
+    <ClCompile Include="MathStuff.cpp" />
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="ModelLoader.cpp" />
     <ClCompile Include="NewDel.cpp" />
@@ -484,6 +486,7 @@
     <ClInclude Include="ConvexVolume.h" />
     <ClInclude Include="Copter.h" />
     <ClInclude Include="CopterController.h" />
+    <ClInclude Include="DataTypes.h" />
     <ClInclude Include="DebugWindow.h" />
     <ClInclude Include="fixedvector.h" />
     <ClInclude Include="FlowManager.h" />
@@ -498,6 +501,7 @@
     <ClInclude Include="includes.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="maths.h" />
+    <ClInclude Include="MathStuff.h" />
     <ClInclude Include="memdebug.h" />
     <ClInclude Include="MeshAssimp.h" />
     <ClInclude Include="mesh.h" />

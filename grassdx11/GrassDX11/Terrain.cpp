@@ -215,9 +215,9 @@ Terrain::Terrain(ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCt
    hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Terrain/Terrain_height.dds", nullptr, &pSRV);
    pESRV->SetResource(pSRV);
 
-   //pESRV = a_pEffect->GetVariableByName("g_txGrassNormal")->AsShaderResource();
-   //hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Terrain/Terrain_normal.dds", nullptr, &pSRV);
-   //pESRV->SetResource(pSRV);
+   pESRV = a_pEffect->GetVariableByName("g_txTerrNormal")->AsShaderResource();
+   hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Terrain/Terrain_normal.dds", nullptr, &pSRV);
+   pESRV->SetResource(pSRV);
 
    
    UINT  m_uSideCount = 256 + 1;

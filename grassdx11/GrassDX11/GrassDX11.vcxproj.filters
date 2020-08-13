@@ -32,6 +32,9 @@
     <Filter Include="Assimp">
       <UniqueIdentifier>{d06192bd-7088-430d-b600-efcf8e0a6d9a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Grass\Render\ShadowMath">
+      <UniqueIdentifier>{48e9d22b-2950-4ef9-b8cc-b7fef2252dec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -132,6 +135,12 @@
     </ClCompile>
     <ClCompile Include="TexturesMixer.cpp">
       <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="DataTypes.cpp">
+      <Filter>Grass\Render\ShadowMath</Filter>
+    </ClCompile>
+    <ClCompile Include="MathStuff.cpp">
+      <Filter>Grass\Render\ShadowMath</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -258,6 +267,12 @@
     </ClInclude>
     <ClInclude Include="AirData.h">
       <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTypes.h">
+      <Filter>Grass\Render\ShadowMath</Filter>
+    </ClInclude>
+    <ClInclude Include="MathStuff.h">
+      <Filter>Grass\Render\ShadowMath</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

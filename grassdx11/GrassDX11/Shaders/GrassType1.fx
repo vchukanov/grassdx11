@@ -442,7 +442,7 @@ float4 InstPSMain( PSIn Input ) : SV_Target
     float3 vColor2 = float3(1.5, 1.5, 1.0);
     float fNoiseScale = lerp(vColor1, vColor2, Input.fNoise);
     float3 vA = Input.vBladeColor;
-    float3 vD = vDiffuseTexel.xyz;//g_vLowGrassDiffuse.xyz;
+    float3 vD = g_vLowGrassDiffuse.xyz;
     float3 vT = Input.vColor * max(0.8, (2.0 + 5.0f* Input.vTerrSpec.y)*0.5);
     float fDot = Input.vTerrSpec.x;
     float fT = 1.0 - abs(Input.fLightParam);
@@ -469,9 +469,9 @@ float4 ShadowPSMain( PSIn Input, out float fDepth: SV_Depth ) : SV_Target
 {   
     uint uTexIndex = SubTypes[Input.uIndex].uTexIndex;
     float fAlpha = g_txGrassDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, uTexIndex)).a;
-    clip(fAlpha - 0.001);
+    clip(fAlpha - 0.1);
     fDepth = Input.vShadowPos.z / Input.vShadowPos.w * 0.5 + 0.5;
-    return float4(0.0, 0.0, 0.0, 1.0);
+    return float4(0.0, 0.0, 0.0, fAlpha);
 }
 
 

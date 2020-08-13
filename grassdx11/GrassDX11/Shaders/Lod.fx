@@ -74,11 +74,11 @@ inline float4 CalcTransparency( float a_fBaseAlpha, float4 a_vFirstPt, out float
     float fDist = length(a_vFirstPt.xyz - g_mInvCamView[3].xyz);
 	a_uNumVertices = 7;
 
-    if (fDist > 40.0)
-       a_uNumVertices = 4;
-	if (fDist > 50.0)
-	   a_uNumVertices = 3;
     if (fDist > 60.0)
+       a_uNumVertices = 4;
+	if (fDist > 75.0)
+	   a_uNumVertices = 3;
+    if (fDist > 100.0)
        a_uNumVertices = 2;
 /*
     if (fDist > 0.5)
