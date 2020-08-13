@@ -323,13 +323,13 @@ void GrassManager::Render(bool a_bShadowPass)
       m_pShadowPass->Apply(0, m_GrassState.pD3DDeviceCtx);
       m_GrassLod[0]->IASetVertexBuffers();
       m_GrassState.pD3DDeviceCtx->DrawInstanced(m_GrassLod[0]->VerticesCount(), m_GrassLod[0]->GetTransformsCount(), 0, 0);
-      //if (m_bUseLowGrass)
-      //{
-      //   m_pShadowLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
-      //   m_GrassState.pD3DDeviceCtx->DrawInstanced(m_GrassLod[0]->VerticesCount(), m_GrassLod[0]->GetTransformsCount(), 0, 0);
-      //   m_pAxesFanFlowESRV->SetResource(NULL);
-      //   m_pShadowLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
-      //}
+      if (m_bUseLowGrass)
+      {
+         m_pShadowLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
+         m_GrassState.pD3DDeviceCtx->DrawInstanced(m_GrassLod[0]->VerticesCount(), m_GrassLod[0]->GetTransformsCount(), 0, 0);
+         m_pAxesFanFlowESRV->SetResource(NULL);
+         m_pShadowLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
+      }
 
       m_pAxesFanFlowESRV->SetResource(NULL);
       m_pShadowPass->Apply(0, m_GrassState.pD3DDeviceCtx);

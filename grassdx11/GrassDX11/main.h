@@ -62,7 +62,7 @@ float                               g_fCarRotVel;
 float                               g_fCarRotAccel;
 const float                         g_fCarRotMaxVel = 0.01f;
 const float                         g_fCarRotMinVel = -0.01f;
-const float                         g_fCarRotForce = 5.0f;
+const float                         g_fCarRotForce = 2.5f;
 
 const float                         g_fCarMinVelocity = 0.001f;
 const float                         g_fCarMaxVelocity = 1.50f;
@@ -113,8 +113,8 @@ float                               g_fCameraMeshDistMax;
 float                               g_fCameraHeight = 5.0f;
 float                               g_fCameraHeightMax;
 float                               g_fCameraHeightMin;
-XMFLOAT3                            g_vCameraEyeStart(69.79, 20.20, -75.06);
-XMFLOAT3                            g_vCameraAtStart(70.33, 19.97, -75.87);
+XMFLOAT3                            g_vCameraEyeStart(-1.52, 12.73, 46.10);
+XMFLOAT3                            g_vCameraAtStart(-0.24 - 1.52, -0.18+ 12.73, -0.954+ 46.10);
 
 
 ID3D11Texture2D*                    g_pRenderTarget = NULL;

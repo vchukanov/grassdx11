@@ -74,7 +74,7 @@ namespace maths
       bool LastLineISect (XMFLOAT3* a_Res, Line a_Line);
    };
 
-   const int MaxPointsNum = 50;
+   const int MaxPointsNum = 150;
    class PointArray : public ObjArray<XMFLOAT3, MaxPointsNum>
    {
    public:

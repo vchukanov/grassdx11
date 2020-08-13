@@ -464,7 +464,8 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    g_pGrassField->SetWindStrength(g_fWindStrength);
    g_pGrassField->SetWindSpeed(g_fWindTexSpeed);
    g_pGrassField->SetQuality(g_fQuality);
-   g_pGrassField->SetLowGrassDiffuse(vGrassSpecular);
+   XMVECTOR lgd = create(0.29 * 2, 1, 0.08, 2);
+   g_pGrassField->SetLowGrassDiffuse(lgd);
    g_pGrassField->SetFogColor(vFogColor);
    g_pGrassField->SetWindBias(g_fWindBias);
    g_pGrassField->SetWindScale(g_fWindScale);
@@ -1202,6 +1203,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
          XM_TO_V(g_vTerrRGB, vTerrRGB, 3);
          setw(vTerrRGB, 1);
          g_pGrassField->SetTerrRGB(vTerrRGB);
+         //vTerrRGB *= 2;
          //g_pGrassField->SetLowGrassDiffuse(vTerrRGB);
          break;
       }

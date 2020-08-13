@@ -301,13 +301,13 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
    
    float3 randComp = normalize(cross(normalFlow, radialFlow));
    randComp *= sqrt(length(normalFlow) * length(radialFlow));
-   randComp *= 3;
+   randComp *= 2;
    float3 randComp_m = normalize(cross(normalFlow_m, radialFlow_m));
    randComp_m *= sqrt(length(normalFlow) * length(radialFlow));
-   randComp *= 3;
+   randComp *= 2;
    
    float3 staticFlow = normalFlow * randMagn + normalFlow_m * randMagn
-      + radialFlow * randMagn1 + radialFlow_m * randMagn1
+      + radialFlow * randMagn1 * 2 + radialFlow_m * randMagn1 * 2
       + randComp * randCompMagn + randComp_m * randCompMagn1;
    
    float3 flow = staticFlow;

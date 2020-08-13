@@ -106,8 +106,9 @@ struct TerrPSIn
     float3 tanLightDir  : POSITION0;
     float3 tanViewPos   : POSITION1;
     float3 tanFragPos   : POSITION2;
+    float3 tanFragPos1  : POSITION3;
 
-    float3 worldPos  : POSITION3;
+    float3 worldPos  : POSITION4;
 
     //float3 vNormal   : NORMAL;
 };
@@ -380,9 +381,11 @@ TerrPSIn TerrainVSMain( TerrVSIn Input )
     //float3 N = normalize(float3(model * vec4(aNormal,    0.0)));
     float3x3 TBN = float3x3(Input.tangent, Input.bitangent, Input.normal);
 //dbg
-    Output.tanLightDir = Input.bitangent;//mul(vLightDir, TBN);
+    Output.tanLightDir = mul(vLightDir, TBN);
     Output.tanViewPos  = mul(g_mInvCamView[3].xyz, TBN);
-    Output.tanFragPos  = mul(Input.vPos + float3(0.0, fY, 0.0), TBN); 
+    Output.tanFragPos  = mul(Input.vPos + float3(0.0, fY, 0.0), TBN);  // minus becouse bug in tbn
+    Output.tanFragPos1  = mul(Input.vPos - float3(0.0, fY, 0.0), TBN);  // minus becouse bug in tbn
+ 
  /*
     Output.tanFragPos;
     Output.tanLightPos;
@@ -399,7 +402,7 @@ float GetAlphaCoef(float2 vTexCoord)
 
 
 
-float2 reliefPM(float2 inTexCoords, float3 inViewDir, Texture2D heigtTex) {
+float2 reliefPM(float2 inTexCoords, float3 inViewDir, float3 inViewDir1, Texture2D heigtTex) {
     float lastDepthValue;
 
 	float _minLayers = 2.;
@@ -407,7 +410,7 @@ float2 reliefPM(float2 inTexCoords, float3 inViewDir, Texture2D heigtTex) {
 	float _numLayers = lerp(_maxLayers, _minLayers, abs(dot(float3(0., 0., 1.), inViewDir)));
 
 	float deltaDepth = 1./_numLayers;
-	float2 deltaTexcoord = 0.03 * inViewDir.xy/(inViewDir.z * _numLayers);
+	float2 deltaTexcoord = g_vTerrRGB.x * inViewDir.xy / (inViewDir1.z * _numLayers);
 
 	float2 currentTexCoords = inTexCoords;
 	float currentLayerDepth = 0.;
@@ -450,7 +453,7 @@ float2 reliefPM(float2 inTexCoords, float3 inViewDir, Texture2D heigtTex) {
 }
 
 
-float2 ParallaxMapping(float2 texCoords, float3 viewDir, Texture2D heigtTex)
+float2 ParallaxMapping(float2 texCoords, float3 viewDir,  float3 viewDir1, Texture2D heigtTex, out float lastDepthValue)
 { 
     //float height =  g_txTerrHeight.Sample(g_samLinear, texCoords).r;    
     //float2 p = -viewDir.xy / viewDir.z * (height * g_vTerrRGB.x/*height_scale*/);
@@ -463,7 +466,7 @@ float2 ParallaxMapping(float2 texCoords, float3 viewDir, Texture2D heigtTex)
 
     float currentLayerDepth = 0;
 
-    float2 P = viewDir.xy / viewDir.z * g_vTerrRGB.x;
+    float2 P = viewDir.xy / viewDir1.z * 0.075;
 
     float2 deltaTexCoords = P / numLayers;
 
@@ -485,17 +488,74 @@ float2 ParallaxMapping(float2 texCoords, float3 viewDir, Texture2D heigtTex)
 
     float weight = afterDepth / (afterDepth - beforeDepth);
 
+	lastDepthValue = currentLayerDepth;
+
     float2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
 
     return finalTexCoords;
 }
 
 
-float ShadowCalc(float2 texCoord, float3 lightDir)
+float ShadowCalc(float2 inTexCoords, float3 inLightDir, float inLastDepth)
 {
-    if ( lightDir.z >= 0.0 )
+    if (inLastDepth > 0.90) {
+        inLastDepth = 1 - g_txTerrHeight.Sample(g_samLinear, inTexCoords).r;
+    }
+    
+    float shadowMultiplier = 0.;
+// расчет будем делать только для поверхностей, 
+// освещенных используемым источником
+	float alignFactor = dot(float3(0., 0., 1.), inLightDir);
+	if (alignFactor > 0.) {
+// знакомая инициализация параметров: слои глубины, шаг 
+// слоя глубины, шаг смещения текстурных координат
+		float _minLayers = 16.;
+		float _maxLayers = 32.;
+		float _numLayers = lerp(_maxLayers, _minLayers, abs(alignFactor));
+		float _dDepth = inLastDepth/_numLayers;
+		float2 _dtex = 0.3 * inLightDir.xy / (inLightDir.z * _numLayers);
+
+// счетчик точек, оказавшихся под поверхностью
+		int numSamplesUnderSurface = 0;
+
+// поднимаемся на глубину слоя и смещаем 
+// текстурные координаты вдоль вектора L
+		float currentLayerDepth = inLastDepth - _dDepth;
+		float2 currentTexCoords = inTexCoords + _dtex;
+
+		float currentDepthValue = 1 - g_txTerrHeight.Sample(g_samLinear, currentTexCoords).r;
+// номер текущего шага
+		float stepIndex = 1.;
+// повторяем, пока не выйдем за слой нулевой глубины…
+        [unroll(16)]
+		while (currentLayerDepth > 0.) {
+// если нашли точку под поверхностью, то увеличим счетчик и 
+// рассчитаем очередной частичный и полный коэффициенты
+			if (currentDepthValue < currentLayerDepth) {
+				numSamplesUnderSurface++;
+				float currentShadowMultiplier = (currentLayerDepth - currentDepthValue) * (1. - stepIndex/_numLayers);
+                shadowMultiplier = max(shadowMultiplier, currentShadowMultiplier);
+			}
+			stepIndex++;
+			currentLayerDepth -= _dDepth;
+			currentTexCoords += _dtex;
+			currentDepthValue = 1 - g_txTerrHeight.Sample(g_samLinear, currentTexCoords).r;
+		}
+// если точек под поверхностью не было, то точка 
+// считается освещенной и коэффициент оставим 1
+		if (numSamplesUnderSurface < 1)
+			shadowMultiplier = 1.;
+		else
+			shadowMultiplier = 1. - shadowMultiplier;
+	} else {
+        return float4(1, 0, 0, 1);
+    }
+
+	return shadowMultiplier;
+ /*   if ( lightDir.z >= 0.0 )
         return 0.0;
 
+    float shadow = 0.0;
     float minLayers = 0;
     float maxLayers = 32;
     float numLayers = lerp(maxLayers, minLayers, abs(dot(float3(0.0, 0.0, 1.0), lightDir)));
@@ -517,7 +577,7 @@ float ShadowCalc(float2 texCoord, float3 lightDir)
     }
 
     float r = currentLayerDepth > currentDepthMapValue ? 0.0 : 1.0;
-    return r;
+    return r;*/
 }
 
 
@@ -535,24 +595,24 @@ float3 Blend(float4 texture1, float a1, float4 texture2, float a2)
 float4 TerrainPSMain( TerrPSIn Input ): SV_Target
 {
     float3 viewDir = normalize(Input.tanViewPos - Input.tanFragPos);
-    // получить смещенные текстурные координаты с помощью Parallax Mapping
+    float3 viewDir1 = normalize(Input.tanViewPos - Input.tanFragPos1);
     
     float alphaValue = GetAlphaCoef(Input.vTexCoord.xy);
 
+    float lastDepthValue = 0;
     float2 texCoords = Input.vTexCoord * 64;
-    if (alphaValue < 0.5 && length(g_mInvCamView[3].xyz - Input.worldPos) < 50) {
-        texCoords = reliefPM(Input.vTexCoord * 64, viewDir, g_txTerrHeight);
+  
+    float3 normal  = g_txTerrNormal.Sample(g_samLinear, Input.vTexCoord * 64);
+  
+    float selfShadow = 1;
+    if (alphaValue < 0.5 && length(g_mInvCamView[3].xyz - Input.worldPos) < 75) {
+        texCoords = ParallaxMapping(Input.vTexCoord * 64, viewDir, viewDir1, g_txTerrHeight, lastDepthValue);
+        selfShadow = ShadowCalc(texCoords, -Input.tanLightDir, lastDepthValue);
+    } else {
+        if (alphaValue < 0.5)
+            selfShadow = dot(-vLightDir * 2 * 0.88, normal);
     }
-    // делаем выборку из использующихся текстур 
-    // с использованием смещенных координат
-    float3 diffuse = g_txTerrDiffuse.Sample(g_samLinear, Input.vTexCoord);
-    float3 normal  = g_txTerrNormal.Sample(g_samLinear, Input.vTexCoord);
-    normal = normalize(normal * 2.0 - 1.0);
-
-    //float dc = max(0.0, dot(-Input.tanLightDir, normal));
-    //float shadow = dc > 0.0 ? ShadowCalc(Input.vTexCoord * 64, Input.tanLightDir) : 0.0;
-
-
+  
     float shadowCoef = ShadowCoef(Input.vShadowPos);
     
     float2 fDot = g_txLightMap.Sample(g_samLinear, Input.vTexCoord.xy).rg;
@@ -570,9 +630,9 @@ float4 TerrainPSMain( TerrPSIn Input ): SV_Target
 	float fLimDist = clamp((Input.vTexCoord.w - 140.0) / 20.0, 0.0, 1.0);
 
     float4 color = lerp(float4(fDot.x * fLimDist * g_vTerrSpec + (1.0 - fDot.x * fLimDist) * vL, 1.0), g_vFogColor, Input.vTexCoord.z);
-    color.xyz = color.xyz * shadowCoef;
-
-    return color /** shadow*/;
+    
+    color.xyz = color.xyz * shadowCoef * selfShadow;
+    return color;
 }
 
 /* Light Map Shaders */
