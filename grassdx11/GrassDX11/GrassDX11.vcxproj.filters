@@ -29,6 +29,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{0548a340-6741-439d-adc6-ede37716a1dc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Snow">
+      <UniqueIdentifier>{be3f8489-3c14-4467-997c-cd02acf525dd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -117,6 +120,12 @@
     </ClCompile>
     <ClCompile Include="Copter.cpp">
       <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="SnowParticleSystem.cpp">
+      <Filter>Snow</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleShader.cpp">
+      <Filter>Snow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -226,12 +235,27 @@
     <ClInclude Include="Copter.h">
       <Filter>Grass\Render\C++</Filter>
     </ClInclude>
+    <ClInclude Include="SnowParticleSystem.h">
+      <Filter>Snow</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleShader.h">
+      <Filter>Snow</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\GrassType1.fx">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\States.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\SnowParticleGS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\SnowParticleVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\SnowParticlePS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

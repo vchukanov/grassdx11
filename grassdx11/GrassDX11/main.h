@@ -17,7 +17,8 @@
 #include "GrassFieldManager.h"
 #include "AxesFanFlow.h"
 #include "DebugWindow.h"
-
+#include "ParticleShader.h"
+#include "SnowParticleSystem.h"
 
 #pragma comment(lib, "Effects11d.lib")
 #pragma comment(lib, "DirectXTex.lib")
@@ -51,7 +52,11 @@ Mesh                                *g_pMeshes[MAX_NUM_MESHES];
 
 // Output textures to screen
 DebugWindow                         *g_dbgWin;
-//
+
+// Snow Particle System
+int g_totalParticles = 50000;
+ParticleShader* g_ParticleShader = nullptr;
+SnowParticleSystem* g_ParticleSystem = nullptr;
 
 
 XMFLOAT3                            g_MeshVels[MAX_NUM_MESHES];
@@ -106,6 +111,8 @@ ID3D11Texture2D*                    g_pRenderTarget = NULL;
 ID3D11RenderTargetView*             g_pRTRV = NULL;
 ID3D11Texture2D*                    g_pDSTarget = NULL;
 ID3D11DepthStencilView*             g_pDSRV = NULL;
+ID3D11BlendState* g_alphaDisableBlendingState;
+ID3D11BlendState* g_alphaEnableBlendingState;
 
 /* sky */
 ID3D11InputLayout                    *g_pSkyVertexLayout = NULL;
@@ -192,6 +199,9 @@ void CALLBACK OnD3D11ReleasingSwapChain (void* pUserContext);
 void CALLBACK OnD3D11DestroyDevice      (void* pUserContext);
 void CALLBACK OnD3D11FrameRender        (ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dImmediateContext, double fTime,
                                          float fElapsedTime, void* pUserContext );
+
+void TurnOnAlphaBlending();
+void TurnOffAlphaBlending();
 
 void InitApp    (void);
 void RenderText (void);

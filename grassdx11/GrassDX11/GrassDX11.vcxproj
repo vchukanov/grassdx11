@@ -169,7 +169,7 @@
     <FxCompile>
       <ShaderType>Effect</ShaderType>
       <EntryPointName />
-      <ShaderModel>4.0</ShaderModel>
+      <ShaderModel>5.0</ShaderModel>
       <EnableDebuggingInformation>true</EnableDebuggingInformation>
     </FxCompile>
   </ItemDefinitionGroup>
@@ -434,10 +434,12 @@
     <ClCompile Include="maths.cpp" />
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="NewDel.cpp" />
+    <ClCompile Include="ParticleShader.cpp" />
     <ClCompile Include="PhysMath.cpp" />
     <ClCompile Include="PhysPatch.cpp" />
     <ClCompile Include="plane.cpp" />
     <ClCompile Include="ShadowMapping.cpp" />
+    <ClCompile Include="SnowParticleSystem.cpp" />
     <ClCompile Include="StateManager.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="VelocityMap.cpp" />
@@ -479,10 +481,12 @@
     <ClInclude Include="mtxfrustum.h" />
     <ClInclude Include="NewDel.h" />
     <ClInclude Include="ObjArray.h" />
+    <ClInclude Include="ParticleShader.h" />
     <ClInclude Include="PhysMath.h" />
     <ClInclude Include="PhysPatch.h" />
     <ClInclude Include="plane.h" />
     <ClInclude Include="ShadowMapping.h" />
+    <ClInclude Include="SnowParticleSystem.h" />
     <ClInclude Include="StateManager.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="VelocityMap.h" />
@@ -493,6 +497,9 @@
     <FxCompile Include="Shaders\GrassType1.fx">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
     </FxCompile>
+    <FxCompile Include="Shaders\SnowParticleGS.hlsl" />
+    <FxCompile Include="Shaders\SnowParticlePS.hlsl" />
+    <FxCompile Include="Shaders\SnowParticleVS.hlsl" />
     <FxCompile Include="Shaders\States.fx">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
     </FxCompile>
