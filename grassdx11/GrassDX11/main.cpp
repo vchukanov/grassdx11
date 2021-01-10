@@ -468,7 +468,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    //g_dbgWin->ToggleRender();
 
     // Create the particle shader object.
-   g_ParticleShader = new ParticleShader;
+   g_ParticleShader = new ParticleShader();
    if (!g_ParticleShader)
    {
        return false;
