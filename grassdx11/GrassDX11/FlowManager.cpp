@@ -15,10 +15,9 @@ FlowManager::FlowManager (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3
 
 FlowManager::~FlowManager(void)
 {
-   for (auto& fan : fans) {
+   for (auto& fan : fans)
       SAFE_DELETE(fan.pAxesFan);
-      SAFE_DELETE(fan.pAxesFanFlow);
-   }
+   SAFE_DELETE(m_pAxesFanFlow);
 }
 
 
