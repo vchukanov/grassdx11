@@ -103,8 +103,10 @@ AxesFanFlow::AxesFanFlow (ID3D11Device * pD3DDevice, ID3D11DeviceContext * pD3DD
 AxesFanFlow::~AxesFanFlow (void)
 {
    SAFE_RELEASE(m_shaderResourceView);
+   SAFE_RELEASE(m_shaderResourceViewPre);
    SAFE_RELEASE(m_renderTargetView);
    SAFE_RELEASE(m_renderTargetTexture);
+   SAFE_RELEASE(m_renderTargetTexturePre);
    SAFE_RELEASE(m_pPass);
    SAFE_RELEASE(m_pEffect);
    SAFE_RELEASE(m_pInputLayout);

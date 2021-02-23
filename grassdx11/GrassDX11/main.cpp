@@ -850,6 +850,7 @@ void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
    SAFE_DELETE(g_pGrassField);
    SAFE_DELETE(g_ParticleShader);
    SAFE_DELETE(g_ParticleSystem);
+   SAFE_DELETE(copter);
 
 
    SAFE_RELEASE(g_pSkyVertexLayout);

@@ -236,6 +236,7 @@ GrassFieldManager::~GrassFieldManager(void)
    delete m_pWind;
    delete m_pShadowMapping;
    delete m_pVelocityMap;
+   delete m_pSceneTex;
    delete m_pGrassTracker;
 
    delete m_pT1SubTypes;
