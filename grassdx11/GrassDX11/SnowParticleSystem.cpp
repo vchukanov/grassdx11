@@ -234,7 +234,7 @@ void SnowParticleSystem::UpdateParticles(float delta)
 	{
 		m_particleList[i].age += delta;
 
-		if (m_particleList[i].age > 40.0f)
+		if (m_particleList[i].age > 38.0f)
 		{
 			std::swap(m_particleList[i], m_particleList[m_currentParticleCount - 1]);
 			--m_currentParticleCount;
