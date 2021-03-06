@@ -1,4 +1,4 @@
-﻿/*
+/*
 	Created 	Elinor Townsend 2012
 */
 
@@ -23,6 +23,8 @@ using namespace DirectX;
 ID3D11ShaderResourceView* SimplexNoise::createPermTableTexture()
 {
 	// Permutation table
+
+	ID3D11Device* device_;
 	int permTable[256] = { 151,160,137,91,90,15,
 		131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
 		190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
@@ -123,6 +125,8 @@ ID3D11ShaderResourceView* SimplexNoise::createPermTableTexture()
 */
 ID3D11ShaderResourceView* SimplexNoise::createSimplexTexture()
 {
+
+	ID3D11Device* device_;
 	// Simplex look up table for determining which simplex a point is in
 	unsigned char simplex4[][4] = { {0,64,128,192},{0,64,192,128},{0,0,0,0},{0,128,192,64},
 								  {0,0,0,0},{0,0,0,0},{0,0,0,0},{64,128,192,0},
@@ -196,6 +200,10 @@ ID3D11ShaderResourceView* SimplexNoise::createSimplexTexture()
 */
 ID3D11ShaderResourceView* SimplexNoise::createPerturbanceTexture()
 {
+
+	ID3D11Device* device_;
+	int width_ = 1024;
+	int height_ = 1024;
 	XMVECTOR* texels = new XMVECTOR[width_ * height_];
 	XMVECTOR normal = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
 	float noiseCoefx, noiseCoefy, noiseCoefz;
@@ -283,6 +291,8 @@ ID3D11ShaderResourceView* SimplexNoise::createPerturbanceTexture()
 */
 ID3D11ShaderResourceView* SimplexNoise::createRandomTexture()
 {
+
+	ID3D11Device* device_;
 	// Create random data
 	XMVECTOR randomValues[1024];
 

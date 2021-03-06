@@ -16,9 +16,6 @@ using namespace DirectX;
 
 namespace SimplexNoise
 {
-	ID3D11Device* device_;
-	int width_ = 1024;
-	int height_ = 1024;
 
 	ID3D11ShaderResourceView* createPermTableTexture();
 	ID3D11ShaderResourceView* createSimplexTexture();
