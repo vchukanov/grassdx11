@@ -21,6 +21,7 @@ SnowParticleSystem::SnowParticleSystem(const SnowParticleSystem& other)
 
 SnowParticleSystem::~SnowParticleSystem()
 {
+	SAFE_DELETE(m_instance);
 	SAFE_RELEASE(m_indexBuffer);
 	SAFE_RELEASE(m_vertexBuffer);
 
