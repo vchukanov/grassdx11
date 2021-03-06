@@ -25,8 +25,8 @@ SnowParticleSystem::~SnowParticleSystem()
 	SAFE_RELEASE(m_vertexBuffer);
 
 	SAFE_DELETE_ARRAY(m_particleList);
-	SAFE_DELETE(m_Texture);
-	SAFE_DELETE(m_TextureView);
+	SAFE_RELEASE(m_Texture);
+	SAFE_RELEASE(m_TextureView);
 
 	SAFE_RELEASE(m_instanceBuffer);
 	SAFE_RELEASE(m_uav);
