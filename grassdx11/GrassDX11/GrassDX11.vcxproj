@@ -439,6 +439,7 @@
     <ClCompile Include="PhysPatch.cpp" />
     <ClCompile Include="plane.cpp" />
     <ClCompile Include="ShadowMapping.cpp" />
+    <ClCompile Include="SimplexNoise.cpp" />
     <ClCompile Include="SnowParticleSystem.cpp" />
     <ClCompile Include="StateManager.cpp" />
     <ClCompile Include="Terrain.cpp" />
@@ -486,6 +487,7 @@
     <ClInclude Include="PhysPatch.h" />
     <ClInclude Include="plane.h" />
     <ClInclude Include="ShadowMapping.h" />
+    <ClInclude Include="SimplexNoise.h" />
     <ClInclude Include="SnowParticleSystem.h" />
     <ClInclude Include="StateManager.h" />
     <ClInclude Include="Terrain.h" />

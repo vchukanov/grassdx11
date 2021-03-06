@@ -32,6 +32,9 @@
     <Filter Include="Snow">
       <UniqueIdentifier>{be3f8489-3c14-4467-997c-cd02acf525dd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Wind">
+      <UniqueIdentifier>{2240997f-a0af-459c-b787-a77a75a46022}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -126,6 +129,9 @@
     </ClCompile>
     <ClCompile Include="ParticleShader.cpp">
       <Filter>Snow</Filter>
+    </ClCompile>
+    <ClCompile Include="SimplexNoise.cpp">
+      <Filter>Wind</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -240,6 +246,9 @@
     </ClInclude>
     <ClInclude Include="ParticleShader.h">
       <Filter>Snow</Filter>
+    </ClInclude>
+    <ClInclude Include="SimplexNoise.h">
+      <Filter>Wind</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
