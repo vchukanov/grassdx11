@@ -1,6 +1,7 @@
 #include "SnowParticleSystem.h"
 #include <iostream>
 #include <WICTextureLoader.h>
+#include "SimplexNoise.h"
 
 SnowParticleSystem::SnowParticleSystem()
 {
@@ -222,6 +223,7 @@ void SnowParticleSystem::SpawnParticle()
 		m_particleList[m_currentParticleCount].initialVel = XMFLOAT3(0.0f, -1.0f, 0.0f);
 		m_particleList[m_currentParticleCount].age = 0.0f;
 		m_particleList[m_currentParticleCount].offset = (float)rand() / RAND_MAX;
+		m_instance[m_currentParticleCount].position = m_particleList[m_currentParticleCount].initialPos;
 		++m_currentParticleCount;
 	}
 }
@@ -241,28 +243,27 @@ void SnowParticleSystem::UpdateParticles(float delta)
 }
 void SnowParticleSystem::CalculateInstancePositions(int begin, int end)
 {
-	float x, y, z, offset, yAmplitude, zAmplitude, age, yVelocity;
-	XMFLOAT3 initialPos;
+	float x, y, z, offset, yAmplitude, age, yVelocity, angle, length;
+	XMFLOAT3 initialPos, curPos;
+
 	for (int i = begin; i < end; ++i)
 	{
 		offset = m_particleList[i].offset;
 		yAmplitude = 0.5f;
-		zAmplitude = 0.5f;
 		age = m_particleList[i].age;
 		initialPos = m_particleList[i].initialPos;
+		curPos = m_instance[i].position;
 		yVelocity = m_particleList[i].initialVel.y;
+		angle = SimplexNoise::turbulence(curPos.x / 50, curPos.z / 50, curPos.y, 1) * PI * 2;
+		length = SimplexNoise::turbulence(curPos.x / 10 + 40000, curPos.z / 10 + 40000, curPos.y, 1);
+		
+		x = curPos.x + length * cos(angle);
 
-		x = yAmplitude * sin(age * 1 * offset);
-		x += yAmplitude * sin(age * 0.5f * offset);
-		x += initialPos.x;
-
-		y = zAmplitude * sin(age * 0.5f * offset);
-		y += zAmplitude * sin(age * 0.66f * offset);
+		y = yAmplitude * sin(age * 0.5f * offset);
+		y += yAmplitude * sin(age * 0.66f * offset);
 		y += age * yVelocity + initialPos.y;
 
-		z = zAmplitude * sin(age * 0.66f * offset);
-		z += zAmplitude * sin(age * 0.4f * offset);
-		z += initialPos.z;
+		z = curPos.z + length * sin(angle);
 
 		m_instance[i].position = XMFLOAT3(x, y, z);
 		m_instance[i].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
