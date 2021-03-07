@@ -8,7 +8,6 @@ ParticleShader::ParticleShader()
 	m_matrixBuffer = nullptr;
 	m_cameraBuffer = nullptr;
 	m_sampleState = nullptr;
-	firstRender = true;
 }
 
 ParticleShader::ParticleShader(const ParticleShader& other)
@@ -40,12 +39,7 @@ bool ParticleShader::Render(ID3D11DeviceContext* direct, SnowParticleSystem* par
 {
 	bool result;
 
-	if (firstRender) {
-		m_initWorldMatrix = camera->GetWorldMatrix();
-		firstRender = false;
-	}
-
-	result = SetShaderParameters(direct, camera, m_initWorldMatrix, camera->GetViewMatrix(), camera->GetProjMatrix(), particlesystem->GetTexture());
+	result = SetShaderParameters(direct, camera, XMMatrixIdentity(), camera->GetViewMatrix(), camera->GetProjMatrix(), particlesystem->GetTexture());
 	if (!result)
 		return false;
 

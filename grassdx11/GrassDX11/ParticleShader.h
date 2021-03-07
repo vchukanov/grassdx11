@@ -44,7 +44,5 @@ private:
 	ID3D11InputLayout* m_layout;
 	ID3D11Buffer* m_matrixBuffer;
 	ID3D11Buffer* m_cameraBuffer;
-	ID3D11SamplerState* m_sampleState;
-	DirectX::XMMATRIX m_initWorldMatrix;
-	bool firstRender;
+	ID3D11SamplerState* m_sampleState;	
 };
