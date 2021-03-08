@@ -63,6 +63,7 @@ private:
 	void RenderBuffers(ID3D11DeviceContext*);
 private:
 
+	float m_cloudPosX, m_cloudPosY, m_cloudPosZ;
 	float m_particleDeviationX, m_particleDeviationY, m_particleDeviationZ;
 	float m_particleVeclocity, m_particleVelocityVariation;
 	float m_particleSize, m_particlePerSecond;

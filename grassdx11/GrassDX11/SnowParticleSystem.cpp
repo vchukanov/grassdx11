@@ -80,9 +80,15 @@ bool SnowParticleSystem::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* 
 
 bool SnowParticleSystem::InitializeParticleSystem(int maxParticles)
 {
+	//размеры тучи
 	m_particleDeviationX = 50.0f;
-	m_particleDeviationY = 0.0f;
 	m_particleDeviationZ = 50.0f;
+	m_particleDeviationY = 0.0f;
+	
+	//позиция
+	m_cloudPosX = 0.f;
+	m_cloudPosY = 80.0f;
+	m_cloudPosZ = 0.f;
 
 	m_particleVeclocity = 1.0f;
 	m_particleVelocityVariation = 0.0f;
@@ -215,9 +221,9 @@ void SnowParticleSystem::SpawnParticle()
 	int index, i, j;
 	if (m_currentParticleCount < m_maxParticles - 1)
 	{
-		positionX = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationX;
-		positionY = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationY + 30;
-		positionZ = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationZ;
+		positionX = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationX + m_cloudPosX;
+		positionY = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationY + m_cloudPosY;
+		positionZ = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationZ + m_cloudPosZ;
 
 		m_particleList[m_currentParticleCount].initialPos = XMFLOAT3(positionX, positionY, positionZ);
 		m_particleList[m_currentParticleCount].initialVel = XMFLOAT3(0.0f, -1.0f, 0.0f);
@@ -234,7 +240,7 @@ void SnowParticleSystem::UpdateParticles(float delta)
 	{
 		m_particleList[i].age += delta;
 
-		if (m_particleList[i].age > 38.0f)
+		if (m_particleList[i].age > 80.0f)
 		{
 			std::swap(m_particleList[i], m_particleList[m_currentParticleCount - 1]);
 			--m_currentParticleCount;
@@ -245,6 +251,10 @@ void SnowParticleSystem::CalculateInstancePositions(int begin, int end)
 {
 	float x, y, z, offset, yAmplitude, age, yVelocity, angle, length;
 	XMFLOAT3 initialPos, curPos;
+	angle = SimplexNoise::turbulence(m_cloudPosX / 50, m_cloudPosZ / 50, m_cloudPosY, 1) * PI * 2;
+	length = SimplexNoise::turbulence(m_cloudPosX / 10 + 40000, m_cloudPosZ / 10 + 40000, m_cloudPosY, 1);
+	m_cloudPosX += length * cos(angle);
+	m_cloudPosY += length * sin(angle);
 
 	for (int i = begin; i < end; ++i)
 	{
