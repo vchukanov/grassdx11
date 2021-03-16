@@ -264,16 +264,16 @@ void SnowParticleSystem::CalculateInstancePositions(int begin, int end)
 		initialPos = m_particleList[i].initialPos;
 		curPos = m_instance[i].position;
 		yVelocity = m_particleList[i].initialVel.y;
-		angle = SimplexNoise::turbulence(curPos.x / 50, curPos.z / 50, curPos.y, 1) * PI * 2;
-		length = SimplexNoise::turbulence(curPos.x / 10 + 40000, curPos.z / 10 + 40000, curPos.y, 1);
+		angle = SimplexNoise::turbulence(curPos.x / 50, curPos.z / 50, curPos.y, (double)age, 2) * PI * 2;
+		length = SimplexNoise::turbulence(curPos.x / 10 + 40000, curPos.z / 10 + 40000, curPos.y, (double)age, 1);
 		
 		x = curPos.x + length * cos(angle);
+		z = curPos.z + length * sin(angle);
 
 		y = yAmplitude * sin(age * 0.5f * offset);
 		y += yAmplitude * sin(age * 0.66f * offset);
 		y += age * yVelocity + initialPos.y;
 
-		z = curPos.z + length * sin(angle);
 
 		m_instance[i].position = XMFLOAT3(x, y, z);
 		m_instance[i].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
