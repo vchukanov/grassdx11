@@ -80,14 +80,14 @@ bool SnowParticleSystem::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* 
 
 bool SnowParticleSystem::InitializeParticleSystem(int maxParticles)
 {
-	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+	//размеры тучи
 	m_particleDeviationX = 50.0f;
 	m_particleDeviationZ = 50.0f;
 	m_particleDeviationY = 0.0f;
 	
-	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	//позиция
 	m_cloudPosX = 0.f;
-	m_cloudPosY = 180.0f;
+	m_cloudPosY = 80.0f;
 	m_cloudPosZ = 0.f;
 
 	m_particleVeclocity = 1.0f;
@@ -240,7 +240,7 @@ void SnowParticleSystem::UpdateParticles(float delta)
 	{
 		m_particleList[i].age += delta;
 
-		if (m_particleList[i].age > 180.0f)
+		if (m_particleList[i].age > 80.0f)
 		{
 			std::swap(m_particleList[i], m_particleList[m_currentParticleCount - 1]);
 			--m_currentParticleCount;
