@@ -59,6 +59,8 @@ Texture2D g_txLightMap;
 Texture2D g_txSkyBox;
 Texture2D g_txTerrGrass;
 Texture2D g_txSandDiffuse;
+Texture2D g_txTerrSnow;
+
 
 // Mesh textures
 Texture2D g_txMeshMapKd;

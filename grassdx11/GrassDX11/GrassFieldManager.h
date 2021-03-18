@@ -30,6 +30,7 @@ struct GrassFieldState
    std::wstring   sNoiseMapPath;
    std::wstring   sColorMapPath;
    std::wstring   sGrassOnTerrainTexturePath;
+   std::wstring   sSnowOnTerrainTexturePath;
    float          fHeightScale;
    float          fTerrRadius;
 };
@@ -84,6 +85,7 @@ private:
    ID3D11ShaderResourceView    *m_pNoiseESV;
    ID3D11ShaderResourceView    *m_pGrassColorESV;
    ID3D11ShaderResourceView    *m_pTerrGrassESV;
+   ID3D11ShaderResourceView    *m_pTerrSnowESV;
    ID3D11ShaderResourceView    *m_pSeatingMapESV[GrassTypeNum];
    ID3DX11EffectVectorVariable *m_pMeshesEVV[GrassTypeNum];
    ID3DX11EffectScalarVariable *m_pSegMass[GrassTypeNum];

@@ -24,6 +24,7 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
 
    CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.sNoiseMapPath.c_str(), nullptr, &m_pNoiseESV);
    CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.sGrassOnTerrainTexturePath.c_str(), nullptr, &m_pTerrGrassESV);
+   CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.sSnowOnTerrainTexturePath.c_str(), nullptr, &m_pTerrSnowESV);
    CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.sColorMapPath.c_str(), nullptr, &m_pGrassColorESV);
 
    /* Grass track unit */
@@ -189,6 +190,10 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
    if (pESRV)
       pESRV->SetResource(m_pTerrGrassESV);
 
+   pESRV = m_pSceneEffect->GetVariableByName("g_txTerrSnow")->AsShaderResource();
+   if (pESRV)
+       pESRV->SetResource(m_pTerrSnowESV);
+
    /* Loading subtypes info */
    m_pT1SubTypes = new GrassPropertiesT1(a_InitState.InitState[0].sSubTypesPath);
    m_pT2SubTypes = new GrassPropertiesT2(a_InitState.InitState[1].sSubTypesPath);
@@ -221,6 +226,7 @@ GrassFieldManager::~GrassFieldManager(void)
    SAFE_RELEASE(m_pNoiseESV);
    SAFE_RELEASE(m_pGrassColorESV);
    SAFE_RELEASE(m_pTerrGrassESV);
+   SAFE_RELEASE(m_pTerrSnowESV);
    UINT i;
    for (i = 0; i < GrassTypeNum; i++)
    {
