@@ -44,7 +44,8 @@ private:
     ID3D11ShaderResourceView            *m_pLightMapSRV;
     D3D11_VIEWPORT                       m_ViewPort;
 
-    ID3DX11EffectPass                   *m_pPass;
+    ID3DX11EffectPass                   *m_pPass;       
+    ID3DX11EffectPass                   * m_pSnowPass;
     ID3DX11EffectPass                   *m_pLightMapPass;
     ID3D11Device                        *m_pD3DDevice;
     ID3D11DeviceContext                 *m_pD3DDeviceCtx;

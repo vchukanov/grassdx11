@@ -93,6 +93,18 @@ struct TerrPSIn
     //float3 vNormal   : NORMAL;
 };
 
+struct SnowVSIn
+{
+    float3 vPos      : POSITION;
+    float2 vTexCoord : TEXCOORD0;
+};
+
+struct SnowPSIn
+{
+    float4 vPos      : SV_Position;
+    float4 vTexCoord      : TEXCOORD1;
+};
+
 /* Sky box input */
 
 struct VSSceneIn
@@ -317,6 +329,26 @@ float4 TerrainPSMain( TerrPSIn Input ): SV_Target
     return color;
 }
 
+SnowPSIn SnowVSMain(SnowVSIn Input)
+{
+    SnowPSIn Output;
+    float fY = g_txHeightMap.SampleLevel(g_samLinear, Input.vTexCoord, 0).a * g_fHeightScale;
+    float4 vWorldPos = float4(Input.vPos + float3(0.0, fY, 0.0), 1.0);
+    Output.vPos = mul(vWorldPos, g_mViewProj);
+    Output.vTexCoord.xy = Input.vTexCoord;
+    Output.vTexCoord.z = FogValue(length(vWorldPos - g_mInvCamView[3].xyz));
+    Output.vTexCoord.w = length(vWorldPos - g_mInvCamView[3].xyz);
+    //Output.vShadowPos = mul(vWorldPos, g_mLightViewProj);
+
+    return Output;
+}
+
+float4 SnowPSMain(SnowPSIn Input) : SV_Target
+{
+    float4 vSnowColor = g_txTerrSnow.Sample(g_samLinear, Input.vTexCoord.xy * 64);
+    return vSnowColor;
+}
+
 /* Light Map Shaders */
 
 TerrPSIn LightMapVSMain( TerrVSIn Input )
@@ -354,6 +386,14 @@ technique10 Render
         SetDepthStencilState( EnableDepthTestWrite, 0 );
         SetRasterizerState( EnableMSAACulling );
     }  
+
+    pass RenderShowPass
+    {
+        SetVertexShader(CompileShader(vs_5_0, SnowVSMain()));
+        SetGeometryShader(NULL);
+        SetPixelShader(CompileShader(ps_4_0, SnowPSMain()));
+        SetBlendState(AlphaBlendState, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
+    }
 
     pass RenderMeshPass
     {
