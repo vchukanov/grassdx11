@@ -193,7 +193,6 @@ Terrain::Terrain(ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCt
    /* just one technique in effect */
    ID3DX11EffectTechnique* pTechnique = a_pEffect->GetTechniqueByIndex(0);
    m_pPass = pTechnique->GetPassByName("RenderTerrainPass");
-   m_pSnowPass = pTechnique->GetPassByName("RenderShowPass");
    m_pLightMapPass = pTechnique->GetPassByName("RenderLightMapPass");
    m_pLightMapESRV = a_pEffect->GetVariableByName("g_txLightMap")->AsShaderResource();
 
@@ -516,7 +515,6 @@ void Terrain::Render(void)
    m_pD3DDeviceCtx->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
    m_pD3DDeviceCtx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
    m_pPass->Apply(0, m_pD3DDeviceCtx);
-   m_pSnowPass->Apply(0, m_pD3DDeviceCtx);
    m_pD3DDeviceCtx->DrawIndexed(m_uIndicesCount, 0, 0);
 }
 
@@ -524,5 +522,4 @@ void Terrain::Render(void)
 void Terrain::ApplyPass (void)
 {
    m_pPass->Apply(0, m_pD3DDeviceCtx);
-   m_pSnowPass->Apply(0, m_pD3DDeviceCtx);
 }
