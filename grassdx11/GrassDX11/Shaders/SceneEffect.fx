@@ -392,7 +392,7 @@ technique10 Render
         SetVertexShader(CompileShader(vs_5_0, SnowVSMain()));
         SetGeometryShader(NULL);
         SetPixelShader(CompileShader(ps_4_0, SnowPSMain()));
-        SetBlendState(AlphaBlendState, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
+        SetBlendState(SrcAlphaBlendingAdd, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
     }
 
     pass RenderMeshPass
