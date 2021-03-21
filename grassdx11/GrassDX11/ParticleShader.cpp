@@ -1,5 +1,6 @@
 #include "ParticleShader.h"
 
+
 ParticleShader::ParticleShader()
 {
 	m_vertexShader = nullptr;
@@ -22,13 +23,15 @@ ParticleShader::~ParticleShader()
 	SAFE_RELEASE(m_layout);
 	SAFE_RELEASE(m_pixelShader);
 	SAFE_RELEASE(m_vertexShader);
+	SAFE_RELEASE(m_pSnowCoverMapSRV);
 }
 
-bool ParticleShader::Initialize(ID3D11Device* device)
+bool ParticleShader::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, ID3DX11Effect* sceneEffect)
 {
 	bool result;
+	m_pSceneEffect = sceneEffect;
 	
-	result = InitializeShader(device, L"Shaders/SnowParticleVS.hlsl", L"Shaders/SnowParticlePS.hlsl", L"Shaders/SnowParticleGS.hlsl");
+	result = InitializeShader(device, deviceContext, L"Shaders/SnowParticleVS.hlsl", L"Shaders/SnowParticlePS.hlsl", L"Shaders/SnowParticleGS.hlsl");
 	if (!result)
 		return false;
 
@@ -47,7 +50,7 @@ bool ParticleShader::Render(ID3D11DeviceContext* direct, SnowParticleSystem* par
 	return true;
 }
 
-bool ParticleShader::InitializeShader(ID3D11Device* device, const WCHAR* vsFilename, const WCHAR* psFilename, const WCHAR* gsFilename)
+bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext* deviceContext, const WCHAR* vsFilename, const WCHAR* psFilename, const WCHAR* gsFilename)
 {
 	HRESULT result;
 	ID3D10Blob* errorMessage = nullptr;
@@ -180,6 +183,73 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, const WCHAR* vsFilen
 	if (FAILED(result))
 		return false;
 
+	/* NEW */
+	CD3D11_TEXTURE2D_DESC dstTexDesc;
+	ID3D11Texture2D* pDstTexRes;
+	D3D11_MAPPED_SUBRESOURCE MappedTexture;
+
+	dstTexDesc.Width = 256;
+	dstTexDesc.Height = 256;
+	dstTexDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	dstTexDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	dstTexDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	dstTexDesc.Usage = D3D11_USAGE_DYNAMIC;
+	dstTexDesc.MipLevels = 1;
+	dstTexDesc.ArraySize = 1;
+	dstTexDesc.MiscFlags = 0;
+	dstTexDesc.SampleDesc.Count = 1;
+	dstTexDesc.SampleDesc.Quality = 0;
+
+	result = device->CreateTexture2D(&dstTexDesc, 0, &pDstTexRes);
+	if (FAILED(result))
+		return false;
+
+	deviceContext->Map(pDstTexRes, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &MappedTexture);
+
+	float* pTexels = (float*)MappedTexture.pData;
+
+	for (UINT row = 0; row < dstTexDesc.Height; row++)
+	{
+		UINT rowStart = row * MappedTexture.RowPitch / sizeof(float);
+		for (UINT col = 0; col < dstTexDesc.Width; col++)
+		{
+			UINT colStart = col * 4;
+			pTexels[rowStart + colStart + 0] = 0.1f;
+			pTexels[rowStart + colStart + 1] = 0.1f;
+			pTexels[rowStart + colStart + 2] = 0.1f;
+			pTexels[rowStart + colStart + 3] = 0.1f;
+		}
+	}
+	deviceContext->Unmap(pDstTexRes, D3D11CalcSubresource(0, 0, 1));
+
+	/* Creating SnowCover texture finally */
+	ID3D11Texture2D* pSnowCoverMap;
+
+	dstTexDesc.CPUAccessFlags = 0;
+	dstTexDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	result = device->CreateTexture2D(&dstTexDesc, 0, &pSnowCoverMap);
+	if (FAILED(result))
+		return false;
+
+	/* Copying data from one texture to another */
+	deviceContext->CopyResource(pSnowCoverMap, pDstTexRes);
+	SAFE_RELEASE(pDstTexRes);
+
+	/* And creating SRV for it */
+	D3D11_SHADER_RESOURCE_VIEW_DESC SnowCoverMapSRVDesc;
+	ZeroMemory(&SnowCoverMapSRVDesc, sizeof(SnowCoverMapSRVDesc));
+	SnowCoverMapSRVDesc.Format = dstTexDesc.Format;
+	SnowCoverMapSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	SnowCoverMapSRVDesc.Texture2D.MostDetailedMip = 0;
+	SnowCoverMapSRVDesc.Texture2D.MipLevels = 1;
+	result = device->CreateShaderResourceView(pSnowCoverMap, &SnowCoverMapSRVDesc, &m_pSnowCoverMapSRV);
+	/******/
+	SAFE_RELEASE(pSnowCoverMap);
+
+	ID3DX11EffectShaderResourceVariable* pESRV;
+	pESRV = m_pSceneEffect->GetVariableByName("g_txSnowCover")->AsShaderResource();
+	pESRV->SetResource(m_pSnowCoverMapSRV);
 	return true;
 }
 
