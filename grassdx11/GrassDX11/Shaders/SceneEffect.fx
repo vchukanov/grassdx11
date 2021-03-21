@@ -311,10 +311,10 @@ float4 TerrainPSMain( TerrPSIn Input ): SV_Target
     float3 vSandColor = g_txSandDiffuse.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
     vSandColor *= float3(0.37, 0.37, 0.28);
     float3 vSandSnowedColor = g_txSandSnowedDiffuse.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
-    float3 vSnowBlendColor = (alphaValue * vSandSnowedColor) + ((1.0 - alphaValue) * vSandColor);
+    float3 vSandBlendColor = (alphaValue * vSandSnowedColor) + ((1.0 - alphaValue) * vSandColor);
 
     alphaValue = GetAlphaCoef(Input.vTexCoord.xy);    
-    float3 blendColor = (alphaValue * vGrassBlendColor) + ((1.0 - alphaValue) * vSnowBlendColor);
+    float3 blendColor = (alphaValue * vGrassBlendColor) + ((1.0 - alphaValue) * vSandBlendColor);
 
     float3 vL = blendColor * max(0.8, (2.0 + 5.0 * fDot.y) * 0.5);
 	float fLimDist = clamp((Input.vTexCoord.w - 140.0) / 20.0, 0.0, 1.0);

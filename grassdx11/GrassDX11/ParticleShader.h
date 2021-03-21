@@ -36,10 +36,13 @@ private:
 	bool InitializeShader(ID3D11Device* device, ID3D11DeviceContext* deviceContext, const WCHAR* vsFilename, const WCHAR* psFilename, const WCHAR* gsFilename);
 
 	bool SetShaderParameters(ID3D11DeviceContext* deviceContext, CFirstPersonCamera* cameraPos, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture);
+	void SetSnowCoverTexture(ID3D11DeviceContext* deviceContext);
 	void RenderShader(ID3D11DeviceContext* deviceContext, int vertexCount, int instanceCount, int indexCount);
 
 private:
 	ID3DX11Effect* m_pSceneEffect;
+	ID3D11Texture2D* m_pSnowCoverMap;
+	ID3DX11EffectShaderResourceVariable* m_pSnowCoverMapESRV;
 	ID3D11ShaderResourceView* m_pSnowCoverMapSRV;
 	ID3D11VertexShader* m_vertexShader;
 	ID3D11PixelShader* m_pixelShader;
@@ -48,4 +51,5 @@ private:
 	ID3D11Buffer* m_matrixBuffer;
 	ID3D11Buffer* m_cameraBuffer;
 	ID3D11SamplerState* m_sampleState;	
+	UINT m_frame = 0;
 };
