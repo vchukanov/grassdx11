@@ -204,6 +204,9 @@ Terrain::Terrain(ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCt
    pESRV = a_pEffect->GetVariableByName("g_txSandDiffuse")->AsShaderResource();
    hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Sand.dds", nullptr, &m_pSandSRV);
    pESRV->SetResource(m_pSandSRV);
+   pESRV = a_pEffect->GetVariableByName("g_txSandSnowedDiffuse")->AsShaderResource();
+   hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/SandSnowed.dds", nullptr, &m_pSandSnowedSRV);
+   pESRV->SetResource(m_pSandSnowedSRV);
 
    m_fCellSize = 0.0f;
    CreateInputLayout();
@@ -221,6 +224,7 @@ Terrain::~Terrain(void)
    SAFE_RELEASE(m_pGrassSRV);
    SAFE_RELEASE(m_pHeightMapSRV);
    SAFE_RELEASE(m_pSandSRV);
+   SAFE_RELEASE(m_pSandSnowedSRV);
    SAFE_RELEASE(m_pLightMapSRV);
    SAFE_RELEASE(m_pLightMapRTV);
    SAFE_RELEASE(m_pLightMap);

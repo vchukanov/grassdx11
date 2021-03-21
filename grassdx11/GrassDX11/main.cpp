@@ -382,7 +382,8 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    g_GrassInitState.sSceneEffectPath = L"Shaders/SceneEffect.fx";
    g_GrassInitState.sNoiseMapPath = L"resources/Noise.dds";
    g_GrassInitState.sGrassOnTerrainTexturePath = L"resources/g.dds";
-   g_GrassInitState.sSnowOnTerrainTexturePath = L"resources/SnowTerr.dds";
+   g_GrassInitState.sGrassSnowedOnTerrainTexturePath = L"resources/gSnowed.dds";
+   //g_GrassInitState.sSnowCoverMapPath = L"resources/SnowCover.dds";
    g_GrassInitState.fHeightScale = g_fHeightScale;
    g_GrassInitState.fTerrRadius = 400.0f;
    g_pGrassField = new GrassFieldManager(g_GrassInitState);
