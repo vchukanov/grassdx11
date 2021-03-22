@@ -80,12 +80,12 @@ bool SnowParticleSystem::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* 
 
 bool SnowParticleSystem::InitializeParticleSystem(int maxParticles)
 {
-	//размеры тучи
+	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 	m_particleDeviationX = 50.0f;
 	m_particleDeviationZ = 50.0f;
 	m_particleDeviationY = 0.0f;
 	
-	//позиция
+	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	m_cloudPosX = 0.f;
 	m_cloudPosY = 80.0f;
 	m_cloudPosZ = 0.f;
@@ -251,10 +251,10 @@ void SnowParticleSystem::CalculateInstancePositions(int begin, int end)
 {
 	float x, y, z, offset, yAmplitude, age, yVelocity, angle, length;
 	XMFLOAT3 initialPos, curPos;
-	angle = SimplexNoise::turbulence(m_cloudPosX / 50, m_cloudPosZ / 50, m_cloudPosY, 1) * PI * 2;
-	length = SimplexNoise::turbulence(m_cloudPosX / 10 + 40000, m_cloudPosZ / 10 + 40000, m_cloudPosY, 1);
+	angle = SimplexNoise::turbulence(m_cloudPosX / 50, m_cloudPosZ / 50, m_cloudPosY, 0., 2) * PI * 2;
+	length = SimplexNoise::turbulence(m_cloudPosX / 10 + 4000, m_cloudPosZ / 10 + 4000, m_cloudPosY, 0., 1);
 	m_cloudPosX += length * cos(angle);
-	m_cloudPosY += length * sin(angle);
+	m_cloudPosZ += length * sin(angle);
 
 	for (int i = begin; i < end; ++i)
 	{
@@ -265,7 +265,7 @@ void SnowParticleSystem::CalculateInstancePositions(int begin, int end)
 		curPos = m_instance[i].position;
 		yVelocity = m_particleList[i].initialVel.y;
 		angle = SimplexNoise::turbulence(curPos.x / 50, curPos.z / 50, curPos.y, (double)age, 2) * PI * 2;
-		length = SimplexNoise::turbulence(curPos.x / 10 + 40000, curPos.z / 10 + 40000, curPos.y, (double)age, 1);
+		length = SimplexNoise::turbulence(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, (double)age, 1);
 		
 		x = curPos.x + length * cos(angle);
 		z = curPos.z + length * sin(angle);
