@@ -258,17 +258,19 @@
     <FxCompile Include="Shaders\States.fx">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\SnowParticleGS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\SnowParticleVS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\SnowParticlePS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\SceneEffect.fx">
       <Filter>Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Shaders\SnowParticleGS.hlsl">
+      <Filter>Shaders</Filter>
+    </Text>
+    <Text Include="Shaders\SnowParticlePS.hlsl">
+      <Filter>Shaders</Filter>
+    </Text>
+    <Text Include="Shaders\SnowParticleVS.hlsl">
+      <Filter>Shaders</Filter>
+    </Text>
   </ItemGroup>
 </Project>
