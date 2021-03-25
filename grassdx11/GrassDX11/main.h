@@ -20,7 +20,11 @@
 #include "ParticleShader.h"
 #include "SnowParticleSystem.h"
 
+#ifdef DEBUG
 #pragma comment(lib, "Effects11d.lib")
+#else
+#pragma comment(lib, "Effects11.lib")
+#endif
 #pragma comment(lib, "DirectXTex.lib")
 
 #define MAX_NUM_MESHES 1

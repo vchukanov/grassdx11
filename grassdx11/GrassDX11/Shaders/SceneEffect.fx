@@ -354,7 +354,7 @@ technique10 Render
 {    
     pass RenderTerrainPass
     {
-        SetVertexShader( CompileShader( vs_5_0, TerrainVSMain() ) );
+        SetVertexShader( CompileShader( vs_4_0, TerrainVSMain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, TerrainPSMain() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );
@@ -364,7 +364,7 @@ technique10 Render
 
     pass RenderMeshPass
     {
-        SetVertexShader( CompileShader( vs_5_0, MeshVSMain() ) );
+        SetVertexShader( CompileShader( vs_4_0, MeshVSMain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, MeshPSMain() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
@@ -373,7 +373,7 @@ technique10 Render
 
     pass RenderMeshPassBlured
     {
-        SetVertexShader( CompileShader( vs_5_0, MeshVSMain() ) );
+        SetVertexShader( CompileShader( vs_4_0, MeshVSMain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, MeshPSMainBlured() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
@@ -382,7 +382,7 @@ technique10 Render
 
     pass RenderLightMapPass
     {
-        SetVertexShader( CompileShader( vs_5_0, LightMapVSMain() ) );
+        SetVertexShader( CompileShader( vs_4_0, LightMapVSMain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, LightMapPSMain() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
@@ -404,7 +404,7 @@ technique10 RenderSkyBox
 {
 	pass RenderPass
     {
-        SetVertexShader( CompileShader( vs_5_0, VSSkymain() ) );
+        SetVertexShader( CompileShader( vs_4_0, VSSkymain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, PSSkymain() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
@@ -415,7 +415,7 @@ technique10 RenderCar
 {
 	pass RenderPass
     {
-        SetVertexShader( CompileShader( vs_5_0, VSCarmain() ) );
+        SetVertexShader( CompileShader( vs_4_0, VSCarmain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, PSCarmain0() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
