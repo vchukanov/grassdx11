@@ -12,3 +12,11 @@ struct ParticleData
 {
 	XMFLOAT3 pos;
 };
+
+struct SystemInfoType
+{
+	UINT groupDim;
+	UINT totalParticles;
+	UINT to16;
+	UINT byte;
+};

@@ -38,6 +38,7 @@ public:
 	bool Render(ID3D11DeviceContext* deviceContext, SnowParticleSystem* particlesystem, CFirstPersonCamera* camera);
 
 private:
+	HRESULT UpdateSystemInfo(ID3D11DeviceContext* deviceContext);
 	bool InitializeShader(ID3D11Device* device, ID3D11DeviceContext* deviceContext, const WCHAR* vsFilename, const WCHAR* psFilename, const WCHAR* gsFilename, const WCHAR* csFilename);
 	bool SetShaderParameters(ID3D11DeviceContext* deviceContext, CFirstPersonCamera* cameraPos, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture);
 	void SetSnowCoverTexture(ID3D11DeviceContext* deviceContext);
@@ -59,6 +60,7 @@ private:
 	UINT m_frame = 0;
 
 	//===== Compute Shader Components =====
+	UINT mGroupSize = 0;
 	ID3D11ComputeShader* mComputeShader;
 
 	// Read Only
@@ -69,4 +71,7 @@ private:
 	ID3D11Buffer* mOutputBuffer;
 	ID3D11Buffer* mOutputResultBuffer;
 	ID3D11UnorderedAccessView* mOutputUAV;
+
+	SystemInfoType mHandlerData;
+	ID3D11Buffer* mHandlerCBuffer;
 };
