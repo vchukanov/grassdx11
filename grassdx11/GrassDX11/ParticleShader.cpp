@@ -20,8 +20,6 @@ ParticleShader::ParticleShader()
 	mOutputBuffer = nullptr;
 	mOutputResultBuffer = nullptr;
 	mOutputUAV = nullptr;
-
-	mHandlerCBuffer = nullptr;
 }
 
 ParticleShader::ParticleShader(const ParticleShader& other)
@@ -49,8 +47,6 @@ ParticleShader::~ParticleShader()
 	SAFE_RELEASE(mOutputBuffer);
 	SAFE_RELEASE(mOutputResultBuffer);
 	SAFE_RELEASE(mOutputUAV);
-
-	SAFE_RELEASE(mHandlerCBuffer);
 }
 
 bool ParticleShader::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, ID3DX11Effect* sceneEffect)
@@ -80,27 +76,6 @@ bool ParticleShader::Render(ID3D11DeviceContext* direct, SnowParticleSystem* par
 
 	RenderShader(direct, particlesystem->GetVertexCount(), particlesystem->GetInstaceCount(), particlesystem->GetIndexCount());
 	return true;
-}
-
-HRESULT ParticleShader::UpdateSystemInfo(ID3D11DeviceContext* deviceContext)
-{
-	HRESULT hr = S_OK;
-
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	hr = deviceContext->Map(mHandlerCBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-
-	if (SUCCEEDED(hr))
-	{
-		mHandlerData.groupDim = mGroupSize;
-		mHandlerData.totalParticles = m_pParticleSystem->GetInstaceCount();
-
-		memcpy(mappedResource.pData, &mHandlerData, sizeof(SystemInfoType));
-		deviceContext->Unmap(mHandlerCBuffer, 0);
-
-		deviceContext->CSSetConstantBuffers(0, 1, &mHandlerCBuffer);
-	}
-
-	return hr;
 }
 
 bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext* deviceContext, const WCHAR* vsFilename, const WCHAR* psFilename, const WCHAR* gsFilename, const WCHAR* csFilename)
@@ -366,29 +341,11 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 	if (FAILED(result))
 		return false;
 
-	D3D11_BUFFER_DESC cbDesc;
-	cbDesc.ByteWidth = sizeof(SystemInfoType);
-	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
-	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	cbDesc.MiscFlags = 0;
-	cbDesc.StructureByteStride = 0;
-
-	result = device->CreateBuffer(&cbDesc, NULL, &mHandlerCBuffer);
-	if (FAILED(result))
-		return false;
-
-	auto PARTICLES_COUNT = m_pParticleSystem->GetInstaceCount();
-	int numGroups = (PARTICLES_COUNT % 768 != 0) ? ((PARTICLES_COUNT / 768) + 1) : (PARTICLES_COUNT / 768);
-	double secondRoot = sqrt((double)numGroups);
-	mGroupSize = (int)ceil(secondRoot);
-
 	return true;
 }
 
 void ParticleShader::CalculateInstancePositions(ID3D11DeviceContext* deviceContext)
 {
-	UpdateSystemInfo(deviceContext);
 	m_pParticleSystem->FillConstantDataBuffer(deviceContext, mInputBuffer);
 	// Enable Compute Shader
 	deviceContext->CSSetShader(mComputeShader, nullptr, 0);

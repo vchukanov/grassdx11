@@ -3,14 +3,10 @@
 			Particle motion calculations
 /=====================================================*/
 
-cbuffer SystemInfo : register(b2)
-{
-	uint groupDim;
-	uint totalParticles;
-	uint to16;
-	uint byte;
-}
-
+//cbuffer PER_FRAME_DELTA : register(b2)
+//{
+//	float4 deltaAndPadding;
+//}
 #include "Noises.hlsli"
 
 struct ConstantParticleData
