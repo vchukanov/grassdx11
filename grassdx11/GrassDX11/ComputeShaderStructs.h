@@ -2,7 +2,8 @@
 #include "includes.h"
 struct ParticleConstantData
 {
-	XMFLOAT3 pos;
+	XMFLOAT3 initialPos;
+	XMFLOAT3 curPos;
 	float age;
 	float offset;
 };

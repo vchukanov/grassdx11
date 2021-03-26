@@ -112,9 +112,14 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 	}
 
 	// Compile Compute Shader
-	result = D3DCompileFromFile(csFilename, NULL, NULL, "CS_main", "cs_5_0", D3DCOMPILE_DEBUG, 0, &computeShaderBuffer, &errorMessage);
+	result = D3DCompileFromFile(csFilename, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "CS_main", "cs_5_0", D3DCOMPILE_DEBUG, 0, &computeShaderBuffer, &errorMessage);
 	if (FAILED(result))
 	{
+		if (errorMessage)
+		{
+			OutputDebugStringA((char*)errorMessage->GetBufferPointer());
+			errorMessage->Release();
+		}
 		return false;
 	}
 
@@ -133,6 +138,7 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 	result = device->CreateComputeShader(computeShaderBuffer->GetBufferPointer(), computeShaderBuffer->GetBufferSize(), NULL, &mComputeShader);
 	if (FAILED(result))
 		return false;
+	SAFE_RELEASE(computeShaderBuffer);
 
 	polygonLayout[0].SemanticName = "POSITION";
 	polygonLayout[0].SemanticIndex = 0;

@@ -280,4 +280,9 @@
       <Filter>Shaders</Filter>
     </Text>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\Noises.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
 </Project>

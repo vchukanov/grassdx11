@@ -334,7 +334,8 @@ void SnowParticleSystem::FillConstantDataBuffer(ID3D11DeviceContext* deviceConte
 		std::vector<ParticleConstantData> particleData(m_currentParticleCount);
 		for (size_t i = 0; i < m_currentParticleCount; i++)
 		{
-			particleData[i].pos = m_particleList[i].initialPos;
+			particleData[i].initialPos = m_particleList[i].initialPos;
+			particleData[i].curPos = m_instance[i].position;
 			particleData[i].age = m_particleList[i].age;
 			particleData[i].offset = m_particleList[i].offset;
 		}
