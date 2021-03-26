@@ -355,15 +355,7 @@ void ParticleShader::CalculateInstancePositions(ID3D11DeviceContext* deviceConte
 
 
 	// Dispatch
-	int _groupSizeX, _groupSizeY;
-	auto PARTICLES_COUNT = m_pParticleSystem->GetInstaceCount();
-	int numGroups = (PARTICLES_COUNT % 1024 != 0) ? ((PARTICLES_COUNT / 1024) + 1) : (PARTICLES_COUNT / 1024);
-	double secondRoot = sqrt((double)numGroups);
-	secondRoot = ceil(secondRoot);
-	_groupSizeX = (int)secondRoot;
-	_groupSizeY = (int)secondRoot;
-
-	deviceContext->Dispatch(_groupSizeX, _groupSizeY, 1);
+	deviceContext->Dispatch(512, 1, 1);
 
 	// Unbind the input textures from the CS for good housekeeping
 	ID3D11ShaderResourceView* nullSRV[] = { NULL };
