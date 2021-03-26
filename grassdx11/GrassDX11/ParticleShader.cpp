@@ -9,6 +9,17 @@ ParticleShader::ParticleShader()
 	m_matrixBuffer = nullptr;
 	m_cameraBuffer = nullptr;
 	m_sampleState = nullptr;
+
+	mComputeShader = nullptr;
+
+	// Read Only
+	mInputBuffer = nullptr;
+	mInputView = nullptr;
+
+	// Read/Write
+	mOutputBuffer = nullptr;
+	mOutputResultBuffer = nullptr;
+	mOutputUAV = nullptr;
 }
 
 ParticleShader::ParticleShader(const ParticleShader& other)
@@ -25,6 +36,17 @@ ParticleShader::~ParticleShader()
 	SAFE_RELEASE(m_vertexShader);
 	SAFE_RELEASE(m_pSnowCoverMapSRV);
 	SAFE_RELEASE(m_pSnowCoverMap);
+	//===== Compute Shader Components =====
+	SAFE_RELEASE(mComputeShader);
+
+	// Read Only
+	SAFE_RELEASE(mInputBuffer);
+	SAFE_RELEASE(mInputView);
+
+	// Read/Write
+	SAFE_RELEASE(mOutputBuffer);
+	SAFE_RELEASE(mOutputResultBuffer);
+	SAFE_RELEASE(mOutputUAV);
 }
 
 bool ParticleShader::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, ID3DX11Effect* sceneEffect)
@@ -32,7 +54,7 @@ bool ParticleShader::Initialize(ID3D11Device* device, ID3D11DeviceContext* devic
 	bool result;
 	m_pSceneEffect = sceneEffect;
 	
-	result = InitializeShader(device, deviceContext, L"Shaders/SnowParticleVS.hlsl", L"Shaders/SnowParticlePS.hlsl", L"Shaders/SnowParticleGS.hlsl");
+	result = InitializeShader(device, deviceContext, L"Shaders/SnowParticleVS.hlsl", L"Shaders/SnowParticlePS.hlsl", L"Shaders/SnowParticleGS.hlsl", L"Shaders/SnowParticleCS.hlsl");
 	if (!result)
 		return false;
 
@@ -56,13 +78,14 @@ bool ParticleShader::Render(ID3D11DeviceContext* direct, SnowParticleSystem* par
 	return true;
 }
 
-bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext* deviceContext, const WCHAR* vsFilename, const WCHAR* psFilename, const WCHAR* gsFilename)
+bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext* deviceContext, const WCHAR* vsFilename, const WCHAR* psFilename, const WCHAR* gsFilename, const WCHAR* csFilename)
 {
 	HRESULT result;
 	ID3D10Blob* errorMessage = nullptr;
 	ID3D10Blob* vertexShaderBuffer = nullptr;
 	ID3D10Blob* pixelShaderBuffer = nullptr;
 	ID3D10Blob* geometryShaderBuffer = nullptr;
+	ID3D10Blob* computeShaderBuffer = nullptr;
 	D3D11_INPUT_ELEMENT_DESC polygonLayout[5];
 	unsigned int numElements;
 	D3D11_BUFFER_DESC matrixBufferDesc;
@@ -88,6 +111,13 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 		return false;
 	}
 
+	// Compile Compute Shader
+	result = D3DCompileFromFile(csFilename, NULL, NULL, "CS_main", "cs_5_0", D3DCOMPILE_DEBUG, 0, &computeShaderBuffer, &errorMessage);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
 	result = device->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), NULL, &m_vertexShader);
 	if (FAILED(result))
 		return false;
@@ -97,6 +127,10 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 		return false;
 
 	result = device->CreateGeometryShader(geometryShaderBuffer->GetBufferPointer(), geometryShaderBuffer->GetBufferSize(), NULL, &m_geometryShader);
+	if (FAILED(result))
+		return false;
+
+	result = device->CreateComputeShader(computeShaderBuffer->GetBufferPointer(), computeShaderBuffer->GetBufferSize(), NULL, &mComputeShader);
 	if (FAILED(result))
 		return false;
 
@@ -239,14 +273,122 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 
 	m_pSnowCoverMapESRV = m_pSceneEffect->GetVariableByName("g_txSnowCover")->AsShaderResource();
 	m_pSnowCoverMapESRV->SetResource(m_pSnowCoverMapSRV);
+
+	//==============================================//
+	//			Compute Shader Components			//
+	//==============================================//
+
+	// Create a buffer to be bound as Compute Shader input (D3D11_BIND_SHADER_RESOURCE).
+	D3D11_BUFFER_DESC constantDataDesc;
+	constantDataDesc.Usage = D3D11_USAGE_DYNAMIC;
+	constantDataDesc.ByteWidth = sizeof(ParticleConstantData) * m_pParticleSystem->GetInstaceCount();
+	constantDataDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	constantDataDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	constantDataDesc.StructureByteStride = sizeof(ParticleConstantData);
+	constantDataDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+
+	result = device->CreateBuffer(&constantDataDesc, 0, &mInputBuffer);
+	if (FAILED(result))
+		return false;
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
+	srvDesc.BufferEx.FirstElement = 0;
+	srvDesc.BufferEx.Flags = 0;
+	srvDesc.BufferEx.NumElements = m_pParticleSystem->GetInstaceCount();
+
+	result = device->CreateShaderResourceView(mInputBuffer, &srvDesc, &mInputView);
+	if (FAILED(result))
+		return false;
+
+	// Create a read-write buffer the compute shader can write to (D3D11_BIND_UNORDERED_ACCESS).
+	D3D11_BUFFER_DESC outputDesc;
+	outputDesc.Usage = D3D11_USAGE_DEFAULT;
+	outputDesc.ByteWidth = sizeof(ParticleData) * m_pParticleSystem->GetInstaceCount();
+	outputDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+	outputDesc.CPUAccessFlags = 0;
+	outputDesc.StructureByteStride = sizeof(ParticleData);
+	outputDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+
+	result = (device->CreateBuffer(&outputDesc, 0, &mOutputBuffer));
+	if (FAILED(result))
+		return false;
+
+	// Create a system memory version of the buffer to read the results back from.
+	outputDesc.Usage = D3D11_USAGE_STAGING;
+	outputDesc.BindFlags = 0;
+	outputDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+
+	result = (device->CreateBuffer(&outputDesc, 0, &mOutputResultBuffer));
+	if (FAILED(result))
+		return false;
+
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+	uavDesc.Buffer.FirstElement = 0;
+	uavDesc.Buffer.Flags = 0;
+	uavDesc.Buffer.NumElements = m_pParticleSystem->GetInstaceCount();
+	uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+
+	result = device->CreateUnorderedAccessView(mOutputBuffer, &uavDesc, &mOutputUAV);
+	if (FAILED(result))
+		return false;
+
 	return true;
+}
+
+void ParticleShader::CalculateInstancePositions(ID3D11DeviceContext* deviceContext)
+{
+	m_pParticleSystem->FillConstantDataBuffer(deviceContext, mInputBuffer);
+	// Enable Compute Shader
+	deviceContext->CSSetShader(mComputeShader, nullptr, 0);
+
+	deviceContext->CSSetShaderResources(0, 1, &mInputView);
+	deviceContext->CSSetUnorderedAccessViews(0, 1, &mOutputUAV, 0);
+
+
+	// Dispatch
+	deviceContext->Dispatch(512, 1, 1);
+
+	// Unbind the input textures from the CS for good housekeeping
+	ID3D11ShaderResourceView* nullSRV[] = { NULL };
+	deviceContext->CSSetShaderResources(0, 1, nullSRV);
+
+	// Unbind output from compute shader ( we are going to use this output as an input in the next pass, 
+	// and a resource cannot be both an output and input at the same time
+	ID3D11UnorderedAccessView* nullUAV[] = { NULL };
+	deviceContext->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
+
+	// Disable Compute Shader
+	deviceContext->CSSetShader(nullptr, nullptr, 0);
+
+
+	// Copy result
+	deviceContext->CopyResource(mOutputResultBuffer, mOutputBuffer);
+
+
+	HRESULT result;
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+
+	// Update particle system data with output from Compute Shader
+	HRESULT hr = deviceContext->Map(mOutputResultBuffer, 0, D3D11_MAP_READ, 0, &mappedResource);
+
+	if (SUCCEEDED(hr))
+	{
+		ParticleData* dataView = reinterpret_cast<ParticleData*>(mappedResource.pData);
+
+		// Update particle positions and velocities
+		m_pParticleSystem->UpdatePosition(dataView);
+
+		deviceContext->Unmap(mOutputResultBuffer, 0);
+	}
 }
 
 bool ParticleShader::SetShaderParameters(ID3D11DeviceContext* deviceContext, CFirstPersonCamera* camera, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-
 
 	// Map matrix buffer
 	result = deviceContext->Map(m_matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);

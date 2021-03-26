@@ -1,8 +1,11 @@
 #pragma once
 #include "DXUT.h"
 #include <thread>
+#include "ComputeShaderStructs.h"
 
 using namespace DirectX;
+
+class ParticleShader;
 
 class SnowParticleSystem
 {
@@ -35,8 +38,12 @@ public:
 	~SnowParticleSystem();
 
 	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, const WCHAR*, int);
+	void SetParticleShader(ParticleShader* ps) { m_pParticleShader = ps; }
 	bool Frame(float, ID3D11DeviceContext*);
 	void Render(ID3D11DeviceContext*);
+
+	void FillConstantDataBuffer(ID3D11DeviceContext* deviceContext, ID3D11Buffer* inputBuffer);
+	void UpdatePosition(ParticleData* dataView);
 
 	//ID3D11UnorderedAccessView* GetUAV() { return m_uav; }
 	ID3D11ShaderResourceView* GetTexture() { return m_TextureView; }
@@ -62,7 +69,7 @@ private:
 	bool UpdateBuffers(ID3D11DeviceContext*);
 	void RenderBuffers(ID3D11DeviceContext*);
 private:
-
+	ParticleShader* m_pParticleShader;
 	float m_cloudPosX, m_cloudPosY, m_cloudPosZ;
 	float m_particleDeviationX, m_particleDeviationY, m_particleDeviationZ;
 	float m_particleVeclocity, m_particleVelocityVariation;

@@ -250,6 +250,9 @@
     <ClInclude Include="SimplexNoise.h">
       <Filter>Wind</Filter>
     </ClInclude>
+    <ClInclude Include="ComputeShaderStructs.h">
+      <Filter>Snow</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\GrassType1.fx">
@@ -270,6 +273,10 @@
       <Filter>Shaders</Filter>
     </Text>
     <Text Include="Shaders\SnowParticleVS.hlsl">
+      <Filter>Shaders</Filter>
+    </Text>
+    <Text Include="SnowParticleCS.hlsl" />
+    <Text Include="Shaders\SnowParticleCS.hlsl">
       <Filter>Shaders</Filter>
     </Text>
   </ItemGroup>
