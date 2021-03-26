@@ -490,22 +490,38 @@
     <ClInclude Include="SimplexNoise.h" />
     <ClInclude Include="SnowParticleSystem.h" />
     <ClInclude Include="StateManager.h" />
+    <ClInclude Include="ComputeShaderStructs.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="VelocityMap.h" />
     <ClInclude Include="Wind.h" />
     <ClInclude Include="xtmfrustum.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="SnowParticleCS.hlsl">
+      <FileType>Document</FileType>
+    </Text>
     <FxCompile Include="Shaders\GrassType1.fx">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shaders\SceneEffect.fx" />
-    <FxCompile Include="Shaders\SnowParticleGS.hlsl" />
-    <FxCompile Include="Shaders\SnowParticlePS.hlsl" />
-    <FxCompile Include="Shaders\SnowParticleVS.hlsl" />
+    <Text Include="Shaders\SnowParticleGS.hlsl">
+      <FileType>Document</FileType>
+    </Text>
+    <Text Include="Shaders\SnowParticlePS.hlsl">
+      <FileType>Document</FileType>
+    </Text>
+    <Text Include="Shaders\SnowParticleVS.hlsl">
+      <FileType>Document</FileType>
+    </Text>
+    <Text Include="Shaders\SnowParticleCS.hlsl">
+      <FileType>Document</FileType>
+    </Text>
     <FxCompile Include="Shaders\States.fx">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\Noises.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -469,20 +469,10 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->m_pAxesFanFlow->m_shaderResourceView, 1);
    //g_dbgWin->ToggleRender();
 
-    // Create the particle shader object.
-   g_ParticleShader = new ParticleShader();
-   if (!g_ParticleShader)
-   {
-       return false;
-   }
+
 
    bool result;
-   // Initialize the particle shader object.
-   result = g_ParticleShader->Initialize(pd3dDevice, pd3dImmediateContext, g_pGrassField->m_pSceneEffect);
-   if (!result)
-   {
-       return false;
-   }
+
 
    // Create the particle system object.
    g_ParticleSystem = new SnowParticleSystem;
@@ -493,7 +483,24 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 
    // Initialize the particle system object.
    result = g_ParticleSystem->Initialize(pd3dDevice, pd3dImmediateContext, L"resources/snow.png", g_totalParticles);
+   //g_ParticleSystem->SetParticlesPerSecond(g_totalParticles / 160);
    g_ParticleSystem->SetParticlesPerSecond(g_totalParticles / 80);
+   if (!result)
+   {
+       return false;
+   }
+
+   // Create the particle shader object.
+   g_ParticleShader = new ParticleShader();
+   if (!g_ParticleShader)
+   {
+       return false;
+   }
+   g_ParticleShader->SetParticleSystem(g_ParticleSystem);
+   g_ParticleSystem->SetParticleShader(g_ParticleShader);
+
+   // Initialize the particle shader object.
+   result = g_ParticleShader->Initialize(pd3dDevice, pd3dImmediateContext, g_pGrassField->m_pSceneEffect);
    if (!result)
    {
        return false;

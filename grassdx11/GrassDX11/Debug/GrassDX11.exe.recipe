@@ -13,15 +13,6 @@
       <FullPath>C:\Studying\Politech\diploma\grassdx11\grassdx11\GrassDX11\Debug\SceneEffect.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Studying\Politech\diploma\grassdx11\grassdx11\GrassDX11\Debug\SnowParticleGS.cso</FullPath>
-    </ContentFile>
-    <ContentFile>
-      <FullPath>C:\Studying\Politech\diploma\grassdx11\grassdx11\GrassDX11\Debug\SnowParticlePS.cso</FullPath>
-    </ContentFile>
-    <ContentFile>
-      <FullPath>C:\Studying\Politech\diploma\grassdx11\grassdx11\GrassDX11\Debug\SnowParticleVS.cso</FullPath>
-    </ContentFile>
-    <ContentFile>
       <FullPath>C:\Studying\Politech\diploma\grassdx11\grassdx11\GrassDX11\Debug\States.cso</FullPath>
     </ContentFile>
   </ContentFiles>

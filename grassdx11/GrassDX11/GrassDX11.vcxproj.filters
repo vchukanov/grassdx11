@@ -250,6 +250,9 @@
     <ClInclude Include="SimplexNoise.h">
       <Filter>Wind</Filter>
     </ClInclude>
+    <ClInclude Include="ComputeShaderStructs.h">
+      <Filter>Snow</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\GrassType1.fx">
@@ -258,17 +261,28 @@
     <FxCompile Include="Shaders\States.fx">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\SnowParticleGS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\SnowParticleVS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\SnowParticlePS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\SceneEffect.fx">
       <Filter>Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Shaders\SnowParticleGS.hlsl">
+      <Filter>Shaders</Filter>
+    </Text>
+    <Text Include="Shaders\SnowParticlePS.hlsl">
+      <Filter>Shaders</Filter>
+    </Text>
+    <Text Include="Shaders\SnowParticleVS.hlsl">
+      <Filter>Shaders</Filter>
+    </Text>
+    <Text Include="SnowParticleCS.hlsl" />
+    <Text Include="Shaders\SnowParticleCS.hlsl">
+      <Filter>Shaders</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\Noises.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

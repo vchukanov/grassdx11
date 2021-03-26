@@ -1,6 +1,7 @@
 #include "SnowParticleSystem.h"
 #include <iostream>
 #include <WICTextureLoader.h>
+#include "ParticleShader.h"
 #include "SimplexNoise.h"
 
 SnowParticleSystem::SnowParticleSystem()
@@ -81,12 +82,15 @@ bool SnowParticleSystem::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* 
 bool SnowParticleSystem::InitializeParticleSystem(int maxParticles)
 {
 	//������� ����
+	//m_particleDeviationX = 400.0f;
+	//m_particleDeviationZ = 400.0f;
 	m_particleDeviationX = 50.0f;
 	m_particleDeviationZ = 50.0f;
 	m_particleDeviationY = 0.0f;
 	
 	//�������
 	m_cloudPosX = 0.f;
+	//m_cloudPosY = 160.0f;
 	m_cloudPosY = 80.0f;
 	m_cloudPosZ = 0.f;
 
@@ -240,6 +244,7 @@ void SnowParticleSystem::UpdateParticles(float delta)
 	{
 		m_particleList[i].age += delta;
 
+		//if (m_particleList[i].age > 160.0f)
 		if (m_particleList[i].age > 80.0f)
 		{
 			std::swap(m_particleList[i], m_particleList[m_currentParticleCount - 1]);
@@ -286,7 +291,7 @@ bool SnowParticleSystem::UpdateBuffers(ID3D11DeviceContext* deviceContext)
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	InstanceType* instancePtr;
 
-	int totalThreads = 8;
+	/*int totalThreads = 8;
 
 	float calculationsPerThread = (float)m_currentParticleCount / (float)totalThreads;
 
@@ -298,8 +303,9 @@ bool SnowParticleSystem::UpdateBuffers(ID3D11DeviceContext* deviceContext)
 	{
 		m_threads[i].join();
 	}
-	m_threads.clear();
+	m_threads.clear();*/
 	//CalculateInstancePositions(0, m_currentParticleCount);
+	m_pParticleShader->CalculateInstancePositions(deviceContext);
 
 	result = deviceContext->Map(m_instanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result))
@@ -310,6 +316,46 @@ bool SnowParticleSystem::UpdateBuffers(ID3D11DeviceContext* deviceContext)
 	deviceContext->Unmap(m_instanceBuffer, 0);
 
 	return true;
+}
+
+void SnowParticleSystem::FillConstantDataBuffer(ID3D11DeviceContext* deviceContext, ID3D11Buffer* inputBuffer)
+{
+	HRESULT hr = S_OK;
+	if (!m_currentParticleCount)
+		return;
+
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	hr = deviceContext->Map(inputBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+
+	if (SUCCEEDED(hr))
+	{
+		auto instancePtr = (ParticleConstantData*)mappedResource.pData;
+		// Fill buffer with particle data
+		std::vector<ParticleConstantData> particleData(m_currentParticleCount);
+		for (size_t i = 0; i < m_currentParticleCount; i++)
+		{
+			particleData[i].initialPos = m_particleList[i].initialPos;
+			particleData[i].curPos = m_instance[i].position;
+			particleData[i].age = m_particleList[i].age;
+			particleData[i].offset = m_particleList[i].offset;
+		}
+
+
+		memcpy(mappedResource.pData, &particleData[0], sizeof(ParticleConstantData) * m_currentParticleCount);
+		deviceContext->Unmap(inputBuffer, 0);
+	}
+}
+
+void SnowParticleSystem::UpdatePosition(ParticleData* dataView)
+{
+	if (!m_currentParticleCount)
+		return;
+	for (size_t i = 0; i < m_currentParticleCount; i++)
+	{
+		// Update position
+		m_instance[i].position = dataView[i].pos;
+		m_instance[i].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	}
 }
 
 void SnowParticleSystem::RenderBuffers(ID3D11DeviceContext* deviceContext)
