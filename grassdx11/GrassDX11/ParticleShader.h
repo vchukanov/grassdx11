@@ -5,7 +5,7 @@
 #include "SnowParticleSystem.h"
 #include "includes.h"
 #include "DXUTcamera.h"
-#include "ComputeShaderStructs.h"
+#include "SnowParticleTypes.h"
 
 using namespace DirectX;
 
@@ -66,7 +66,8 @@ private:
 	ID3D11ShaderResourceView* mInputView;
 
 	// Read/Write
-	ID3D11Buffer* mOutputBuffer;
-	ID3D11Buffer* mOutputResultBuffer;
-	ID3D11UnorderedAccessView* mOutputUAV;
+	ID3D11Buffer* mRWBuffer;
+	ID3D11Buffer* mRWInputBuffer;
+	ID3D11Buffer* mRWOutputBuffer;
+	ID3D11UnorderedAccessView* mRWUAV;
 };

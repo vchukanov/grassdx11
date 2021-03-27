@@ -250,7 +250,7 @@
     <ClInclude Include="SimplexNoise.h">
       <Filter>Wind</Filter>
     </ClInclude>
-    <ClInclude Include="ComputeShaderStructs.h">
+    <ClInclude Include="SnowParticleTypes.h">
       <Filter>Snow</Filter>
     </ClInclude>
   </ItemGroup>

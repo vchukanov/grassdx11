@@ -1,7 +1,7 @@
 #pragma once
 #include "DXUT.h"
 #include <thread>
-#include "ComputeShaderStructs.h"
+#include "SnowParticleTypes.h"
 
 using namespace DirectX;
 
@@ -9,21 +9,6 @@ class ParticleShader;
 
 class SnowParticleSystem
 {
-private:
-	struct ParticleType
-	{
-		XMFLOAT3 initialPos;
-		XMFLOAT3 initialVel;
-		float age;
-		float offset;
-	};
-
-	struct InstanceType
-	{
-		XMFLOAT3 position;
-		XMFLOAT4 color;
-	};
-
 public:
 	struct VertexType
 	{
@@ -42,8 +27,8 @@ public:
 	bool Frame(float, ID3D11DeviceContext*);
 	void Render(ID3D11DeviceContext*);
 
-	void FillConstantDataBuffer(ID3D11DeviceContext* deviceContext, ID3D11Buffer* inputBuffer);
-	void UpdatePosition(ParticleData* dataView);
+	void FillConstantDataBuffer(ID3D11DeviceContext* deviceContext, ID3D11Buffer* inputBuffer, ID3D11Buffer* outputBuffer);
+	void UpdatePosition(InstanceType* dataView);
 
 	//ID3D11UnorderedAccessView* GetUAV() { return m_uav; }
 	ID3D11ShaderResourceView* GetTexture() { return m_TextureView; }

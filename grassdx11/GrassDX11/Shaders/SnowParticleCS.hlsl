@@ -9,21 +9,23 @@
 //}
 #include "Noises.hlsli"
 
-struct ConstantParticleData
+struct ParticleType
 {
 	float3 initPos;
-	float3 curPos;
+	float3 initVel;
 	float age;
 	float offset;
 };
 
-struct ParticleData
+struct InstanceType
 {
 	float3 position;
+	float4 color;
 };
 
-StructuredBuffer<ConstantParticleData>	inputConstantParticleData	: register(t0);
-RWStructuredBuffer<ParticleData>		outputParticleData			: register(u0);
+
+StructuredBuffer<ParticleType>	inputConstantParticleData	: register(t0);
+RWStructuredBuffer<InstanceType>		outputParticleData			: register(u0);
 
 
 [numthreads(512, 1, 1)]
@@ -43,7 +45,7 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	age = inputConstantParticleData[dispatchThreadID.x].age;
 	offset = inputConstantParticleData[dispatchThreadID.x].offset;
 	float3 initialPos = inputConstantParticleData[dispatchThreadID.x].initPos;
-	float3 curPos = inputConstantParticleData[dispatchThreadID.x].curPos;
+	float3 curPos = outputParticleData[dispatchThreadID.x].position;
 
 	float angle = turbulence(float4(curPos.x / 50, curPos.z / 50, curPos.y, age), 2) * PI * 2;
 	float length = turbulence(float4(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, age), 1);
@@ -64,4 +66,5 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	y += age * yVelocity + initialPos.y;
 
 	outputParticleData[dispatchThreadID.x].position = float3(x, y, z);	
+	outputParticleData[dispatchThreadID.x].color = float4(1, 1, 1, 1);
 }

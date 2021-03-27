@@ -318,7 +318,7 @@ bool SnowParticleSystem::UpdateBuffers(ID3D11DeviceContext* deviceContext)
 	return true;
 }
 
-void SnowParticleSystem::FillConstantDataBuffer(ID3D11DeviceContext* deviceContext, ID3D11Buffer* inputBuffer)
+void SnowParticleSystem::FillConstantDataBuffer(ID3D11DeviceContext* deviceContext, ID3D11Buffer* inputBuffer, ID3D11Buffer* outputBuffer)
 {
 	HRESULT hr = S_OK;
 	if (!m_currentParticleCount)
@@ -329,33 +329,22 @@ void SnowParticleSystem::FillConstantDataBuffer(ID3D11DeviceContext* deviceConte
 
 	if (SUCCEEDED(hr))
 	{
-		auto instancePtr = (ParticleConstantData*)mappedResource.pData;
-		// Fill buffer with particle data
-		std::vector<ParticleConstantData> particleData(m_currentParticleCount);
-		for (size_t i = 0; i < m_currentParticleCount; i++)
-		{
-			particleData[i].initialPos = m_particleList[i].initialPos;
-			particleData[i].curPos = m_instance[i].position;
-			particleData[i].age = m_particleList[i].age;
-			particleData[i].offset = m_particleList[i].offset;
-		}
-
-
-		memcpy(mappedResource.pData, &particleData[0], sizeof(ParticleConstantData) * m_currentParticleCount);
+		memcpy(mappedResource.pData, m_particleList, sizeof(ParticleType) * m_instanceCount);
 		deviceContext->Unmap(inputBuffer, 0);
+	}
+
+	hr = deviceContext->Map(outputBuffer, 0, D3D11_MAP_WRITE, 0, &mappedResource);
+
+	if (SUCCEEDED(hr))
+	{
+		memcpy(mappedResource.pData, m_instance, sizeof(InstanceType) * m_instanceCount);
+		deviceContext->Unmap(outputBuffer, 0);
 	}
 }
 
-void SnowParticleSystem::UpdatePosition(ParticleData* dataView)
+void SnowParticleSystem::UpdatePosition(InstanceType* dataView)
 {
-	if (!m_currentParticleCount)
-		return;
-	for (size_t i = 0; i < m_currentParticleCount; i++)
-	{
-		// Update position
-		m_instance[i].position = dataView[i].pos;
-		m_instance[i].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	}
+	memcpy(m_instance, dataView, sizeof(InstanceType) * m_instanceCount);
 }
 
 void SnowParticleSystem::RenderBuffers(ID3D11DeviceContext* deviceContext)

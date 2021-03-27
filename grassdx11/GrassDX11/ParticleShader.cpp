@@ -17,9 +17,10 @@ ParticleShader::ParticleShader()
 	mInputView = nullptr;
 
 	// Read/Write
-	mOutputBuffer = nullptr;
-	mOutputResultBuffer = nullptr;
-	mOutputUAV = nullptr;
+	mRWBuffer = nullptr;
+	mRWInputBuffer = nullptr;
+	mRWOutputBuffer = nullptr;
+	mRWUAV = nullptr;
 }
 
 ParticleShader::ParticleShader(const ParticleShader& other)
@@ -44,9 +45,10 @@ ParticleShader::~ParticleShader()
 	SAFE_RELEASE(mInputView);
 
 	// Read/Write
-	SAFE_RELEASE(mOutputBuffer);
-	SAFE_RELEASE(mOutputResultBuffer);
-	SAFE_RELEASE(mOutputUAV);
+	SAFE_RELEASE(mRWBuffer);
+	SAFE_RELEASE(mRWInputBuffer);
+	SAFE_RELEASE(mRWOutputBuffer);
+	SAFE_RELEASE(mRWUAV);
 }
 
 bool ParticleShader::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, ID3DX11Effect* sceneEffect)
@@ -287,10 +289,10 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 	// Create a buffer to be bound as Compute Shader input (D3D11_BIND_SHADER_RESOURCE).
 	D3D11_BUFFER_DESC constantDataDesc;
 	constantDataDesc.Usage = D3D11_USAGE_DYNAMIC;
-	constantDataDesc.ByteWidth = sizeof(ParticleConstantData) * m_pParticleSystem->GetInstaceCount();
+	constantDataDesc.ByteWidth = sizeof(ParticleType) * m_pParticleSystem->GetInstaceCount();
 	constantDataDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	constantDataDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	constantDataDesc.StructureByteStride = sizeof(ParticleConstantData);
+	constantDataDesc.StructureByteStride = sizeof(ParticleType);
 	constantDataDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 
 	result = device->CreateBuffer(&constantDataDesc, 0, &mInputBuffer);
@@ -311,13 +313,13 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 	// Create a read-write buffer the compute shader can write to (D3D11_BIND_UNORDERED_ACCESS).
 	D3D11_BUFFER_DESC outputDesc;
 	outputDesc.Usage = D3D11_USAGE_DEFAULT;
-	outputDesc.ByteWidth = sizeof(ParticleData) * m_pParticleSystem->GetInstaceCount();
+	outputDesc.ByteWidth = sizeof(InstanceType) * m_pParticleSystem->GetInstaceCount();
 	outputDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
 	outputDesc.CPUAccessFlags = 0;
-	outputDesc.StructureByteStride = sizeof(ParticleData);
+	outputDesc.StructureByteStride = sizeof(InstanceType);
 	outputDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 
-	result = (device->CreateBuffer(&outputDesc, 0, &mOutputBuffer));
+	result = (device->CreateBuffer(&outputDesc, 0, &mRWBuffer));
 	if (FAILED(result))
 		return false;
 
@@ -326,7 +328,13 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 	outputDesc.BindFlags = 0;
 	outputDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 
-	result = (device->CreateBuffer(&outputDesc, 0, &mOutputResultBuffer));
+	result = (device->CreateBuffer(&outputDesc, 0, &mRWOutputBuffer));
+	if (FAILED(result))
+		return false;
+
+	outputDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	result = (device->CreateBuffer(&outputDesc, 0, &mRWInputBuffer));
 	if (FAILED(result))
 		return false;
 
@@ -337,7 +345,7 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 	uavDesc.Format = DXGI_FORMAT_UNKNOWN;
 	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 
-	result = device->CreateUnorderedAccessView(mOutputBuffer, &uavDesc, &mOutputUAV);
+	result = device->CreateUnorderedAccessView(mRWBuffer, &uavDesc, &mRWUAV);
 	if (FAILED(result))
 		return false;
 
@@ -346,12 +354,14 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 
 void ParticleShader::CalculateInstancePositions(ID3D11DeviceContext* deviceContext)
 {
-	m_pParticleSystem->FillConstantDataBuffer(deviceContext, mInputBuffer);
+	m_pParticleSystem->FillConstantDataBuffer(deviceContext, mInputBuffer, mRWInputBuffer);
+	deviceContext->CopyResource(mRWBuffer, mRWInputBuffer);
+
 	// Enable Compute Shader
 	deviceContext->CSSetShader(mComputeShader, nullptr, 0);
 
 	deviceContext->CSSetShaderResources(0, 1, &mInputView);
-	deviceContext->CSSetUnorderedAccessViews(0, 1, &mOutputUAV, 0);
+	deviceContext->CSSetUnorderedAccessViews(0, 1, &mRWUAV, 0);
 
 
 	// Dispatch
@@ -371,23 +381,23 @@ void ParticleShader::CalculateInstancePositions(ID3D11DeviceContext* deviceConte
 
 
 	// Copy result
-	deviceContext->CopyResource(mOutputResultBuffer, mOutputBuffer);
+	deviceContext->CopyResource(mRWOutputBuffer, mRWBuffer);
 
 
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 
 	// Update particle system data with output from Compute Shader
-	HRESULT hr = deviceContext->Map(mOutputResultBuffer, 0, D3D11_MAP_READ, 0, &mappedResource);
+	HRESULT hr = deviceContext->Map(mRWOutputBuffer, 0, D3D11_MAP_READ, 0, &mappedResource);
 
 	if (SUCCEEDED(hr))
 	{
-		ParticleData* dataView = reinterpret_cast<ParticleData*>(mappedResource.pData);
+		InstanceType* dataView = reinterpret_cast<InstanceType*>(mappedResource.pData);
 
 		// Update particle positions and velocities
 		m_pParticleSystem->UpdatePosition(dataView);
 
-		deviceContext->Unmap(mOutputResultBuffer, 0);
+		deviceContext->Unmap(mRWOutputBuffer, 0);
 	}
 }
 

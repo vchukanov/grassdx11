@@ -490,7 +490,7 @@
     <ClInclude Include="SimplexNoise.h" />
     <ClInclude Include="SnowParticleSystem.h" />
     <ClInclude Include="StateManager.h" />
-    <ClInclude Include="ComputeShaderStructs.h" />
+    <ClInclude Include="SnowParticleTypes.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="VelocityMap.h" />
     <ClInclude Include="Wind.h" />
