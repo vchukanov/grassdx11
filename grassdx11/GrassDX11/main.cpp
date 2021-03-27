@@ -483,8 +483,8 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 
    // Initialize the particle system object.
    result = g_ParticleSystem->Initialize(pd3dDevice, pd3dImmediateContext, L"resources/snow.png", g_totalParticles);
-   //g_ParticleSystem->SetParticlesPerSecond(g_totalParticles / 160);
-   g_ParticleSystem->SetParticlesPerSecond(g_totalParticles / 80);
+   g_ParticleSystem->SetParticlesPerSecond(g_totalParticles / 120);
+   //g_ParticleSystem->SetParticlesPerSecond(g_totalParticles / 80);
    if (!result)
    {
        return false;

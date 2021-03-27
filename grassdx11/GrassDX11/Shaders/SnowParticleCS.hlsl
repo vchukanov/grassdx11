@@ -29,6 +29,7 @@ RWStructuredBuffer<InstanceType>		outputParticleData			: register(u0);
 
 
 [numthreads(512, 1, 1)]
+//void CS_main(uint3 groupID : SV_GroupID, uint groupIndex : SV_GroupIndex)
 void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 {
 	///==========================================================
@@ -41,11 +42,13 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	///==========================================================
 
 	// Calculate new position
+	//uint index = groupID.x * 1024 + groupID.y * 16 * 1024 + groupIndex;
+	uint index = dispatchThreadID.x;
 	float x, y, z, age, offset, yAmplitude = -0.5f, yVelocity = -1.f;
-	age = inputConstantParticleData[dispatchThreadID.x].age;
-	offset = inputConstantParticleData[dispatchThreadID.x].offset;
-	float3 initialPos = inputConstantParticleData[dispatchThreadID.x].initPos;
-	float3 curPos = outputParticleData[dispatchThreadID.x].position;
+	age = inputConstantParticleData[index].age;
+	offset = inputConstantParticleData[index].offset;
+	float3 initialPos = inputConstantParticleData[index].initPos;
+	float3 curPos = outputParticleData[index].position;
 
 	float angle = turbulence(float4(curPos.x / 50, curPos.z / 50, curPos.y, age), 2) * PI * 2;
 	float length = turbulence(float4(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, age), 1);
@@ -65,6 +68,6 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	y += yAmplitude * sin(age * 0.66f * offset);
 	y += age * yVelocity + initialPos.y;
 
-	outputParticleData[dispatchThreadID.x].position = float3(x, y, z);	
-	outputParticleData[dispatchThreadID.x].color = float4(1, 1, 1, 1);
+	outputParticleData[index].position = float3(x, y, z);	
+	outputParticleData[index].color = float4(1, 1, 1, 1);
 }
