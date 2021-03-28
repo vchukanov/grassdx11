@@ -278,6 +278,11 @@ void GrassFieldManager::Reinit(GrassFieldState& a_InitState)
    );
 }
 
+ID3DX11Effect* GrassFieldManager::GetGrassTypeEffect(int i)
+{
+    return m_pGrassTypes[i]->GetEffect();
+}
+
 void GrassFieldManager::SetTerrRGB(float3& a_vValue)
 {
    m_pTerrRGBEVV[0]->SetFloatVector((float*)& a_vValue);

@@ -82,6 +82,7 @@ Texture2DArray   g_txWindTex;
 Texture2DArray   g_txAxesFanFlow;
 Texture2D        g_txIndexMap;
 Texture2D        g_txSeatingMap;
+Texture2D        g_txSnowCover;
 Texture2D        g_txNoise;
 Texture2D        g_txHeightMap;
 Texture2D        g_txShadowMap;
@@ -462,8 +463,17 @@ float4 InstPSMain( PSIn Input ) : SV_Target
     fDd = 1.0 - 3.0*fDd2 +2.0*fDd2*fDd;
    //vC = fDd*vC + (1.0-fDd)*vT;
     float4 color = lerp(float4(vC, fAlpha) , g_vFogColor, Input.vTexCoord.z);
-    color.xyz = color.xyz * shadowCoef;
-    return color;
+    color = color * shadowCoef;
+
+    float alphaValue = length(g_txSnowCover.Sample(g_samLinear, (Input.vPos.xz / g_fTerrRadius) * 0.5 + 0.5).r);
+    alphaValue = clamp(alphaValue, 0.0, 1.0);
+    if (alphaValue > 0.85)
+        alphaValue = 0.85;
+
+    float4 blendColor = alphaValue * float4(1, 1, 1, 1) + (1.0 - alphaValue) * color;
+    //color.w *= (1 - alphaValue);
+    //color.xyz = blendColor;
+    return blendColor;
 }
 
 

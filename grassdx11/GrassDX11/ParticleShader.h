@@ -6,6 +6,7 @@
 #include "includes.h"
 #include "DXUTcamera.h"
 #include "SnowParticleTypes.h"
+#include "GrassFieldManager.h"
 
 using namespace DirectX;
 
@@ -34,7 +35,7 @@ public:
 	~ParticleShader();
 
 	void SetParticleSystem(SnowParticleSystem* system) { m_pParticleSystem = system; }
-	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, ID3DX11Effect* sceneEffect);
+	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, GrassFieldManager* grassFieldManager);
 	bool Render(ID3D11DeviceContext* deviceContext, SnowParticleSystem* particlesystem, CFirstPersonCamera* camera);
 
 private:
@@ -45,7 +46,7 @@ private:
 
 private:
 	SnowParticleSystem* m_pParticleSystem;
-	ID3DX11Effect* m_pSceneEffect;
+	GrassFieldManager* m_pGrassFieldManager;
 	ID3D11Texture2D* m_pSnowCoverMap;
 	ID3DX11EffectShaderResourceVariable* m_pSnowCoverMapESRV;
 	ID3D11ShaderResourceView* m_pSnowCoverMapSRV;

@@ -51,10 +51,10 @@ ParticleShader::~ParticleShader()
 	SAFE_RELEASE(mRWUAV);
 }
 
-bool ParticleShader::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, ID3DX11Effect* sceneEffect)
+bool ParticleShader::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, GrassFieldManager* grassFieldManager)
 {
 	bool result;
-	m_pSceneEffect = sceneEffect;
+	m_pGrassFieldManager = grassFieldManager;
 	
 	result = InitializeShader(device, deviceContext, L"Shaders/SnowParticleVS.hlsl", L"Shaders/SnowParticlePS.hlsl", L"Shaders/SnowParticleGS.hlsl", L"Shaders/SnowParticleCS.hlsl");
 	if (!result)
@@ -279,8 +279,15 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 	result = device->CreateShaderResourceView(m_pSnowCoverMap, &SnowCoverMapSRVDesc, &m_pSnowCoverMapSRV);
 	/******/
 
-	m_pSnowCoverMapESRV = m_pSceneEffect->GetVariableByName("g_txSnowCover")->AsShaderResource();
+	m_pSnowCoverMapESRV = m_pGrassFieldManager->m_pSceneEffect->GetVariableByName("g_txSnowCover")->AsShaderResource();
 	m_pSnowCoverMapESRV->SetResource(m_pSnowCoverMapSRV);
+
+	m_pSnowCoverMapESRV = m_pGrassFieldManager->GetGrassTypeEffect(0)->GetVariableByName("g_txSnowCover")->AsShaderResource();
+	m_pSnowCoverMapESRV->SetResource(m_pSnowCoverMapSRV);
+
+	//m_pSnowCoverMapESRV = m_pGrassFieldManager->GetGrassTypeEffect(1)->GetVariableByName("g_txSnowCover")->AsShaderResource();
+	//m_pSnowCoverMapESRV->SetResource(m_pSnowCoverMapSRV);
+
 
 	//==============================================//
 	//			Compute Shader Components			//

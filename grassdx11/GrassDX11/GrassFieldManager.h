@@ -116,6 +116,7 @@ public:
    GrassFieldManager         (GrassFieldState& a_InitState);
    ~GrassFieldManager        (void);
    void Reinit               (GrassFieldState &a_InitState);
+   ID3DX11Effect* GetGrassTypeEffect(int i);
    void SetGrassLodBias      (float a_fGrassLodBias);
    void SetSubScatterGamma   (float a_fGrassSubScatterGamma);
    void SetGrassAmbient      (float a_fGrassAmbient);

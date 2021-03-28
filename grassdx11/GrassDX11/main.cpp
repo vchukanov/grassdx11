@@ -500,7 +500,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    g_ParticleSystem->SetParticleShader(g_ParticleShader);
 
    // Initialize the particle shader object.
-   result = g_ParticleShader->Initialize(pd3dDevice, pd3dImmediateContext, g_pGrassField->m_pSceneEffect);
+   result = g_ParticleShader->Initialize(pd3dDevice, pd3dImmediateContext, g_pGrassField);
    if (!result)
    {
        return false;
