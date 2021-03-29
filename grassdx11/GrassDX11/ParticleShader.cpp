@@ -451,6 +451,7 @@ bool ParticleShader::SetShaderParameters(ID3D11DeviceContext* deviceContext, CFi
 void ParticleShader::SetSnowCoverTexture(ID3D11DeviceContext* deviceContext)
 {
 	D3D11_MAPPED_SUBRESOURCE MappedTexture;
+	float** snowCover = m_pParticleSystem->GetSnowCover();
 	deviceContext->Map(m_pSnowCoverMap, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &MappedTexture);
 
 	float* pTexels = (float*)MappedTexture.pData;
@@ -460,10 +461,7 @@ void ParticleShader::SetSnowCoverTexture(ID3D11DeviceContext* deviceContext)
 		for (UINT col = 0; col < 256; col++)
 		{
 			UINT colStart = col * 4;
-			pTexels[rowStart + colStart + 0] += 0.01f;
-			pTexels[rowStart + colStart + 1] += 0.01f;
-			pTexels[rowStart + colStart + 2] += 0.01f;
-			pTexels[rowStart + colStart + 3] += 0.01f;
+			pTexels[rowStart + colStart] += snowCover[row][col];
 		}
 	}
 	deviceContext->Unmap(m_pSnowCoverMap, D3D11CalcSubresource(0, 0, 1));

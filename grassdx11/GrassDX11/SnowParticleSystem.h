@@ -37,6 +37,7 @@ public:
 	int GetInstaceCount() { return m_instanceCount; }
 	int GetCurrentParticleCount() { return m_currentParticleCount; }
 	int GetParticlesPerSecond() { return m_particlePerSecond; }
+	float** GetSnowCover() { return m_snowCover; }
 	void SetParticlesPerSecond(int value) { m_particlePerSecond = value; }
 private:
 	// Initialize
@@ -44,6 +45,7 @@ private:
 	bool InitializeParticleSystem(int);
 	bool InitializeBuffers(ID3D11Device*, ID3D11DeviceContext*);
 	void CalculateInstancePositions(int, int);
+	XMUINT2 GetIntCoord(XMFLOAT2 pos);
 
 	// Particle methods
 	void EmitParticles(float);
@@ -75,6 +77,7 @@ private:
 	int m_vertexCount, m_indexCount, m_instanceCount;
 	InstanceType* m_instance;
 	ID3D11Buffer* m_vertexBuffer, * m_indexBuffer, * m_instanceBuffer;
+	float** m_snowCover = nullptr;
 
 	std::vector<std::thread> m_threads;
 };

@@ -15,6 +15,12 @@ SnowParticleSystem::SnowParticleSystem()
 	m_instanceBuffer = nullptr;
 	m_uav = nullptr;
 	m_uavTex = nullptr;
+	m_snowCover = new float* [256];
+	for (int i = 0; i < 256; ++i)
+		m_snowCover[i] = new float[256];
+	for (int i = 0; i < 256; ++i)
+		for (int j = 0; j < 256; ++j)
+			m_snowCover[i][j] = 0.f;
 }
 
 SnowParticleSystem::SnowParticleSystem(const SnowParticleSystem& other)
@@ -23,6 +29,11 @@ SnowParticleSystem::SnowParticleSystem(const SnowParticleSystem& other)
 
 SnowParticleSystem::~SnowParticleSystem()
 {
+	for (int i = 0; i < 256; ++i) {
+		delete[] m_snowCover[i];
+	}
+	delete[] m_snowCover;
+
 	SAFE_DELETE(m_instance);
 	SAFE_RELEASE(m_indexBuffer);
 	SAFE_RELEASE(m_vertexBuffer);
@@ -283,6 +294,15 @@ void SnowParticleSystem::CalculateInstancePositions(int begin, int end)
 		m_instance[i].position = XMFLOAT3(x, y, z);
 		m_instance[i].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	}
+}
+
+XMUINT2 SnowParticleSystem::GetIntCoord(XMFLOAT2 pos)
+{
+	static const float scaleFactor = 3.125f;
+	static const XMINT2 shift = {128, 128};
+	XMFLOAT2 scaledPos = { pos.x / scaleFactor, pos.y / scaleFactor };
+	XMINT2 intPos = { (int)roundf(scaledPos.x), (int)roundf(scaledPos.y) };
+	return XMUINT2(labs(intPos.x + shift.x), labs(intPos.y + shift.y));
 }
 
 bool SnowParticleSystem::UpdateBuffers(ID3D11DeviceContext* deviceContext)

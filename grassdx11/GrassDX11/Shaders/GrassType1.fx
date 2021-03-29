@@ -465,15 +465,15 @@ float4 InstPSMain( PSIn Input ) : SV_Target
     float4 color = lerp(float4(vC, fAlpha) , g_vFogColor, Input.vTexCoord.z);
     color = color * shadowCoef;
 
-    float alphaValue = length(g_txSnowCover.Sample(g_samLinear, (Input.vPos.xz / g_fTerrRadius) * 0.5 + 0.5).r);
-    alphaValue = clamp(alphaValue, 0.0, 1.0);
-    if (alphaValue > 0.85)
-        alphaValue = 0.85;
+    //float alphaValue = length(g_txSnowCover.Sample(g_samLinear, (Input.vPos.xz / g_fTerrRadius) * 0.5 + 0.5).r);
+    //alphaValue = clamp(alphaValue, 0.0, 1.0);
+    //if (alphaValue > 0.85)
+    //    alphaValue = 0.85;
 
-    float4 blendColor = alphaValue * float4(1, 1, 1, 1) + (1.0 - alphaValue) * color;
+    //float4 blendColor = alphaValue * float4(1, 1, 1, 1) + (1.0 - alphaValue) * color;
     //color.w *= (1 - alphaValue);
     //color.xyz = blendColor;
-    return blendColor;
+    return color;
 }
 
 
