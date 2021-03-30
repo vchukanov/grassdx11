@@ -259,9 +259,13 @@ void SnowParticleSystem::UpdateParticles(float delta)
 		//if (m_particleList[i].age > 80.0f)
 		{
 			auto intCoord = GetIntCoord(XMFLOAT2(m_instance[i].position.x, m_instance[i].position.z));
-			if (m_snowCover[intCoord.x][intCoord.y] < 1.f)
-				m_snowCover[intCoord.x][intCoord.y] += 0.01f;
+			auto value = m_snowCover[intCoord.y][intCoord.x];
+			if (value < 0.6f) {
+				m_snowCover[intCoord.y][intCoord.x] += 0.01f * 0.001f / (value > 0.001f ? value : 0.001f);
+			}
+
 			std::swap(m_particleList[i], m_particleList[m_currentParticleCount - 1]);
+			std::swap(m_instance[i], m_instance[m_currentParticleCount - 1]);
 			--m_currentParticleCount;
 		}
 	}
@@ -305,7 +309,8 @@ XMUINT2 SnowParticleSystem::GetIntCoord(XMFLOAT2 pos)
 	static const XMINT2 shift = {128, 128};
 	XMFLOAT2 scaledPos = { pos.x / scaleFactor, pos.y / scaleFactor };
 	XMINT2 intPos = { (int)roundf(scaledPos.x), (int)roundf(scaledPos.y) };
-	return XMUINT2(labs(intPos.x + shift.x), labs(intPos.y + shift.y));
+	auto ans = XMUINT2(iclamp(intPos.x + shift.x, 0, 255), iclamp(intPos.y + shift.y, 0, 255));
+	return ans;
 }
 
 bool SnowParticleSystem::UpdateBuffers(ID3D11DeviceContext* deviceContext)

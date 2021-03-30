@@ -176,6 +176,17 @@ float clamp(float v, float a, float b)
    return v;
 }
 
+int iclamp(int v, int a, int b)
+{
+    if (v < a) {
+        v = a;
+    }
+    if (v > b) {
+        v = b;
+    }
+    return v;
+}
+
 
 float3 oneOver(const float3& v)
 {

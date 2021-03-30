@@ -45,6 +45,7 @@ float3   cross     (const float3 &a, const float3 &b);
 float    length    (const float3 &v);
 float3   normalize (const float3 &v);
 float    clamp     (float v, float a, float b);
+int     iclamp(int v, int a, int b);
 float3   oneOver   (const float3 &v);
 
 float3x3 MakeRotationMatrix (const float3 &axis);
