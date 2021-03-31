@@ -234,6 +234,8 @@ void SnowParticleSystem::SpawnParticle()
 	bool found;
 	float positionX, positionY, positionZ, velocity, red, green, blue;
 	int index, i, j;
+	if (m_currentParticleCount != 0)
+		UpdateCloudPosition();
 	if (m_currentParticleCount < m_maxParticles - 1)
 	{
 		positionX = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationX + m_cloudPosX;
@@ -251,9 +253,6 @@ void SnowParticleSystem::SpawnParticle()
 
 void SnowParticleSystem::UpdateParticles(float delta)
 {
-	long deadPartNum = 0;
-	long meanX = 0;
-	long meanZ = 0;
 	for (int i = 0; i < m_currentParticleCount; ++i)
 	{
 		m_particleList[i].age += delta;
@@ -261,10 +260,6 @@ void SnowParticleSystem::UpdateParticles(float delta)
 		if (m_instance[i].position.y <= 0.0f)
 		//if (m_particleList[i].age > 80.0f)
 		{
-			++deadPartNum;
-			meanX += m_instance[i].position.x;
-			meanZ += m_instance[i].position.z;
-
 			auto intCoord = GetIntCoord(XMFLOAT2(m_instance[i].position.x, m_instance[i].position.z));
 			auto value = m_snowCover[intCoord.y][intCoord.x];
 			if (value < 0.6f) {
@@ -275,10 +270,6 @@ void SnowParticleSystem::UpdateParticles(float delta)
 			std::swap(m_instance[i], m_instance[m_currentParticleCount - 1]);
 			--m_currentParticleCount;
 		}
-	}
-	if (deadPartNum != 0) {
-		m_cloudPosX = meanX / deadPartNum;
-		m_cloudPosZ = meanZ / deadPartNum;
 	}
 
 }
@@ -313,6 +304,20 @@ void SnowParticleSystem::CalculateInstancePositions(int begin, int end)
 		m_instance[i].position = XMFLOAT3(x, y, z);
 		m_instance[i].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	}
+}
+
+void SnowParticleSystem::UpdateCloudPosition()
+{
+	long meanX = 0;
+	long meanZ = 0;
+	for (int i = 0; i < m_currentParticleCount; ++i)
+	{
+		meanX += m_instance[i].position.x;
+		meanZ += m_instance[i].position.z;
+	}
+
+	m_cloudPosX = meanX / m_currentParticleCount;
+	m_cloudPosZ = meanZ / m_currentParticleCount;
 }
 
 XMUINT2 SnowParticleSystem::GetIntCoord(XMFLOAT2 pos)
