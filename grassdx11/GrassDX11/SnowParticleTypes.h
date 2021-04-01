@@ -4,7 +4,7 @@
 struct ParticleType
 {
 	XMFLOAT3 initialPos;
-	XMFLOAT3 initialVel;
+	XMFLOAT3 curPos;
 	float age;
 	float offset;
 };

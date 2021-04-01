@@ -68,7 +68,7 @@ private:
 
 	// Read/Write
 	ID3D11Buffer* mRWBuffer;
-	ID3D11Buffer* mRWInputBuffer;
+	//ID3D11Buffer* mRWInputBuffer;
 	ID3D11Buffer* mRWOutputBuffer;
 	ID3D11UnorderedAccessView* mRWUAV;
 };

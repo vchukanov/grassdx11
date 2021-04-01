@@ -18,7 +18,7 @@ ParticleShader::ParticleShader()
 
 	// Read/Write
 	mRWBuffer = nullptr;
-	mRWInputBuffer = nullptr;
+	//mRWInputBuffer = nullptr;
 	mRWOutputBuffer = nullptr;
 	mRWUAV = nullptr;
 }
@@ -46,7 +46,7 @@ ParticleShader::~ParticleShader()
 
 	// Read/Write
 	SAFE_RELEASE(mRWBuffer);
-	SAFE_RELEASE(mRWInputBuffer);
+	//SAFE_RELEASE(mRWInputBuffer);
 	SAFE_RELEASE(mRWOutputBuffer);
 	SAFE_RELEASE(mRWUAV);
 }
@@ -339,11 +339,11 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 	if (FAILED(result))
 		return false;
 
-	outputDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	//outputDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
-	result = (device->CreateBuffer(&outputDesc, 0, &mRWInputBuffer));
-	if (FAILED(result))
-		return false;
+	//result = (device->CreateBuffer(&outputDesc, 0, &mRWInputBuffer));
+	//if (FAILED(result))
+	//	return false;
 
 	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
 	uavDesc.Buffer.FirstElement = 0;
@@ -361,8 +361,8 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 
 void ParticleShader::CalculateInstancePositions(ID3D11DeviceContext* deviceContext)
 {
-	m_pParticleSystem->FillConstantDataBuffer(deviceContext, mInputBuffer, mRWInputBuffer);
-	deviceContext->CopyResource(mRWBuffer, mRWInputBuffer);
+	m_pParticleSystem->FillConstantDataBuffer(deviceContext, mInputBuffer);
+	//deviceContext->CopyResource(mRWBuffer, mRWInputBuffer);
 
 	// Enable Compute Shader
 	deviceContext->CSSetShader(mComputeShader, nullptr, 0);

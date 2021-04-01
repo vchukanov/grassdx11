@@ -27,7 +27,7 @@ public:
 	bool Frame(float, ID3D11DeviceContext*);
 	void Render(ID3D11DeviceContext*);
 
-	void FillConstantDataBuffer(ID3D11DeviceContext* deviceContext, ID3D11Buffer* inputBuffer, ID3D11Buffer* outputBuffer);
+	void FillConstantDataBuffer(ID3D11DeviceContext* deviceContext, ID3D11Buffer* inputBuffer);
 	void UpdatePosition(InstanceType* dataView);
 
 	//ID3D11UnorderedAccessView* GetUAV() { return m_uav; }

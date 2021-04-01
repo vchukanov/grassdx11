@@ -243,7 +243,7 @@ void SnowParticleSystem::SpawnParticle()
 		positionZ = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationZ + m_cloudPosZ;
 
 		m_particleList[m_currentParticleCount].initialPos = XMFLOAT3(positionX, positionY, positionZ);
-		m_particleList[m_currentParticleCount].initialVel = XMFLOAT3(0.0f, -1.0f, 0.0f);
+		m_particleList[m_currentParticleCount].curPos = XMFLOAT3(positionX, positionY, positionZ);
 		m_particleList[m_currentParticleCount].age = 0.0f;
 		m_particleList[m_currentParticleCount].offset = (float)rand() / RAND_MAX;
 		m_instance[m_currentParticleCount].position = m_particleList[m_currentParticleCount].initialPos;
@@ -256,7 +256,7 @@ void SnowParticleSystem::UpdateParticles(float delta)
 	for (int i = 0; i < m_currentParticleCount; ++i)
 	{
 		m_particleList[i].age += delta;
-
+		m_particleList[i].curPos = m_instance[i].position;
 		if (m_instance[i].position.y <= 0.0f)
 		//if (m_particleList[i].age > 80.0f)
 		{
@@ -289,7 +289,7 @@ void SnowParticleSystem::CalculateInstancePositions(int begin, int end)
 		age = m_particleList[i].age;
 		initialPos = m_particleList[i].initialPos;
 		curPos = m_instance[i].position;
-		yVelocity = m_particleList[i].initialVel.y;
+		yVelocity = -0.5f; //temp
 		angle = SimplexNoise::turbulence(curPos.x / 50, curPos.z / 50, curPos.y, (double)age, 2) * PI * 2;
 		length = SimplexNoise::turbulence(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, (double)age, 1);
 		
@@ -363,7 +363,7 @@ bool SnowParticleSystem::UpdateBuffers(ID3D11DeviceContext* deviceContext)
 	return true;
 }
 
-void SnowParticleSystem::FillConstantDataBuffer(ID3D11DeviceContext* deviceContext, ID3D11Buffer* inputBuffer, ID3D11Buffer* outputBuffer)
+void SnowParticleSystem::FillConstantDataBuffer(ID3D11DeviceContext* deviceContext, ID3D11Buffer* inputBuffer)
 {
 	HRESULT hr = S_OK;
 	if (!m_currentParticleCount)
@@ -376,14 +376,6 @@ void SnowParticleSystem::FillConstantDataBuffer(ID3D11DeviceContext* deviceConte
 	{
 		memcpy(mappedResource.pData, m_particleList, sizeof(ParticleType) * m_instanceCount);
 		deviceContext->Unmap(inputBuffer, 0);
-	}
-
-	hr = deviceContext->Map(outputBuffer, 0, D3D11_MAP_WRITE, 0, &mappedResource);
-
-	if (SUCCEEDED(hr))
-	{
-		memcpy(mappedResource.pData, m_instance, sizeof(InstanceType) * m_instanceCount);
-		deviceContext->Unmap(outputBuffer, 0);
 	}
 }
 

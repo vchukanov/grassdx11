@@ -12,7 +12,7 @@
 struct ParticleType
 {
 	float3 initPos;
-	float3 initVel;
+	float3 curPos;
 	float age;
 	float offset;
 };
@@ -48,7 +48,7 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	age = inputConstantParticleData[index].age;
 	offset = inputConstantParticleData[index].offset;
 	float3 initialPos = inputConstantParticleData[index].initPos;
-	float3 curPos = outputParticleData[index].position;
+	float3 curPos = inputConstantParticleData[index].curPos;
 
 	float angle = turbulence(float4(curPos.x / 50, curPos.z / 50, curPos.y, age), 2) * PI * 2;
 	float length = turbulence(float4(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, age), 1);
