@@ -45,6 +45,7 @@ private:
 	bool InitializeParticleSystem(int);
 	bool InitializeBuffers(ID3D11Device*, ID3D11DeviceContext*);
 	void CalculateInstancePositions(int, int);
+	void UpdateCloudPosition();
 	XMUINT2 GetIntCoord(XMFLOAT2 pos);
 
 	// Particle methods
