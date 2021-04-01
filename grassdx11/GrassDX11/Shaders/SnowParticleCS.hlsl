@@ -64,6 +64,25 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	//z += yAmplitude * sin(age * 0.4f * offset);
 	//z += initialPos.z;
 
+	if (curPos.x > -90 && curPos.x < -10 && curPos.z > -90 && curPos.z < -10) {
+		float angle = snoise(float4(curPos.x / 50, curPos.z / 50, curPos.y, age)) * PI * 2;
+		float length = snoise(float4(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, age));
+		length = length * 0.6;
+
+		x = curPos.x + length * cos(angle);
+		z = curPos.z + length * sin(angle);
+		yVelocity = 5.5f;
+	}
+	else {
+		float angle = turbulence(float4(curPos.x / 50, curPos.z / 50, curPos.y, age), 2) * PI * 2;
+		float length = turbulence(float4(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, age), 1);
+		length = length * 0.6;
+
+		x = curPos.x + length * cos(angle);
+		z = curPos.z + length * sin(angle);
+		yVelocity = -5.5f;
+	}
+
 	y = yAmplitude * sin(age * 0.5f * offset);
 	y += yAmplitude * sin(age * 0.66f * offset);
 	y += age * yVelocity + initialPos.y;
