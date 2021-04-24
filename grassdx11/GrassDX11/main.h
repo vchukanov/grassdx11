@@ -58,7 +58,7 @@ Mesh                                *g_pMeshes[MAX_NUM_MESHES];
 DebugWindow                         *g_dbgWin;
 
 // Snow Particle System
-int g_totalParticles = 250000;
+int g_totalParticles = 150000;
 ParticleShader* g_ParticleShader = nullptr;
 SnowParticleSystem* g_ParticleSystem = nullptr;
 

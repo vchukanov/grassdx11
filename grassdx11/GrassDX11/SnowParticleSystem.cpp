@@ -93,10 +93,10 @@ bool SnowParticleSystem::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* 
 bool SnowParticleSystem::InitializeParticleSystem(int maxParticles)
 {
 	//������� ����
-	m_particleDeviationX = 400.0f;
-	m_particleDeviationZ = 400.0f;
-	//m_particleDeviationX = 50.0f;
-	//m_particleDeviationZ = 50.0f;
+	//m_particleDeviationX = 400.0f;
+	//m_particleDeviationZ = 400.0f;
+	m_particleDeviationX = 150.0f;
+	m_particleDeviationZ = 150.0f;
 	m_particleDeviationY = 0.0f;
 	
 	//�������
@@ -234,8 +234,8 @@ void SnowParticleSystem::SpawnParticle()
 	bool found;
 	float positionX, positionY, positionZ, velocity, red, green, blue;
 	int index, i, j;
-	if (m_currentParticleCount != 0)
-		UpdateCloudPosition();
+	/*if (m_currentParticleCount != 0)
+		UpdateCloudPosition();*/
 	if (m_currentParticleCount < m_maxParticles - 1)
 	{
 		positionX = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationX + m_cloudPosX;
