@@ -38,8 +38,16 @@ public:
 	int GetCurrentParticleCount() { return m_currentParticleCount; }
 	int GetParticlesPerSecond() { return m_particlePerSecond; }
 	float** GetSnowCover() { return m_snowCover; }
-	XMFLOAT3 GetTornadoPos() { return XMFLOAT3(m_tornadoPosX, 0, m_tornadoPosZ); }
 	void SetParticlesPerSecond(int value) { m_particlePerSecond = value; }
+
+	/*TORNADO*/
+	XMFLOAT3 GetTornadoPos() { return XMFLOAT3(m_tornadoPosX, 0, m_tornadoPosZ); }
+	void ToggleTornado() { tornadoActive = !tornadoActive; }
+	bool IsTornadoActive() { return tornadoActive; }
+	void MoveTornadoForward() { m_tornadoPosZ += 1.f; }
+	void MoveTornadoBack() { m_tornadoPosZ -= 1.f; }
+	void MoveTornadoLeft() { m_tornadoPosX -= 1.f; }
+	void MoveTornadoRight() { m_tornadoPosX += 1.f; }
 private:
 	// Initialize
 	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, const WCHAR*);
@@ -61,6 +69,7 @@ private:
 	ParticleShader* m_pParticleShader;
 	float m_cloudPosX, m_cloudPosY, m_cloudPosZ;
 	float m_tornadoPosX, m_tornadoPosZ;
+	bool tornadoActive = false;
 	float m_particleDeviationX, m_particleDeviationY, m_particleDeviationZ;
 	float m_particleVeclocity, m_particleVelocityVariation;
 	float m_particleSize, m_particlePerSecond;

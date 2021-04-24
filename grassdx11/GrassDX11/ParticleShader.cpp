@@ -69,7 +69,8 @@ bool ParticleShader::Render(ID3D11DeviceContext* direct, SnowParticleSystem* par
 {
 	bool result;
 
-	result = SetShaderParameters(direct, camera, XMMatrixIdentity(), camera->GetViewMatrix(), camera->GetProjMatrix(), particlesystem->GetTexture(), particlesystem->GetTornadoPos());
+	result = SetShaderParameters(direct, camera, XMMatrixIdentity(), camera->GetViewMatrix(), camera->GetProjMatrix(), 
+		particlesystem->GetTexture(), particlesystem->IsTornadoActive(), particlesystem->GetTornadoPos());
 	if (!result)
 		return false;
 
@@ -422,7 +423,14 @@ void ParticleShader::CalculateInstancePositions(ID3D11DeviceContext* deviceConte
 	}
 }
 
-bool ParticleShader::SetShaderParameters(ID3D11DeviceContext* deviceContext, CFirstPersonCamera* camera, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture, XMFLOAT3 tornadoPos)
+bool ParticleShader::SetShaderParameters(ID3D11DeviceContext* deviceContext
+	, CFirstPersonCamera* camera
+	, XMMATRIX worldMatrix
+	, XMMATRIX viewMatrix
+	, XMMATRIX projectionMatrix
+	, ID3D11ShaderResourceView* texture
+	, bool tornadoActive
+	, XMFLOAT3 tornadoPos)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -460,6 +468,7 @@ bool ParticleShader::SetShaderParameters(ID3D11DeviceContext* deviceContext, CFi
 		return false;
 	TornadoBuffetType* dataPtr3 = (TornadoBuffetType*)mappedResource.pData;
 	dataPtr3->pos = tornadoPos;
+	dataPtr3->active = tornadoActive;
 	deviceContext->Unmap(m_tornadoBuffer, 0);
 
 	deviceContext->GSSetConstantBuffers(0, 1, &m_matrixBuffer);

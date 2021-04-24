@@ -483,8 +483,8 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 
    // Initialize the particle system object.
    result = g_ParticleSystem->Initialize(pd3dDevice, pd3dImmediateContext, L"resources/snow.png", g_totalParticles);
-   g_ParticleSystem->SetParticlesPerSecond(g_totalParticles / 120);
-   //g_ParticleSystem->SetParticlesPerSecond(g_totalParticles / 80);
+   //g_ParticleSystem->SetParticlesPerSecond(g_totalParticles / 120);
+   g_ParticleSystem->SetParticlesPerSecond(g_totalParticles / 80);
    if (!result)
    {
        return false;
@@ -976,6 +976,21 @@ void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserC
       case VK_ADD:
          copterController.ToggleFixCam();
          break;
+      case VK_NUMPAD8:
+          g_ParticleSystem->MoveTornadoForward();
+          break;
+      case VK_NUMPAD5:
+          g_ParticleSystem->MoveTornadoBack();
+          break;
+      case VK_NUMPAD6:
+          g_ParticleSystem->MoveTornadoRight();
+          break;
+      case VK_NUMPAD4:
+          g_ParticleSystem->MoveTornadoLeft();
+          break;
+      case VK_NUMPAD9:
+          g_ParticleSystem->ToggleTornado();
+          break;
       }
    }
    else

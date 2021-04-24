@@ -29,7 +29,7 @@ private:
 	struct TornadoBuffetType
 	{
 		XMFLOAT3 pos;
-		float padding;
+		bool active;
 	};
 
 public:
@@ -46,7 +46,14 @@ public:
 
 private:
 	bool InitializeShader(ID3D11Device* device, ID3D11DeviceContext* deviceContext, const WCHAR* vsFilename, const WCHAR* psFilename, const WCHAR* gsFilename, const WCHAR* csFilename);
-	bool SetShaderParameters(ID3D11DeviceContext* deviceContext, CFirstPersonCamera* cameraPos, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture, XMFLOAT3 tornadoPos);
+	bool SetShaderParameters(ID3D11DeviceContext* deviceContext
+		, CFirstPersonCamera* cameraPos
+		, XMMATRIX worldMatrix
+		, XMMATRIX viewMatrix
+		, XMMATRIX projectionMatrix
+		, ID3D11ShaderResourceView* texture
+		, bool tornadoActive
+		, XMFLOAT3 tornadoPos);
 	void SetSnowCoverTexture(ID3D11DeviceContext* deviceContext);
 	void RenderShader(ID3D11DeviceContext* deviceContext, int vertexCount, int instanceCount, int indexCount);
 
