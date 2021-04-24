@@ -8,6 +8,7 @@ ParticleShader::ParticleShader()
 	m_layout = nullptr;
 	m_matrixBuffer = nullptr;
 	m_cameraBuffer = nullptr;
+	m_tornadoBuffer = nullptr;
 	m_sampleState = nullptr;
 
 	mComputeShader = nullptr;
@@ -32,6 +33,7 @@ ParticleShader::~ParticleShader()
 	SAFE_RELEASE(m_sampleState);
 	SAFE_RELEASE(m_matrixBuffer);
 	SAFE_RELEASE(m_cameraBuffer);
+	SAFE_RELEASE(m_tornadoBuffer);
 	SAFE_RELEASE(m_layout);
 	SAFE_RELEASE(m_pixelShader);
 	SAFE_RELEASE(m_vertexShader);
@@ -67,7 +69,7 @@ bool ParticleShader::Render(ID3D11DeviceContext* direct, SnowParticleSystem* par
 {
 	bool result;
 
-	result = SetShaderParameters(direct, camera, XMMatrixIdentity(), camera->GetViewMatrix(), camera->GetProjMatrix(), particlesystem->GetTexture());
+	result = SetShaderParameters(direct, camera, XMMatrixIdentity(), camera->GetViewMatrix(), camera->GetProjMatrix(), particlesystem->GetTexture(), particlesystem->GetTornadoPos());
 	if (!result)
 		return false;
 
@@ -92,6 +94,7 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 	unsigned int numElements;
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	D3D11_BUFFER_DESC cameraBufferDesc;
+	D3D11_BUFFER_DESC tornadoBufferDesc;
 	D3D11_SAMPLER_DESC samplerDesc;
 
 	// Compile Vertex Shader
@@ -210,6 +213,17 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 	cameraBufferDesc.StructureByteStride = 0;
 
 	result = device->CreateBuffer(&cameraBufferDesc, NULL, &m_cameraBuffer);
+	if (FAILED(result))
+		return false;
+
+	tornadoBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	tornadoBufferDesc.ByteWidth = sizeof(TornadoBuffetType);
+	tornadoBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	tornadoBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	tornadoBufferDesc.MiscFlags = 0;
+	tornadoBufferDesc.StructureByteStride = 0;
+
+	result = device->CreateBuffer(&tornadoBufferDesc, NULL, &m_tornadoBuffer);
 	if (FAILED(result))
 		return false;
 
@@ -408,7 +422,7 @@ void ParticleShader::CalculateInstancePositions(ID3D11DeviceContext* deviceConte
 	}
 }
 
-bool ParticleShader::SetShaderParameters(ID3D11DeviceContext* deviceContext, CFirstPersonCamera* camera, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture)
+bool ParticleShader::SetShaderParameters(ID3D11DeviceContext* deviceContext, CFirstPersonCamera* camera, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture, XMFLOAT3 tornadoPos)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -440,8 +454,18 @@ bool ParticleShader::SetShaderParameters(ID3D11DeviceContext* deviceContext, CFi
 	XMStoreFloat3(&(dataPtr2->cameraPosition), camera->GetEyePt());
 	deviceContext->Unmap(m_cameraBuffer, 0);
 
+	//Tornado camera buffer
+	result = deviceContext->Map(m_tornadoBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(result))
+		return false;
+	TornadoBuffetType* dataPtr3 = (TornadoBuffetType*)mappedResource.pData;
+	dataPtr3->pos = tornadoPos;
+	deviceContext->Unmap(m_tornadoBuffer, 0);
+
 	deviceContext->GSSetConstantBuffers(0, 1, &m_matrixBuffer);
 	deviceContext->GSSetConstantBuffers(1, 1, &m_cameraBuffer);
+	deviceContext->CSSetConstantBuffers(0, 1, &m_tornadoBuffer);
+
 	deviceContext->PSSetShaderResources(0, 1, &texture);
 	deviceContext->PSSetShaderResources(1, 1, &texture);
 	//deviceContext->OMSetRenderTargetsAndUnorderedAccessViews();

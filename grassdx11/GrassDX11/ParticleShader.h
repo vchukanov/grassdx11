@@ -25,6 +25,12 @@ private:
 		XMFLOAT3 cameraPosition;
 		float padding;
 	};
+	
+	struct TornadoBuffetType
+	{
+		XMFLOAT3 pos;
+		float padding;
+	};
 
 public:
 	ParticleShader();
@@ -40,7 +46,7 @@ public:
 
 private:
 	bool InitializeShader(ID3D11Device* device, ID3D11DeviceContext* deviceContext, const WCHAR* vsFilename, const WCHAR* psFilename, const WCHAR* gsFilename, const WCHAR* csFilename);
-	bool SetShaderParameters(ID3D11DeviceContext* deviceContext, CFirstPersonCamera* cameraPos, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture);
+	bool SetShaderParameters(ID3D11DeviceContext* deviceContext, CFirstPersonCamera* cameraPos, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture, XMFLOAT3 tornadoPos);
 	void SetSnowCoverTexture(ID3D11DeviceContext* deviceContext);
 	void RenderShader(ID3D11DeviceContext* deviceContext, int vertexCount, int instanceCount, int indexCount);
 
@@ -56,6 +62,7 @@ private:
 	ID3D11InputLayout* m_layout;
 	ID3D11Buffer* m_matrixBuffer;
 	ID3D11Buffer* m_cameraBuffer;
+	ID3D11Buffer* m_tornadoBuffer;
 	ID3D11SamplerState* m_sampleState;	
 	UINT m_frame = 0;
 

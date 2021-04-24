@@ -38,6 +38,7 @@ public:
 	int GetCurrentParticleCount() { return m_currentParticleCount; }
 	int GetParticlesPerSecond() { return m_particlePerSecond; }
 	float** GetSnowCover() { return m_snowCover; }
+	XMFLOAT3 GetTornadoPos() { return XMFLOAT3(m_tornadoPosX, 0, m_tornadoPosZ); }
 	void SetParticlesPerSecond(int value) { m_particlePerSecond = value; }
 private:
 	// Initialize
@@ -59,6 +60,7 @@ private:
 private:
 	ParticleShader* m_pParticleShader;
 	float m_cloudPosX, m_cloudPosY, m_cloudPosZ;
+	float m_tornadoPosX, m_tornadoPosZ;
 	float m_particleDeviationX, m_particleDeviationY, m_particleDeviationZ;
 	float m_particleVeclocity, m_particleVelocityVariation;
 	float m_particleSize, m_particlePerSecond;

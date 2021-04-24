@@ -104,6 +104,8 @@ bool SnowParticleSystem::InitializeParticleSystem(int maxParticles)
 	m_cloudPosY = 120.0f;
 	//m_cloudPosY = 80.0f;
 	m_cloudPosZ = 0.f;
+	m_tornadoPosX = 75.f;
+	m_tornadoPosZ = 75.f;
 
 	m_particleVeclocity = 1.0f;
 	m_particleVelocityVariation = 0.0f;

@@ -8,6 +8,11 @@
 //	float4 deltaAndPadding;
 //}
 #include "Noises.hlsli"
+cbuffer TornadoBuffer : register(b0)
+{
+	float3 tornadoPos;
+	float padding;
+};
 
 struct ParticleType
 {
