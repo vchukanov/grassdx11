@@ -12,8 +12,6 @@ cbuffer TornadoBuffer : register(b0)
 {
 	float3 tornadoPos;
 	bool tornadoActive;
-	float3 tornadoPrevPos;
-	float padding;
 };
 
 struct ParticleType
@@ -70,12 +68,6 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	float offset = inputConstantParticleData[index].offset;
 	float3 initialPos = inputConstantParticleData[index].initPos;
 	float3 curPos = inputConstantParticleData[index].curPos;
-	bool wasInTornado = offset > 0 ? false : true;
-	offset = abs(offset);
-	if (wasInTornado && (tornadoPrevPos.x != tornadoPos.x || tornadoPrevPos.z != tornadoPos.z)) {
-		curPos.x = curPos.x + (tornadoPos.x - tornadoPrevPos.x);
-		curPos.z = curPos.z + (tornadoPos.z - tornadoPrevPos.z);
-	}
 
 	//x = yAmplitude * sin(age * 1.f * offset);
 	//x += yAmplitude * sin(age * 0.5f * offset);
@@ -88,7 +80,7 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	if (tornadoActive && IsInTornado(GetRadiusOnHeight(curPos.y), curPos))
 	{
 		inTornado = true;
-		yVelocity = -0.45f;
+		yVelocity = -0.25f;
 		//Движение по касательным
 		/*float k2 = (tornadoPos.x - curPos.x) / (curPos.z - tornadoPos.z);
 		float b2 = curPos.z - k2 * curPos.x;
@@ -104,7 +96,7 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 			x = (-_b - sqrt(D)) / _a;
 		z = k2 * x + b2;*/
 		
-		float step = 1.f;
+		float step = 1.5f;
 		float radius = sqrt((curPos.z - tornadoPos.z) * (curPos.z - tornadoPos.z) + (curPos.x - tornadoPos.x) * (curPos.x - tornadoPos.x));
 		float alpha1 = atan((curPos.z - tornadoPos.z) / (curPos.x - tornadoPos.x));
 		if (curPos.x < tornadoPos.x)
@@ -121,7 +113,7 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 		/*if (y < 0)
 			y = 0.1f;*/
 
-		color = float4(0, 1, 1, 1);
+		color = float4(0.6f, 0.6f, 0.6f, 1);
 	}
 	else {
 		inTornado = false;

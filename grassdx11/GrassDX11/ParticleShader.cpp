@@ -467,7 +467,6 @@ bool ParticleShader::SetShaderParameters(ID3D11DeviceContext* deviceContext
 	if (FAILED(result))
 		return false;
 	TornadoBufferType* dataPtr3 = (TornadoBufferType*)mappedResource.pData;
-	dataPtr3->prevPos = dataPtr3->pos;
 	dataPtr3->pos = tornadoPos;
 	dataPtr3->active = tornadoActive;
 	deviceContext->Unmap(m_tornadoBuffer, 0);
