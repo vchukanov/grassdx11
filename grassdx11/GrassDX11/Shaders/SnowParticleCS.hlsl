@@ -11,7 +11,9 @@
 cbuffer TornadoBuffer : register(b0)
 {
 	float3 tornadoPos;
-	bool active;
+	bool tornadoActive;
+	float3 tornadoPrevPos;
+	float padding;
 };
 
 struct ParticleType
@@ -26,6 +28,7 @@ struct InstanceType
 {
 	float3 position;
 	float4 color;
+	bool inTornado;
 };
 
 
@@ -33,7 +36,8 @@ StructuredBuffer<ParticleType>	inputConstantParticleData	: register(t0);
 RWStructuredBuffer<InstanceType>		outputParticleData			: register(u0);
 
 float GetRadiusOnHeight(float height) {
-	return 0.003 * height * height + 5;
+	//return 15.f;
+	return 0.0015 * height * height + 5;
 	//return height / 3.33333f;
 };
 
@@ -60,11 +64,18 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	//uint index = groupID.x * 1024 + groupID.y * 16 * 1024 + groupIndex;
 	uint index = dispatchThreadID.x;
 	float4 color;
-	float x, y, z, age, offset, yAmplitude = -0.5f, yVelocity = -5.5f;
-	age = inputConstantParticleData[index].age;
-	offset = inputConstantParticleData[index].offset;
+	bool inTornado;
+	float x, y, z, yAmplitude = -0.5f, yVelocity = -5.5f;
+	float age = inputConstantParticleData[index].age;
+	float offset = inputConstantParticleData[index].offset;
 	float3 initialPos = inputConstantParticleData[index].initPos;
 	float3 curPos = inputConstantParticleData[index].curPos;
+	bool wasInTornado = offset > 0 ? false : true;
+	offset = abs(offset);
+	if (wasInTornado && (tornadoPrevPos.x != tornadoPos.x || tornadoPrevPos.z != tornadoPos.z)) {
+		curPos.x = curPos.x + (tornadoPos.x - tornadoPrevPos.x);
+		curPos.z = curPos.z + (tornadoPos.z - tornadoPrevPos.z);
+	}
 
 	//x = yAmplitude * sin(age * 1.f * offset);
 	//x += yAmplitude * sin(age * 0.5f * offset);
@@ -73,8 +84,11 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	//z = yAmplitude * sin(age * 0.66f * offset);
 	//z += yAmplitude * sin(age * 0.4f * offset);
 	//z += initialPos.z;
-	if (active && IsInTornado(GetRadiusOnHeight(curPos.y), curPos))
+
+	if (tornadoActive && IsInTornado(GetRadiusOnHeight(curPos.y), curPos))
 	{
+		inTornado = true;
+		yVelocity = -0.45f;
 		//Движение по касательным
 		/*float k2 = (tornadoPos.x - curPos.x) / (curPos.z - tornadoPos.z);
 		float b2 = curPos.z - k2 * curPos.x;
@@ -90,7 +104,7 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 			x = (-_b - sqrt(D)) / _a;
 		z = k2 * x + b2;*/
 		
-		float step = 0.3f;
+		float step = 1.f;
 		float radius = sqrt((curPos.z - tornadoPos.z) * (curPos.z - tornadoPos.z) + (curPos.x - tornadoPos.x) * (curPos.x - tornadoPos.x));
 		float alpha1 = atan((curPos.z - tornadoPos.z) / (curPos.x - tornadoPos.x));
 		if (curPos.x < tornadoPos.x)
@@ -100,17 +114,21 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 
 		x = tornadoPos.x + radius * cos(alpha2);
 		z = tornadoPos.z + radius * sin(alpha2);
-		y = curPos.y;
-		//y = yAmplitude * sin(age * 0.5f * offset);
-		//y += yAmplitude * sin(age * 0.66f * offset);
-		//y += age * yVelocity + initialPos.y;
+		//y = curPos.y;
+		y = yAmplitude * sin(age * 0.5f * offset);
+		y += yAmplitude * sin(age * 0.66f * offset);
+		y += age * yVelocity + initialPos.y;
+		/*if (y < 0)
+			y = 0.1f;*/
 
 		color = float4(0, 1, 1, 1);
 	}
 	else {
+		inTornado = false;
+
 		float angle = turbulence(float4(curPos.x / 50, curPos.z / 50, curPos.y, age), 2) * PI * 2;
 		float length = turbulence(float4(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, age), 1);
-		length = length * 0.6;
+		length = length * 2.f;
 
 		x = curPos.x + length * cos(angle);
 		z = curPos.z + length * sin(angle);
@@ -118,10 +136,11 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 		y = yAmplitude * sin(age * 0.5f * offset);
 		y += yAmplitude * sin(age * 0.66f * offset);
 		y += age * yVelocity + initialPos.y;
-		//color = float4(1, 1, 1, 1);
-		color = float4(0, 0, 0, 0);
+		color = float4(1, 1, 1, 1);
+		//color = float4(0, 0, 0, 0);
 	}
 	
 	outputParticleData[index].color = color;
-	outputParticleData[index].position = float3(x, y, z);	
+	outputParticleData[index].position = float3(x, y, z);
+	outputParticleData[index].inTornado = inTornado;
 }

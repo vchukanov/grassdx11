@@ -218,7 +218,7 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 		return false;
 
 	tornadoBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	tornadoBufferDesc.ByteWidth = sizeof(TornadoBuffetType);
+	tornadoBufferDesc.ByteWidth = sizeof(TornadoBufferType);
 	tornadoBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	tornadoBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	tornadoBufferDesc.MiscFlags = 0;
@@ -466,7 +466,8 @@ bool ParticleShader::SetShaderParameters(ID3D11DeviceContext* deviceContext
 	result = deviceContext->Map(m_tornadoBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result))
 		return false;
-	TornadoBuffetType* dataPtr3 = (TornadoBuffetType*)mappedResource.pData;
+	TornadoBufferType* dataPtr3 = (TornadoBufferType*)mappedResource.pData;
+	dataPtr3->prevPos = dataPtr3->pos;
 	dataPtr3->pos = tornadoPos;
 	dataPtr3->active = tornadoActive;
 	deviceContext->Unmap(m_tornadoBuffer, 0);

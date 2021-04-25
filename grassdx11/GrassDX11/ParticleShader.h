@@ -26,10 +26,12 @@ private:
 		float padding;
 	};
 	
-	struct TornadoBuffetType
+	struct TornadoBufferType
 	{
 		XMFLOAT3 pos;
 		bool active;
+		XMFLOAT3 prevPos;
+		float padding;
 	};
 
 public:

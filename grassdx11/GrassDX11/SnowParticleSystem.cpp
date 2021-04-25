@@ -104,8 +104,9 @@ bool SnowParticleSystem::InitializeParticleSystem(int maxParticles)
 	//m_cloudPosY = 120.0f;
 	m_cloudPosY = 80.0f;
 	m_cloudPosZ = 0.f;
-	m_tornadoPosX = 50.f;
-	m_tornadoPosZ = 50.f;
+	m_tornadoPosX = 0.f;
+	m_tornadoPosZ = 0.f;
+	m_tornadoPosY = 0.f;
 
 	m_particleVeclocity = 1.0f;
 	m_particleVelocityVariation = 0.0f;
@@ -259,6 +260,8 @@ void SnowParticleSystem::UpdateParticles(float delta)
 	{
 		m_particleList[i].age += delta;
 		m_particleList[i].curPos = m_instance[i].position;
+		if (m_instance[i].inTornado && m_particleList[i].offset > 0)
+			m_particleList[i].offset *= -1;
 		if (m_instance[i].position.y <= 0.0f)
 		//if (m_particleList[i].age > 80.0f)
 		{
