@@ -258,10 +258,12 @@ void SnowParticleSystem::UpdateParticles(float delta)
 		if (m_instance[i].position.y <= 0.0f)
 		//if (m_particleList[i].age > 80.0f)
 		{
-			auto intCoord = GetIntCoord(XMFLOAT2(m_instance[i].position.x, m_instance[i].position.z));
-			auto value = m_snowCover[intCoord.y][intCoord.x];
-			if (value < 0.6f) {
+			if (isSnowCoverActive) {
+				auto intCoord = GetIntCoord(XMFLOAT2(m_instance[i].position.x, m_instance[i].position.z));
+				auto value = m_snowCover[intCoord.y][intCoord.x];
+				if (value < 0.6f) {
 				m_snowCover[intCoord.y][intCoord.x] += 0.01f * 0.001f / (value > 0.001f ? value : 0.001f);
+				}
 			}
 
 			std::swap(m_particleList[i], m_particleList[m_currentParticleCount - 1]);
