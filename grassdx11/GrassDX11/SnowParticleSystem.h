@@ -39,6 +39,16 @@ public:
 	int GetParticlesPerSecond() { return m_particlePerSecond; }
 	float** GetSnowCover() { return m_snowCover; }
 	void SetParticlesPerSecond(int value) { m_particlePerSecond = value; }
+	void ToggleSnowCover() { isSnowCoverActive = !isSnowCoverActive; }
+
+	/*TORNADO*/
+	XMFLOAT3 GetTornadoPos() { return m_tornadoPos; }
+	void ToggleTornado() { tornadoActive = !tornadoActive; }
+	bool IsTornadoActive() { return tornadoActive; }
+	void MoveTornadoForward() { m_tornadoPos.z += 1.1f; m_deltaTorandoPos.z += 1.1f; }
+	void MoveTornadoBack() { m_tornadoPos.z -= 1.1f; m_deltaTorandoPos.z -= 1.1f;}
+	void MoveTornadoLeft() { m_tornadoPos.x -= 1.1f; m_deltaTorandoPos.x -= 1.1f;}
+	void MoveTornadoRight() { m_tornadoPos.x += 1.1f; m_deltaTorandoPos.x += 1.1f;}
 private:
 	// Initialize
 	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, const WCHAR*);
@@ -58,7 +68,10 @@ private:
 	void RenderBuffers(ID3D11DeviceContext*);
 private:
 	ParticleShader* m_pParticleShader;
-	float m_cloudPosX, m_cloudPosY, m_cloudPosZ;
+	XMFLOAT3 m_cloudPos{ 0.f, 80.f, 0.f };
+	XMFLOAT3 m_tornadoPos{ 0.f, 0.f, 0.f };;
+	XMFLOAT3 m_deltaTorandoPos{ 0.f, 0.f, 0.f };;
+	bool tornadoActive = false;
 	float m_particleDeviationX, m_particleDeviationY, m_particleDeviationZ;
 	float m_particleVeclocity, m_particleVelocityVariation;
 	float m_particleSize, m_particlePerSecond;
@@ -79,6 +92,7 @@ private:
 	InstanceType* m_instance;
 	ID3D11Buffer* m_vertexBuffer, * m_indexBuffer, * m_instanceBuffer;
 	float** m_snowCover = nullptr;
+	bool isSnowCoverActive = false;
 
 	std::vector<std::thread> m_threads;
 };

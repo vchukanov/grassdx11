@@ -95,15 +95,9 @@ bool SnowParticleSystem::InitializeParticleSystem(int maxParticles)
 	//������� ����
 	//m_particleDeviationX = 400.0f;
 	//m_particleDeviationZ = 400.0f;
-	m_particleDeviationX = 150.0f;
-	m_particleDeviationZ = 150.0f;
+	m_particleDeviationX = 100.0f;
+	m_particleDeviationZ = 100.0f;
 	m_particleDeviationY = 0.0f;
-	
-	//�������
-	m_cloudPosX = 0.f;
-	m_cloudPosY = 120.0f;
-	//m_cloudPosY = 80.0f;
-	m_cloudPosZ = 0.f;
 
 	m_particleVeclocity = 1.0f;
 	m_particleVelocityVariation = 0.0f;
@@ -238,9 +232,9 @@ void SnowParticleSystem::SpawnParticle()
 		UpdateCloudPosition();*/
 	if (m_currentParticleCount < m_maxParticles - 1)
 	{
-		positionX = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationX + m_cloudPosX;
-		positionY = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationY + m_cloudPosY;
-		positionZ = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationZ + m_cloudPosZ;
+		positionX = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationX + m_cloudPos.x;
+		positionY = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationY + m_cloudPos.y;
+		positionZ = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationZ + m_cloudPos.z;
 
 		m_particleList[m_currentParticleCount].initialPos = XMFLOAT3(positionX, positionY, positionZ);
 		m_particleList[m_currentParticleCount].curPos = XMFLOAT3(positionX, positionY, positionZ);
@@ -257,13 +251,19 @@ void SnowParticleSystem::UpdateParticles(float delta)
 	{
 		m_particleList[i].age += delta;
 		m_particleList[i].curPos = m_instance[i].position;
+		if (m_instance[i].inTornado) {
+			m_particleList[i].curPos.x += m_deltaTorandoPos.x;
+			m_particleList[i].curPos.z += m_deltaTorandoPos.z;
+		}
 		if (m_instance[i].position.y <= 0.0f)
 		//if (m_particleList[i].age > 80.0f)
 		{
-			auto intCoord = GetIntCoord(XMFLOAT2(m_instance[i].position.x, m_instance[i].position.z));
-			auto value = m_snowCover[intCoord.y][intCoord.x];
-			if (value < 0.6f) {
+			if (isSnowCoverActive) {
+				auto intCoord = GetIntCoord(XMFLOAT2(m_instance[i].position.x, m_instance[i].position.z));
+				auto value = m_snowCover[intCoord.y][intCoord.x];
+				if (value < 0.6f) {
 				m_snowCover[intCoord.y][intCoord.x] += 0.01f * 0.001f / (value > 0.001f ? value : 0.001f);
+				}
 			}
 
 			std::swap(m_particleList[i], m_particleList[m_currentParticleCount - 1]);
@@ -271,16 +271,16 @@ void SnowParticleSystem::UpdateParticles(float delta)
 			--m_currentParticleCount;
 		}
 	}
-
+	m_deltaTorandoPos = { 0.f,0.f,0.f };
 }
 void SnowParticleSystem::CalculateInstancePositions(int begin, int end)
 {
 	float x, y, z, offset, yAmplitude, age, yVelocity, angle, length;
 	XMFLOAT3 initialPos, curPos;
-	angle = SimplexNoise::turbulence(m_cloudPosX / 50, m_cloudPosZ / 50, m_cloudPosY, 0., 2) * PI * 2;
-	length = SimplexNoise::turbulence(m_cloudPosX / 10 + 4000, m_cloudPosZ / 10 + 4000, m_cloudPosY, 0., 1);
-	m_cloudPosX += length * cos(angle);
-	m_cloudPosZ += length * sin(angle);
+	angle = SimplexNoise::turbulence(m_cloudPos.x / 50, m_cloudPos.z / 50, m_cloudPos.y, 0., 2) * PI * 2;
+	length = SimplexNoise::turbulence(m_cloudPos.x / 10 + 4000, m_cloudPos.z / 10 + 4000, m_cloudPos.y, 0., 1);
+	m_cloudPos.x += length * cos(angle);
+	m_cloudPos.z += length * sin(angle);
 
 	for (int i = begin; i < end; ++i)
 	{
@@ -316,8 +316,8 @@ void SnowParticleSystem::UpdateCloudPosition()
 		meanZ += m_instance[i].position.z;
 	}
 
-	m_cloudPosX = meanX / m_currentParticleCount;
-	m_cloudPosZ = meanZ / m_currentParticleCount;
+	m_cloudPos.x = meanX / m_currentParticleCount;
+	m_cloudPos.z = meanZ / m_currentParticleCount;
 }
 
 XMUINT2 SnowParticleSystem::GetIntCoord(XMFLOAT2 pos)
