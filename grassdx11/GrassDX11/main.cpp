@@ -994,6 +994,9 @@ void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserC
       case VK_NUMPAD7:
           g_ParticleSystem->ToggleSnowCover();
           break;
+      case VK_NUMPAD1:
+          g_ParticleSystem->ToggleCloudMovement();
+          break;
       }
    }
    else

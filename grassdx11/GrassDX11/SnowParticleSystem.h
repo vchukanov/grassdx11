@@ -40,6 +40,7 @@ public:
 	float** GetSnowCover() { return m_snowCover; }
 	void SetParticlesPerSecond(int value) { m_particlePerSecond = value; }
 	void ToggleSnowCover() { isSnowCoverActive = !isSnowCoverActive; }
+	void ToggleCloudMovement() { isCloudMovementActive = !isCloudMovementActive; }
 
 	/*TORNADO*/
 	XMFLOAT3 GetTornadoPos() { return m_tornadoPos; }
@@ -93,6 +94,7 @@ private:
 	ID3D11Buffer* m_vertexBuffer, * m_indexBuffer, * m_instanceBuffer;
 	float** m_snowCover = nullptr;
 	bool isSnowCoverActive = false;
+	bool isCloudMovementActive = false;
 
 	std::vector<std::thread> m_threads;
 };
