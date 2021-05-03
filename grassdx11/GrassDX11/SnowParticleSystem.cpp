@@ -216,11 +216,15 @@ void SnowParticleSystem::EmitParticles(float delta)
 		return;
 	m_accumulatedTime += delta;
 
+	if (m_currentParticleCount != 0)
+		UpdateCloudPosition();
+
 	while (m_accumulatedTime > (1.0f / m_particlePerSecond))
 	{
 		m_accumulatedTime -= 1.0f / m_particlePerSecond;
 		SpawnParticle();
 	}
+
 }
 
 void SnowParticleSystem::SpawnParticle()
@@ -228,8 +232,6 @@ void SnowParticleSystem::SpawnParticle()
 	bool found;
 	float positionX, positionY, positionZ, velocity, red, green, blue;
 	int index, i, j;
-	/*if (m_currentParticleCount != 0)
-		UpdateCloudPosition();*/
 	if (m_currentParticleCount < m_maxParticles - 1)
 	{
 		positionX = (((float)rand() - (float)rand()) / RAND_MAX) * m_particleDeviationX + m_cloudPos.x;
@@ -310,14 +312,26 @@ void SnowParticleSystem::UpdateCloudPosition()
 {
 	long meanX = 0;
 	long meanZ = 0;
+	long countParticle = m_currentParticleCount;
 	for (int i = 0; i < m_currentParticleCount; ++i)
 	{
-		meanX += m_instance[i].position.x;
-		meanZ += m_instance[i].position.z;
+		if (isnan(m_instance[i].position.x) || isnan(m_instance[i].position.z)) {
+			--countParticle;
+		}
+		else
+		{
+			meanX += m_instance[i].position.x;
+			meanZ += m_instance[i].position.z;
+		}
 	}
 
-	m_cloudPos.x = meanX / m_currentParticleCount;
-	m_cloudPos.z = meanZ / m_currentParticleCount;
+	m_cloudPos.x = meanX / countParticle;
+	m_cloudPos.z = meanZ / countParticle;
+
+	/*if (!tornadoActive) {*/
+		m_tornadoPos.x = m_cloudPos.x;
+		m_tornadoPos.z = m_cloudPos.z;
+	//}
 }
 
 XMUINT2 SnowParticleSystem::GetIntCoord(XMFLOAT2 pos)

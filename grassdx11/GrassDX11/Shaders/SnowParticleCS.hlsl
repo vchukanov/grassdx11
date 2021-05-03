@@ -97,9 +97,9 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 		z = k2 * x + b2;*/
 		
 		float step = 1.5f;
-		float radius = sqrt((curPos.z - tornadoPos.z) * (curPos.z - tornadoPos.z) + (curPos.x - tornadoPos.x) * (curPos.x - tornadoPos.x));
+		float radius = sqrt((curPos.z - tornadoPos.z) * (curPos.z - tornadoPos.z) + (curPos.x - tornadoPos.x) * (curPos.x - tornadoPos.x) + 0.00000001f);
 		radius = radius + 0.075f * radius * snoise(float4(curPos, age));
-		float alpha1 = atan((curPos.z - tornadoPos.z) / (curPos.x - tornadoPos.x));
+		float alpha1 = atan((curPos.z - tornadoPos.z) / (curPos.x - tornadoPos.x + 0.00000001f));
 		if (curPos.x < tornadoPos.x)
 			alpha1 = alpha1 + PI;
 		float dalpha = acos(1 - step * step / 2 / radius / radius);
