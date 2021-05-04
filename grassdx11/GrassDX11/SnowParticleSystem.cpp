@@ -292,8 +292,8 @@ void SnowParticleSystem::UpdateParticles(float delta)
 				//find least way
 				float least = 1.f;
 				int indY = 0, indX = 0;
-				for (int j = intCoord.y - 1 < 0 ? 0 : intCoord.y - 1; j < intCoord.y + 1 > 255 ? 255 : intCoord.y + 1; ++j) {
-					for (int k = intCoord.x - 1 < 0 ? 0 : intCoord.x - 1; k < intCoord.x + 1 > 255 ? 255 : intCoord.x + 1; ++k) {
+				for (int j = intCoord.y - 1 < 0 ? 0 : intCoord.y - 1; j < (intCoord.y + 1 > 255 ? 255 : intCoord.y + 1); ++j) {
+					for (int k = intCoord.x - 1 < 0 ? 0 : intCoord.x - 1; k < (intCoord.x + 1 > 255 ? 255 : intCoord.x + 1); ++k) {
 						if (m_snowCover[j][k] < least) {
 							least = m_snowCover[j][k];
 							indY = j;
