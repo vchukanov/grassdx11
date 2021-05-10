@@ -497,9 +497,6 @@
     <ClInclude Include="xtmfrustum.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="SnowParticleCS.hlsl">
-      <FileType>Document</FileType>
-    </Text>
     <FxCompile Include="Shaders\GrassType1.fx">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
     </FxCompile>

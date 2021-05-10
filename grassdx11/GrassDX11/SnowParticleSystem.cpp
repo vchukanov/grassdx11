@@ -453,7 +453,7 @@ bool SnowParticleSystem::UpdateBuffers(ID3D11DeviceContext* deviceContext)
 	}
 	m_threads.clear();*/
 	//CalculateInstancePositions(0, m_currentParticleCount);
-	m_pParticleShader->CalculateInstancePositions(deviceContext);
+	m_pParticleShader->CalculateInstancePositions(deviceContext, m_pAxesFanFlow->GetAxesFanFlowTexture());
 
 	result = deviceContext->Map(m_instanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result))

@@ -7,6 +7,7 @@
 #include "DXUTcamera.h"
 #include "SnowParticleTypes.h"
 #include "GrassFieldManager.h"
+#include "CopterController.h"
 
 using namespace DirectX;
 
@@ -30,17 +31,20 @@ private:
 	{
 		XMFLOAT3 pos;
 		bool active;
+		XMFLOAT3 fanPos;
+		float padding;
 	};
 
 public:
 	ParticleShader();
 	ParticleShader(const ParticleShader&);
 
-	void CalculateInstancePositions(ID3D11DeviceContext* deviceContext);
+	void CalculateInstancePositions(ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView* fanFlowTex);
 
 	~ParticleShader();
 
 	void SetParticleSystem(SnowParticleSystem* system) { m_pParticleSystem = system; }
+	void SetCopterController(CopterController* controller) { m_pCopterController = controller; }
 	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, GrassFieldManager* grassFieldManager);
 	bool Render(ID3D11DeviceContext* deviceContext, SnowParticleSystem* particlesystem, CFirstPersonCamera* camera);
 
@@ -59,6 +63,7 @@ private:
 
 private:
 	SnowParticleSystem* m_pParticleSystem;
+	CopterController* m_pCopterController;
 	GrassFieldManager* m_pGrassFieldManager;
 	ID3D11Texture2D* m_pSnowCoverMap;
 	ID3DX11EffectShaderResourceVariable* m_pSnowCoverMapESRV;

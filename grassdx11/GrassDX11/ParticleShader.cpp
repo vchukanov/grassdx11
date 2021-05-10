@@ -374,7 +374,7 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 	return true;
 }
 
-void ParticleShader::CalculateInstancePositions(ID3D11DeviceContext* deviceContext)
+void ParticleShader::CalculateInstancePositions(ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView* fanFlowTex)
 {
 	m_pParticleSystem->FillConstantDataBuffer(deviceContext, mInputBuffer);
 	//deviceContext->CopyResource(mRWBuffer, mRWInputBuffer);
@@ -383,6 +383,7 @@ void ParticleShader::CalculateInstancePositions(ID3D11DeviceContext* deviceConte
 	deviceContext->CSSetShader(mComputeShader, nullptr, 0);
 
 	deviceContext->CSSetShaderResources(0, 1, &mInputView);
+	deviceContext->CSSetShaderResources(1, 1, &fanFlowTex);
 	deviceContext->CSSetUnorderedAccessViews(0, 1, &mRWUAV, 0);
 
 
@@ -392,6 +393,7 @@ void ParticleShader::CalculateInstancePositions(ID3D11DeviceContext* deviceConte
 	// Unbind the input textures from the CS for good housekeeping
 	ID3D11ShaderResourceView* nullSRV[] = { NULL };
 	deviceContext->CSSetShaderResources(0, 1, nullSRV);
+	deviceContext->CSSetShaderResources(1, 1, nullSRV);
 
 	// Unbind output from compute shader ( we are going to use this output as an input in the next pass, 
 	// and a resource cannot be both an output and input at the same time
@@ -469,6 +471,7 @@ bool ParticleShader::SetShaderParameters(ID3D11DeviceContext* deviceContext
 	TornadoBufferType* dataPtr3 = (TornadoBufferType*)mappedResource.pData;
 	dataPtr3->pos = tornadoPos;
 	dataPtr3->active = tornadoActive;
+	dataPtr3->fanPos = m_pCopterController->GetPos();
 	deviceContext->Unmap(m_tornadoBuffer, 0);
 
 	deviceContext->GSSetConstantBuffers(0, 1, &m_matrixBuffer);

@@ -275,7 +275,6 @@
     <Text Include="Shaders\SnowParticleVS.hlsl">
       <Filter>Shaders</Filter>
     </Text>
-    <Text Include="SnowParticleCS.hlsl" />
     <Text Include="Shaders\SnowParticleCS.hlsl">
       <Filter>Shaders</Filter>
     </Text>

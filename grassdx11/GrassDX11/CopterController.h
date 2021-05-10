@@ -57,6 +57,8 @@ public:
 
    void ToggleFixCam (void) { fixCam = !fixCam; }
 
+   XMFLOAT3 GetPos() { return XMFLOAT3(getx(position), gety(position), getz(position)); }
+
 private:
    void UpdateInput (void);
 

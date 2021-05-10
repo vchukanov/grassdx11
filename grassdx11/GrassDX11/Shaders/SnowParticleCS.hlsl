@@ -8,10 +8,21 @@
 //	float4 deltaAndPadding;
 //}
 #include "Noises.hlsli"
+
+SamplerState g_samLinear
+{
+	Filter = MIN_MAG_LINEAR_MIP_POINT;
+	AddressU = Wrap;
+	AddressV = Wrap;
+	MIPLODBIAS = -1.0;
+};
+
 cbuffer TornadoBuffer : register(b0)
 {
 	float3 tornadoPos;
 	bool tornadoActive;
+	float3 copterPos;
+	float padding;
 };
 
 struct ParticleType
@@ -32,6 +43,7 @@ struct InstanceType
 
 StructuredBuffer<ParticleType>	inputConstantParticleData	: register(t0);
 RWStructuredBuffer<InstanceType>		outputParticleData			: register(u0);
+Texture2D g_txAxesFanFlow : register(t1);
 
 float GetRadiusOnHeight(float height) {
 	//return 15.f;
@@ -81,7 +93,7 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	{
 		inTornado = true;
 		yVelocity = -0.25f;
-		//Движение по касательным
+		//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		/*float k2 = (tornadoPos.x - curPos.x) / (curPos.z - tornadoPos.z);
 		float b2 = curPos.z - k2 * curPos.x;
 
@@ -119,12 +131,29 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	else {
 		inTornado = false;
 
+		float3 dist;
+		dist = abs(curPos - copterPos);
+		dist = dist / 400.f; //normalize
+
+		//Axes fan flow 
+		float2 texCoordForFlow = ((curPos.xz / 400.f) * 0.5 + 0.5);
+		float3 axesFlowSpeed = float3(0.0, 0.0, 0.0);
+
+		for (int i = 0; i < 30; i++) {
+			axesFlowSpeed += 1.0 / (4.5 * (30 - i)) * g_txAxesFanFlow.SampleLevel(g_samLinear, float3(texCoordForFlow, i), 0).rgb;
+		}
+
 		float angle = turbulence(float4(curPos.x / 50, curPos.z / 50, curPos.y, age), 2) * PI * 2;
 		float length = turbulence(float4(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, age), 1);
 		length = length * 2.f;
 
+		/*x = curPos.x + 100.f * (1 - dist.x) * axesFlowSpeed.x;
+		z = curPos.z + 100.f * (1 - dist.z) * axesFlowSpeed.z;
+		y = curPos.y;*/
+
 		x = curPos.x + length * cos(angle);
 		z = curPos.z + length * sin(angle);
+
 
 		y = yAmplitude * sin(age * 0.5f * offset);
 		y += yAmplitude * sin(age * 0.66f * offset);
