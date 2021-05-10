@@ -490,7 +490,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 
    //g_ParticleSystem->SetParticlesPerSecond(g_totalParticles / 120);
    g_ParticleSystem->SetParticlesPerSecond(g_totalParticles / 80);
-   g_ParticleSystem->SetAxesFanFlow(g_pGrassField->GetFlowManager()->m_pAxesFanFlow);
+   g_ParticleSystem->SetFlowManager(g_pGrassField->GetFlowManager());
 
    // Create the particle shader object.
    g_ParticleShader = new ParticleShader();

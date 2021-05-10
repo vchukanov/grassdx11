@@ -3,6 +3,7 @@
 #include <thread>
 #include "SnowParticleTypes.h"
 #include "AxesFanFlow.h"
+#include "FlowManager.h"
 
 using namespace DirectX;
 
@@ -25,7 +26,7 @@ public:
 
 	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, const WCHAR*, int);
 	void SetParticleShader(ParticleShader* ps) { m_pParticleShader = ps; }
-	void SetAxesFanFlow(AxesFanFlow* fanFlow) { m_pAxesFanFlow = fanFlow; }
+	void SetFlowManager(FlowManager* manager) { m_pFlowManager = manager; }
 	bool Frame(float, ID3D11DeviceContext*);
 	void Render(ID3D11DeviceContext*);
 
@@ -71,7 +72,7 @@ private:
 	void RenderBuffers(ID3D11DeviceContext*);
 private:
 	ParticleShader* m_pParticleShader;
-	AxesFanFlow* m_pAxesFanFlow;
+	FlowManager* m_pFlowManager;
 	XMFLOAT3 m_cloudPos{ 0.f, 80.f, 0.f };
 	XMFLOAT3 m_tornadoPos{ 0.f, 0.f, 0.f };;
 	XMFLOAT3 m_deltaTorandoPos{ 0.f, 0.f, 0.f };;
