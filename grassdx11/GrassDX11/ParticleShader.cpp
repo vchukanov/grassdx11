@@ -74,7 +74,7 @@ bool ParticleShader::Render(ID3D11DeviceContext* direct, SnowParticleSystem* par
 	if (!result)
 		return false;
 
-	if (++m_frame % 60 == 0) {
+	if (++m_frame % 10 == 0) {
 		SetSnowCoverTexture(direct);
 	}
 

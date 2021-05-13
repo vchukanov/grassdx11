@@ -303,8 +303,8 @@ void SnowParticleSystem::UpdateParticles(float delta)
 				}
 					
 				float value = m_snowCover[indY][indX];
-				if (value < 0.5f) {
-					float addValue = 0.005f * 0.1f / (value > 0.1f ? value : 0.1f);
+				if (value < 0.30f) {
+					float addValue = 0.015f * 0.06f / (value > 0.06f ? value : 0.06f);
 					m_snowCover[indY][indX] += addValue;
 				}
 				
