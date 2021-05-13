@@ -292,8 +292,8 @@ void SnowParticleSystem::UpdateParticles(float delta)
 				//find least way
 				float least = 1.f;
 				int indY = 0, indX = 0;
-				for (int j = intCoord.y - 1 < 0 ? 0 : intCoord.y - 1; j < (intCoord.y + 1 > 255 ? 255 : intCoord.y + 1); ++j) {
-					for (int k = intCoord.x - 1 < 0 ? 0 : intCoord.x - 1; k < (intCoord.x + 1 > 255 ? 255 : intCoord.x + 1); ++k) {
+				for (int j = intCoord.y - 1 < 0 ? 0 : intCoord.y - 1; j <= (intCoord.y + 1 > 255 ? 255 : intCoord.y + 1); ++j) {
+					for (int k = intCoord.x - 1 < 0 ? 0 : intCoord.x - 1; k <= (intCoord.x + 1 > 255 ? 255 : intCoord.x + 1); ++k) {
 						if (m_snowCover[j][k] < least) {
 							least = m_snowCover[j][k];
 							indY = j;
@@ -302,58 +302,16 @@ void SnowParticleSystem::UpdateParticles(float delta)
 					}
 				}
 					
-				/*if (m_snowCover[intCoord.y - 1 < 0 ? 0 : intCoord.y - 1][intCoord.x - 1 < 0 ? 0 : intCoord.x - 1] < least) {
-					least = m_snowCover[intCoord.y - 1 < 0 ? 0 : intCoord.y - 1][intCoord.x - 1 < 0 ? 0 : intCoord.x - 1];
-					indY = intCoord.y - 1 < 0 ? 0 : intCoord.y - 1;
-					indX = intCoord.x - 1 < 0 ? 0 : intCoord.x - 1;
-				}
-				if (m_snowCover[intCoord.y - 1 < 0 ? 0 : intCoord.y - 1][intCoord.x] < least) {
-					least = m_snowCover[intCoord.y - 1 < 0 ? 0 : intCoord.y - 1][intCoord.x];
-					indY = intCoord.y - 1 < 0 ? 0 : intCoord.y - 1;
-					indX = intCoord.x;
-				}
-				if (m_snowCover[intCoord.y - 1 < 0 ? 0 : intCoord.y - 1][intCoord.x + 1 > 255 ? 255 : intCoord.x + 1] < least) {
-					least = m_snowCover[intCoord.y - 1 < 0 ? 0 : intCoord.y - 1][intCoord.x + 1 > 255 ? 255 : intCoord.x + 1];
-					indY = intCoord.y - 1 < 0 ? 0 : intCoord.y - 1;
-					indX = intCoord.x + 1 > 255 ? 255 : intCoord.x + 1;
-				}
-				if (m_snowCover[intCoord.y][intCoord.x + 1 > 255 ? 255 : intCoord.x + 1] < least) {
-					least = m_snowCover[intCoord.y][intCoord.x + 1 > 255 ? 255 : intCoord.x + 1];
-					indY = intCoord.y;
-					indX = intCoord.x + 1 > 255 ? 255 : intCoord.x + 1;
-				}
-				if (m_snowCover[intCoord.y + 1 > 255 ? 255 : intCoord.y + 1][intCoord.x + 1 > 255 ? 255 : intCoord.x + 1] < least) {
-					least = m_snowCover[intCoord.y + 1 > 255 ? 255 : intCoord.y + 1][intCoord.x + 1 > 255 ? 255 : intCoord.x + 1];
-					indY = intCoord.y + 1 > 255 ? 255 : intCoord.y + 1;
-					indX = intCoord.x + 1 > 255 ? 255 : intCoord.x + 1;
-				}
-				if (m_snowCover[intCoord.y + 1 > 255 ? 255 : intCoord.y + 1][intCoord.x] < least) {
-					least = m_snowCover[intCoord.y + 1 > 255 ? 255 : intCoord.y + 1][intCoord.x];
-					indY = intCoord.y + 1 > 255 ? 255 : intCoord.y + 1;
-					indX = intCoord.x;
-				}
-				if (m_snowCover[intCoord.y + 1 > 255 ? 255 : intCoord.y + 1][intCoord.x - 1 < 0 ? 0 : intCoord.x - 1] < least) {
-					least = m_snowCover[intCoord.y + 1 > 255 ? 255 : intCoord.y + 1][intCoord.x - 1 < 0 ? 0 : intCoord.x - 1];
-					indY = intCoord.y + 1 > 255 ? 255 : intCoord.y + 1;
-					indX = intCoord.x - 1 < 0 ? 0 : intCoord.x - 1;
-				}
-				if (m_snowCover[intCoord.y][intCoord.x - 1 < 0 ? 0 : intCoord.x - 1] < least) {
-					least = m_snowCover[intCoord.y][intCoord.x - 1 < 0 ? 0 : intCoord.x - 1];
-					indY = intCoord.y;
-					indX = intCoord.x - 1 < 0 ? 0 : intCoord.x - 1;
-				}
-				if (m_snowCover[intCoord.y][intCoord.x] < least) {
-					least = m_snowCover[intCoord.y][intCoord.x];
-					indY = intCoord.y;
-					indX = intCoord.x;
-				}*/
 				float value = m_snowCover[indY][indX];
-				if (value < 0.6f) {
-					float addValue = 0.002f * 0.001f / (value > 0.001f ? value : 0.001f);
+				if (value < 0.5f) {
+					float addValue = 0.005f * 0.1f / (value > 0.1f ? value : 0.1f);
 					m_snowCover[indY][indX] += addValue;
 				}
 				
 			}
+
+			++_reachGround;
+			m_particlePerSecond = floorf((_reachGround * m_particlePerSecond + m_particleList[i].age) / _reachGround);
 
 			std::swap(m_particleList[i], m_particleList[m_currentParticleCount - 1]);
 			std::swap(m_instance[i], m_instance[m_currentParticleCount - 1]);

@@ -96,6 +96,7 @@ private:
 	int m_vertexCount, m_indexCount, m_instanceCount;
 	InstanceType* m_instance;
 	ID3D11Buffer* m_vertexBuffer, * m_indexBuffer, * m_instanceBuffer;
+	long _reachGround = 1;
 	float** m_snowCover = nullptr;
 	bool isSnowCoverActive = false;
 	bool isCloudMovementActive = false;
