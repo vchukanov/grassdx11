@@ -497,7 +497,7 @@ void ParticleShader::SetSnowCoverTexture(ID3D11DeviceContext* deviceContext)
 		for (UINT col = 0; col < 256; col++)
 		{
 			UINT colStart = col * 4;
-			pTexels[rowStart + colStart] += snowCover[row][col];
+			pTexels[rowStart + colStart] = snowCover[row][col];
 		}
 	}
 	deviceContext->Unmap(m_pSnowCoverMap, D3D11CalcSubresource(0, 0, 1));
