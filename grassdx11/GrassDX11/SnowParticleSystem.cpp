@@ -370,14 +370,14 @@ void SnowParticleSystem::UpdateCloudPosition()
 		}
 	}
 
-	/*if (!tornadoActive) {*/
-		m_tornadoPos.x = meanX / countParticle;
-		m_tornadoPos.z = meanZ / countParticle;
-	//}
-
 	if (isCloudMovementActive) {
-		m_cloudPos.x = m_tornadoPos.x;
-		m_cloudPos.z = m_tornadoPos.z;
+		m_cloudPos.x = meanX / countParticle;
+		m_cloudPos.z = meanZ / countParticle;
+	}
+
+	if (!_tornadoActive || !_manualTornadoContral) {
+		m_tornadoPos.x = m_cloudPos.x;
+		m_tornadoPos.z = m_cloudPos.z;
 	}
 }
 

@@ -47,12 +47,12 @@ public:
 
 	/*TORNADO*/
 	XMFLOAT3 GetTornadoPos() { return m_tornadoPos; }
-	void ToggleTornado() { tornadoActive = !tornadoActive; }
-	bool IsTornadoActive() { return tornadoActive; }
-	void MoveTornadoForward() { m_tornadoPos.z += 1.1f; m_deltaTorandoPos.z += 1.1f; }
-	void MoveTornadoBack() { m_tornadoPos.z -= 1.1f; m_deltaTorandoPos.z -= 1.1f;}
-	void MoveTornadoLeft() { m_tornadoPos.x -= 1.1f; m_deltaTorandoPos.x -= 1.1f;}
-	void MoveTornadoRight() { m_tornadoPos.x += 1.1f; m_deltaTorandoPos.x += 1.1f;}
+	void ToggleTornado() { _tornadoActive = !_tornadoActive; }
+	bool IsTornadoActive() { return _tornadoActive; }
+	void MoveTornadoForward() { m_tornadoPos.z += 0.2f; m_deltaTorandoPos.z += 0.2f; _manualTornadoContral = true; }
+	void MoveTornadoBack() { m_tornadoPos.z -= 0.2f; m_deltaTorandoPos.z -= 0.2f; _manualTornadoContral = true;}
+	void MoveTornadoLeft() { m_tornadoPos.x -= 0.2f; m_deltaTorandoPos.x -= 0.2f; _manualTornadoContral = true;}
+	void MoveTornadoRight() { m_tornadoPos.x += 0.2f; m_deltaTorandoPos.x += 0.2f; _manualTornadoContral = true;}
 private:
 	// Initialize
 	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, const WCHAR*);
@@ -74,9 +74,10 @@ private:
 	ParticleShader* m_pParticleShader;
 	//FlowManager* m_pFlowManager;
 	XMFLOAT3 m_cloudPos{ 0.f, 80.f, 0.f };
-	XMFLOAT3 m_tornadoPos{ 0.f, 0.f, 0.f };;
+	XMFLOAT3 m_tornadoPos{ 0.f, 0.f, 0.f };
 	XMFLOAT3 m_deltaTorandoPos{ 0.f, 0.f, 0.f };;
-	bool tornadoActive = false;
+	bool _tornadoActive = false;
+	bool _manualTornadoContral = false;
 	float m_particleDeviationX, m_particleDeviationY, m_particleDeviationZ;
 	float m_particleVeclocity, m_particleVelocityVariation;
 	float m_particleSize, m_particlePerSecond;
