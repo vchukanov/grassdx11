@@ -22,7 +22,7 @@ cbuffer TornadoBuffer : register(b0)
 	float3 tornadoPos;
 	bool tornadoActive;
 	float3 copterPos;
-	float padding;
+	float dt;
 };
 
 struct ParticleType
@@ -61,25 +61,18 @@ bool IsInTornado(float radius, float3 particlePos) {
 //void CS_main(uint3 groupID : SV_GroupID, uint groupIndex : SV_GroupIndex)
 void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 {
-	///==========================================================
-	//float  timeStepFactor = 0.03f; // LAPTOP
-	//float  timeStepFactor	= 0.003f;
-	//float  timeStep = deltaAndPadding.x * timeStepFactor;
-	//float  acceleration = -9.82f;
-	//float  verticalLimit = -140.0f;
-	//float3 worldOrigo = float3(0.0f, 0.0f, 0.0f);
-	///==========================================================
-
 	// Calculate new position
 	//uint index = groupID.x * 1024 + groupID.y * 16 * 1024 + groupIndex;
 	uint index = dispatchThreadID.x;
 	float4 color;
 	bool inTornado;
-	float x, y, z, yAmplitude = -0.5f, yVelocity = -5.5f;
+	float x, y, z, yAmplitude = -0.5f, yVelocity = -10.5f;
 	float age = inputConstantParticleData[index].age;
 	float offset = inputConstantParticleData[index].offset;
 	float3 initialPos = inputConstantParticleData[index].initPos;
 	float3 curPos = inputConstantParticleData[index].curPos;
+
+	float speedFactor = 60.f;
 
 	//x = yAmplitude * sin(age * 1.f * offset);
 	//x += yAmplitude * sin(age * 0.5f * offset);
@@ -92,7 +85,7 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	if (tornadoActive && IsInTornado(GetRadiusOnHeight(curPos.y), curPos))
 	{
 		inTornado = true;
-		yVelocity = -0.25f;
+		yVelocity = -0.4f;
 		//�������� �� �����������
 		/*float k2 = (tornadoPos.x - curPos.x) / (curPos.z - tornadoPos.z);
 		float b2 = curPos.z - k2 * curPos.x;
@@ -108,13 +101,14 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 			x = (-_b - sqrt(D)) / _a;
 		z = k2 * x + b2;*/
 		
-		float step = 1.5f;
+		float radV = 65.f;
+
 		float radius = sqrt((curPos.z - tornadoPos.z) * (curPos.z - tornadoPos.z) + (curPos.x - tornadoPos.x) * (curPos.x - tornadoPos.x) + 0.00000001f);
-		radius = radius + 0.075f * radius * snoise(float4(curPos, age));
+		radius = radius + 0.06f * radius * snoise(float4(curPos, age)); 
 		float alpha1 = atan((curPos.z - tornadoPos.z) / (curPos.x - tornadoPos.x + 0.00000001f));
 		if (curPos.x < tornadoPos.x)
 			alpha1 = alpha1 + PI;
-		float dalpha = acos(1 - step * step / 2 / radius / radius);
+		float dalpha = acos(1 - radV * radV * dt * dt / 2 / radius / radius);
 		float alpha2 = alpha1 + dalpha;
 
 		x = tornadoPos.x + radius * cos(alpha2);
@@ -136,23 +130,23 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 		dist = dist / 400.f; //normalize
 
 		//Axes fan flow 
-		float2 texCoordForFlow = ((curPos.xz / 400.f) * 0.5 + 0.5);
-		float3 axesFlowSpeed = float3(0.0, 0.0, 0.0);
+		//float2 texCoordForFlow = ((curPos.xz / 400.f) * 0.5 + 0.5);
+		//float3 axesFlowSpeed = float3(0.0, 0.0, 0.0);
 
-		for (int i = 0; i < 30; i++) {
-			axesFlowSpeed += 1.0 / (4.5 * (30 - i)) * g_txAxesFanFlow.SampleLevel(g_samLinear, float3(texCoordForFlow, i), 0).rgb;
-		}
+		//for (int i = 0; i < 30; i++) {
+		//	axesFlowSpeed += 1.0 / (4.5 * (30 - i)) * g_txAxesFanFlow.SampleLevel(g_samLinear, float3(texCoordForFlow, i), 0).rgb;
+		//}
+
+		//x = curPos.x + 5.f * (1 - dist.x) * axesFlowSpeed.x;
+		//z = curPos.z + 5.f * (1 - dist.z) * axesFlowSpeed.z;
+		//y = curPos.y;
 
 		float angle = turbulence(float4(curPos.x / 50, curPos.z / 50, curPos.y, age), 2) * PI * 2;
-		float length = turbulence(float4(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, age), 1);
-		length = length * 2.f;
+		float speed = turbulence(float4(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, age), 1);
+		speed = speed * dt * speedFactor;
 
-		/*x = curPos.x + 100.f * (1 - dist.x) * axesFlowSpeed.x;
-		z = curPos.z + 100.f * (1 - dist.z) * axesFlowSpeed.z;
-		y = curPos.y;*/
-
-		x = curPos.x + length * cos(angle);
-		z = curPos.z + length * sin(angle);
+		x = curPos.x + speed * cos(angle);
+		z = curPos.z + speed * sin(angle);
 
 
 		y = yAmplitude * sin(age * 0.5f * offset);

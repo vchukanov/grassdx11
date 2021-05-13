@@ -754,7 +754,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
    g_ParticleSystem->Frame(fElapsedTime, pd3dImmediateContext);
    TurnOnAlphaBlending();
    g_ParticleSystem->Render(pd3dImmediateContext);
-   g_ParticleShader->Render(pd3dImmediateContext, g_ParticleSystem, g_Camera);
+   g_ParticleShader->Render(pd3dImmediateContext, g_ParticleSystem, g_Camera, fElapsedTime);
    TurnOffAlphaBlending();
 
    XMMATRIX mViewProj;

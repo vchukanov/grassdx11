@@ -27,12 +27,12 @@ private:
 		float padding;
 	};
 	
-	struct TornadoBufferType
+	struct CSConstantBufferType
 	{
-		XMFLOAT3 pos;
-		bool active;
-		XMFLOAT3 fanPos;
-		float padding;
+		XMFLOAT3 tornadoPos;
+		bool tornadoActive;
+		XMFLOAT3 copterPos;
+		float dt;
 	};
 
 public:
@@ -46,7 +46,7 @@ public:
 	void SetParticleSystem(SnowParticleSystem* system) { m_pParticleSystem = system; }
 	void SetCopterController(CopterController* controller) { m_pCopterController = controller; }
 	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, GrassFieldManager* grassFieldManager);
-	bool Render(ID3D11DeviceContext* deviceContext, SnowParticleSystem* particlesystem, CFirstPersonCamera* camera);
+	bool Render(ID3D11DeviceContext* deviceContext, SnowParticleSystem* particlesystem, CFirstPersonCamera* camera, float dt);
 
 private:
 	bool InitializeShader(ID3D11Device* device, ID3D11DeviceContext* deviceContext, const WCHAR* vsFilename, const WCHAR* psFilename, const WCHAR* gsFilename, const WCHAR* csFilename);
@@ -57,7 +57,8 @@ private:
 		, XMMATRIX projectionMatrix
 		, ID3D11ShaderResourceView* texture
 		, bool tornadoActive
-		, XMFLOAT3 tornadoPos);
+		, XMFLOAT3 tornadoPos
+		, float dt);
 	void SetSnowCoverTexture(ID3D11DeviceContext* deviceContext);
 	void RenderShader(ID3D11DeviceContext* deviceContext, int vertexCount, int instanceCount, int indexCount);
 
@@ -74,7 +75,7 @@ private:
 	ID3D11InputLayout* m_layout;
 	ID3D11Buffer* m_matrixBuffer;
 	ID3D11Buffer* m_cameraBuffer;
-	ID3D11Buffer* m_tornadoBuffer;
+	ID3D11Buffer* m_CSConstantBuffer;
 	ID3D11SamplerState* m_sampleState;	
 	UINT m_frame = 0;
 

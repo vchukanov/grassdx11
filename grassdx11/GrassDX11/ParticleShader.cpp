@@ -8,7 +8,7 @@ ParticleShader::ParticleShader()
 	m_layout = nullptr;
 	m_matrixBuffer = nullptr;
 	m_cameraBuffer = nullptr;
-	m_tornadoBuffer = nullptr;
+	m_CSConstantBuffer = nullptr;
 	m_sampleState = nullptr;
 
 	mComputeShader = nullptr;
@@ -33,7 +33,7 @@ ParticleShader::~ParticleShader()
 	SAFE_RELEASE(m_sampleState);
 	SAFE_RELEASE(m_matrixBuffer);
 	SAFE_RELEASE(m_cameraBuffer);
-	SAFE_RELEASE(m_tornadoBuffer);
+	SAFE_RELEASE(m_CSConstantBuffer);
 	SAFE_RELEASE(m_layout);
 	SAFE_RELEASE(m_pixelShader);
 	SAFE_RELEASE(m_vertexShader);
@@ -65,12 +65,12 @@ bool ParticleShader::Initialize(ID3D11Device* device, ID3D11DeviceContext* devic
 	return true;
 }
 
-bool ParticleShader::Render(ID3D11DeviceContext* direct, SnowParticleSystem* particlesystem, CFirstPersonCamera* camera)
+bool ParticleShader::Render(ID3D11DeviceContext* direct, SnowParticleSystem* particlesystem, CFirstPersonCamera* camera, float dt)
 {
 	bool result;
 
 	result = SetShaderParameters(direct, camera, XMMatrixIdentity(), camera->GetViewMatrix(), camera->GetProjMatrix(), 
-		particlesystem->GetTexture(), particlesystem->IsTornadoActive(), particlesystem->GetTornadoPos());
+		particlesystem->GetTexture(), particlesystem->IsTornadoActive(), particlesystem->GetTornadoPos(), dt);
 	if (!result)
 		return false;
 
@@ -95,7 +95,7 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 	unsigned int numElements;
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	D3D11_BUFFER_DESC cameraBufferDesc;
-	D3D11_BUFFER_DESC tornadoBufferDesc;
+	D3D11_BUFFER_DESC CSConstantBufferDesc;
 	D3D11_SAMPLER_DESC samplerDesc;
 
 	// Compile Vertex Shader
@@ -217,14 +217,14 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 	if (FAILED(result))
 		return false;
 
-	tornadoBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	tornadoBufferDesc.ByteWidth = sizeof(TornadoBufferType);
-	tornadoBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	tornadoBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	tornadoBufferDesc.MiscFlags = 0;
-	tornadoBufferDesc.StructureByteStride = 0;
+	CSConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	CSConstantBufferDesc.ByteWidth = sizeof(CSConstantBufferType);
+	CSConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	CSConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	CSConstantBufferDesc.MiscFlags = 0;
+	CSConstantBufferDesc.StructureByteStride = 0;
 
-	result = device->CreateBuffer(&tornadoBufferDesc, NULL, &m_tornadoBuffer);
+	result = device->CreateBuffer(&CSConstantBufferDesc, NULL, &m_CSConstantBuffer);
 	if (FAILED(result))
 		return false;
 
@@ -432,7 +432,8 @@ bool ParticleShader::SetShaderParameters(ID3D11DeviceContext* deviceContext
 	, XMMATRIX projectionMatrix
 	, ID3D11ShaderResourceView* texture
 	, bool tornadoActive
-	, XMFLOAT3 tornadoPos)
+	, XMFLOAT3 tornadoPos
+	, float dt)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -465,18 +466,19 @@ bool ParticleShader::SetShaderParameters(ID3D11DeviceContext* deviceContext
 	deviceContext->Unmap(m_cameraBuffer, 0);
 
 	//Tornado camera buffer
-	result = deviceContext->Map(m_tornadoBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	result = deviceContext->Map(m_CSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result))
 		return false;
-	TornadoBufferType* dataPtr3 = (TornadoBufferType*)mappedResource.pData;
-	dataPtr3->pos = tornadoPos;
-	dataPtr3->active = tornadoActive;
-	dataPtr3->fanPos = m_pCopterController->GetPos();
-	deviceContext->Unmap(m_tornadoBuffer, 0);
+	CSConstantBufferType* dataPtr3 = (CSConstantBufferType*)mappedResource.pData;
+	dataPtr3->tornadoPos = tornadoPos;
+	dataPtr3->tornadoActive = tornadoActive;
+	dataPtr3->copterPos = m_pCopterController->GetPos();
+	dataPtr3->dt = dt;
+	deviceContext->Unmap(m_CSConstantBuffer, 0);
 
 	deviceContext->GSSetConstantBuffers(0, 1, &m_matrixBuffer);
 	deviceContext->GSSetConstantBuffers(1, 1, &m_cameraBuffer);
-	deviceContext->CSSetConstantBuffers(0, 1, &m_tornadoBuffer);
+	deviceContext->CSSetConstantBuffers(0, 1, &m_CSConstantBuffer);
 
 	deviceContext->PSSetShaderResources(0, 1, &texture);
 	deviceContext->PSSetShaderResources(1, 1, &texture);
