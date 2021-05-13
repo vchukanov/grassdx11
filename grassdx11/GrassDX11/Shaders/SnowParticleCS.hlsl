@@ -9,13 +9,13 @@
 //}
 #include "Noises.hlsli"
 
-SamplerState g_samLinear
-{
-	Filter = MIN_MAG_LINEAR_MIP_POINT;
-	AddressU = Wrap;
-	AddressV = Wrap;
-	MIPLODBIAS = -1.0;
-};
+//SamplerState g_samLinear
+//{
+//	Filter = MIN_MAG_LINEAR_MIP_POINT;
+//	AddressU = Wrap;
+//	AddressV = Wrap;
+//	MIPLODBIAS = -1.0;
+//};
 
 cbuffer TornadoBuffer : register(b0)
 {
@@ -43,7 +43,7 @@ struct InstanceType
 
 StructuredBuffer<ParticleType>	inputConstantParticleData	: register(t0);
 RWStructuredBuffer<InstanceType>		outputParticleData			: register(u0);
-Texture2D g_txAxesFanFlow : register(t1);
+//Texture2D g_txAxesFanFlow : register(t1);
 
 float GetRadiusOnHeight(float height) {
 	//return 15.f;

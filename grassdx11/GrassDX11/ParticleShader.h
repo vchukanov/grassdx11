@@ -39,7 +39,7 @@ public:
 	ParticleShader();
 	ParticleShader(const ParticleShader&);
 
-	void CalculateInstancePositions(ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView* fanFlowTex);
+	void CalculateInstancePositions(ID3D11DeviceContext* deviceContext/*, ID3D11ShaderResourceView* fanFlowTex*/);
 
 	~ParticleShader();
 
