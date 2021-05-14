@@ -980,16 +980,16 @@ void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserC
          copterController.ToggleFixCam();
          break;
       case VK_NUMPAD8:
-          g_ParticleSystem->MoveTornadoForward();
-          break;
-      case VK_NUMPAD5:
-          g_ParticleSystem->MoveTornadoBack();
-          break;
-      case VK_NUMPAD6:
           g_ParticleSystem->MoveTornadoRight();
           break;
-      case VK_NUMPAD4:
+      case VK_NUMPAD5:
           g_ParticleSystem->MoveTornadoLeft();
+          break;
+      case VK_NUMPAD6:
+          g_ParticleSystem->MoveTornadoBack();
+          break;
+      case VK_NUMPAD4:
+          g_ParticleSystem->MoveTornadoForward();
           break;
       case VK_NUMPAD9:
           g_ParticleSystem->ToggleTornado();
