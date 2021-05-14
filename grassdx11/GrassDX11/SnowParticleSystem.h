@@ -49,10 +49,10 @@ public:
 	XMFLOAT3 GetTornadoPos() { return m_tornadoPos; }
 	void ToggleTornado() { _tornadoActive = !_tornadoActive; }
 	bool IsTornadoActive() { return _tornadoActive; }
-	void MoveTornadoForward() { m_tornadoPos.z += 0.2f; m_deltaTorandoPos.z += 0.2f; _manualTornadoContral = true; }
-	void MoveTornadoBack() { m_tornadoPos.z -= 0.2f; m_deltaTorandoPos.z -= 0.2f; _manualTornadoContral = true;}
-	void MoveTornadoLeft() { m_tornadoPos.x -= 0.2f; m_deltaTorandoPos.x -= 0.2f; _manualTornadoContral = true;}
-	void MoveTornadoRight() { m_tornadoPos.x += 0.2f; m_deltaTorandoPos.x += 0.2f; _manualTornadoContral = true;}
+	void MoveTornadoForward() { m_tornadoPos.z += 0.5f; m_deltaTorandoPos.z += 0.5f; _manualTornadoContral = true; }
+	void MoveTornadoBack() { m_tornadoPos.z -= 0.5f; m_deltaTorandoPos.z -= 0.5f; _manualTornadoContral = true;}
+	void MoveTornadoLeft() { m_tornadoPos.x -= 0.5f; m_deltaTorandoPos.x -= 0.5f; _manualTornadoContral = true;}
+	void MoveTornadoRight() { m_tornadoPos.x += 0.5f; m_deltaTorandoPos.x += 0.5f; _manualTornadoContral = true;}
 private:
 	// Initialize
 	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, const WCHAR*);

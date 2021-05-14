@@ -99,11 +99,11 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	if (tornadoActive && IsInTornado(GetRadiusOnHeight(curPos.y), curPos))
 	{
 		inTornado = true;
-		yVelocity = -0.4f;		
+		yVelocity = -0.6f;		
 		float radV = 65.f;
 
 		float radius = sqrt((curPos.z - tornadoPos.z) * (curPos.z - tornadoPos.z) + (curPos.x - tornadoPos.x) * (curPos.x - tornadoPos.x) + 0.00000001f);
-		radius = radius + 0.06f * radius * snoise(float4(curPos, age)); 
+		radius = radius + 0.05f * radius * snoise(float4(curPos, age)); 
 		float alpha1 = atan((curPos.z - tornadoPos.z) / (curPos.x - tornadoPos.x + 0.00000001f));
 		if (curPos.x < tornadoPos.x)
 			alpha1 = alpha1 + PI;
@@ -112,14 +112,13 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 
 		x = tornadoPos.x + radius * cos(alpha2) + fanVx * dt;
 		z = tornadoPos.z + radius * sin(alpha2) + fanVz * dt;
-		//y = curPos.y;
-		y = yAmplitude * sin(age * 0.5f * offset);
-		y += yAmplitude * sin(age * 0.66f * offset);
-		y += age * yVelocity + initialPos.y + fanVy * dt;
+
+		y = curPos.y;
+		y += dt * yVelocity + fanVy * dt;
 		/*if (y < 0)
 			y = 0.1f;*/
 
-		color = float4(0.6f, 0.6f, 0.6f, 1);
+		color = float4(0.5f, 0.5f, 0.5f, 1);
 	}
 	else {
 		inTornado = false;
