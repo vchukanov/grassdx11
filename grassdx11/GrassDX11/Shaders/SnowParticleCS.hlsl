@@ -66,14 +66,14 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	uint index = dispatchThreadID.x;
 	float4 color;
 	bool inTornado;
-	float copterFieldRadius = 30.f;
+	float copterFieldRadius = 25.f;
 	float x, y, z, yAmplitude = -0.5f, yVelocity = -10.5f;
 	float age = inputConstantParticleData[index].age;
 	float offset = inputConstantParticleData[index].offset;
 	float3 initialPos = inputConstantParticleData[index].initPos;
 	float3 curPos = inputConstantParticleData[index].curPos;
 
-	float speedFactor = 60.f;
+	float windScaleFactor = 60.f;
 
 	//x = yAmplitude * sin(age * 1.f * offset);
 	//x += yAmplitude * sin(age * 0.5f * offset);
@@ -85,18 +85,15 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 
 	float3 vec;
 	vec = curPos - copterPos;
-	float len = vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
+	float len = sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 
-	float3 copterVec = { 0.f,0.f,0.f };
-	if (len <= copterFieldRadius * copterFieldRadius) {
-		float Vx, Vy, Vz;
-		Vx = 10.f / vec.x * vec.x;
-		Vy = 3.f / vec.y * vec.y;
-		Vz = 10.f / vec.z * vec.z;
+	float fanVx = 0.f, fanVy = 0.f, fanVz = 0.f;
+	float fanScaleFactor = 100.f;
+	if (len <= copterFieldRadius + copterFieldRadius * 0.1f * snoise(float4(curPos, age))) {
+		fanVx = fanScaleFactor * vec.x / len;
+		fanVy = fanScaleFactor * vec.y / len;
+		fanVz = fanScaleFactor * vec.z / len;
 
-		copterVec.x = curPos.x + Vx * dt * vec.x;
-		copterVec.y = curPos.y + Vy * dt * vec.y;
-		copterVec.z = curPos.z + Vz * dt * vec.z;
 		//vec = vec / 400.f; //normalize
 	}
 	if (tornadoActive && IsInTornado(GetRadiusOnHeight(curPos.y), curPos))
@@ -113,12 +110,12 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 		float dalpha = acos(1 - radV * radV * dt * dt / 2 / radius / radius);
 		float alpha2 = alpha1 + dalpha;
 
-		x = tornadoPos.x + radius * cos(alpha2) + copterVec.x;
-		z = tornadoPos.z + radius * sin(alpha2) + copterVec.z;
+		x = tornadoPos.x + radius * cos(alpha2) + fanVx * dt;
+		z = tornadoPos.z + radius * sin(alpha2) + fanVz * dt;
 		//y = curPos.y;
 		y = yAmplitude * sin(age * 0.5f * offset);
 		y += yAmplitude * sin(age * 0.66f * offset);
-		y += age * yVelocity + initialPos.y + copterVec.y;
+		y += age * yVelocity + initialPos.y + fanVy * dt;
 		/*if (y < 0)
 			y = 0.1f;*/
 
@@ -128,16 +125,16 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 		inTornado = false;
 
 		float angle = turbulence(float4(curPos.x / 50, curPos.z / 50, curPos.y, age), 2) * PI * 2;
-		float speed = turbulence(float4(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, age), 1);
-		speed = speed * dt * speedFactor;
+		float value = turbulence(float4(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, age), 1);
+		value = value * windScaleFactor;
 
-		x = curPos.x + speed * cos(angle) + copterVec.x;
-		z = curPos.z + speed * sin(angle) + copterVec.z;
+		x = curPos.x + (value * cos(angle) + fanVx) * dt;
+		z = curPos.z + (value * sin(angle) + fanVz) * dt;
 
 
 		y = yAmplitude * sin(age * 0.5f * offset);
 		y += yAmplitude * sin(age * 0.66f * offset);
-		y += age * yVelocity + initialPos.y + copterVec.y;
+		y += age * yVelocity + initialPos.y + fanVy * dt;
 		color = float4(1, 1, 1, 1);
 		//color = float4(0, 0, 0, 0);
 	}
