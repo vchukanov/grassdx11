@@ -66,7 +66,7 @@ void CopterController::UpdateCamera (void)
 
 void CopterController::UpdateInput (void)
 {
-   const float angleStep = 0.1;
+   const float angleStep = 0.04f;
 
    if (forward == FORWARD) {
       pitch -= angleStep;
@@ -93,10 +93,10 @@ void CopterController::UpdateInput (void)
    }
 
    if (up == UP) {
-      torque += 2;
+      torque += 0.4f;
    }
 
    if (down == DOWN) {
-      torque -= 2;
+       torque -= 0.4f;
    }
 }
