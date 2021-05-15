@@ -123,7 +123,7 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	else {
 		inTornado = false;
 
-		float angle = turbulence(float4(curPos.x / 50, curPos.z / 50, curPos.y, age), 2) * PI * 2 - PI / 2;
+		float angle = turbulence(float4(curPos.x / 50, curPos.z / 50, curPos.y, age), 2) * PI * 2;
 		float value = turbulence(float4(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, age), 1);
 		value = value * windScaleFactor;
 
