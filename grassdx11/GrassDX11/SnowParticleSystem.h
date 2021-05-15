@@ -43,7 +43,7 @@ public:
 	float** GetSnowCover() { return m_snowCover; }
 	void SetParticlesPerSecond(int value) { m_particlePerSecond = value; }
 	void ToggleSnowCover() { isSnowCoverActive = !isSnowCoverActive; }
-	void ToggleCloudMovement() { isCloudMovementActive = !isCloudMovementActive; }
+	void ToggleCloudMovement();
 
 	/*TORNADO*/
 	XMFLOAT3 GetTornadoPos() { return m_tornadoPos; }
