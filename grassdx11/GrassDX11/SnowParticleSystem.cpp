@@ -446,23 +446,6 @@ void SnowParticleSystem::UpdatePosition(InstanceType* dataView)
 	memcpy(m_instance, dataView, sizeof(InstanceType) * m_instanceCount);
 }
 
-void SnowParticleSystem::ToggleCloudMovement()
-{
-	isCloudMovementActive = !isCloudMovementActive;
-	if (isCloudMovementActive) {
-		UpdateCloudPosition();
-		for (int i = 0; i < m_currentParticleCount; ++i)
-		{
-			if (m_instance[i].inTornado) {
-				m_instance[i].position.x += m_tornadoPos.x;
-				m_instance[i].position.z += m_tornadoPos.z;
-				m_particleList[i].curPos.x += m_tornadoPos.x;
-				m_particleList[i].curPos.z += m_tornadoPos.z;
-			}
-		}
-	}
-}
-
 void SnowParticleSystem::RenderBuffers(ID3D11DeviceContext* deviceContext)
 {
 	unsigned int strides[2];
