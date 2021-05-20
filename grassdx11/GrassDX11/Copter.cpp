@@ -55,7 +55,7 @@ Copter::Copter (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx
    }
    
    copterModel = new ModelLoader;
-   if (!copterModel->Load(0, m_pD3DDevice, m_pD3DDeviceCtx, "resources/Copter/DroneUvMapped.fbx"))
+   if (!copterModel->Load(0, m_pD3DDevice, m_pD3DDeviceCtx, "resources/Copter/quadrocopter.fbx"))
       assert (false);
 }
 
