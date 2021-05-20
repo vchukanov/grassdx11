@@ -37,7 +37,6 @@ cbuffer cUserControlled
     float g_fGrassDiffuse;
     float g_fGrassLodBias;
     float g_fGrassSubScatterGamma;
-    float g_fWindStrength;
     float g_fWindTexTile;
     float g_fMass;
     float g_fHeightScale;
@@ -79,8 +78,7 @@ cbuffer cGrassSubTypes
 //--------------------------------------------------------------------------------------
 Texture2DArray g_txGrassDiffuseArray;
 Texture2DArray g_txTopDiffuseArray;
-Texture2DArray g_txWindTex;
-Texture2DArray g_txAxesFanFlow;
+Texture2DArray g_txAirTex;
 Texture2D      g_txSeatingMap;
 Texture2D      g_txIndexMap;
 Texture2D      g_txNoise;
@@ -645,7 +643,10 @@ float4 InstPSMain( PSIn Input ) : SV_Target
   //  return float4(vC3, vTexel.a);
     float4 color = lerp(float4(vC3, vTexel.a * Input.fDissolve), g_vFogColor, Input.vTexCoord.z);
     
-    color.xyz = color.xyz * fShadowCoef;
+    if (!Input.bIsTop) { // hack
+        color.xyz = color.xyz * fShadowCoef;
+    }
+
     return color;
 }
 
@@ -708,6 +709,13 @@ technique10 RenderGrass
     pass ShadowPhysicsPass
     {
         SetVertexShader( CompileShader( vs_4_0, PhysVSMain() ) );
+        SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
+        SetPixelShader( CompileShader( ps_4_0, ShadowPSMain() ) );
+    }
+
+    pass ShadowAnimPass
+    {
+        SetVertexShader( CompileShader( vs_4_0, AnimVSMain() ) );
         SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
         SetPixelShader( CompileShader( ps_4_0, ShadowPSMain() ) );
     }

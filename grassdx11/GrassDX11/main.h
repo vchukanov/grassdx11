@@ -53,6 +53,7 @@ ID3DX11EffectScalarVariable         *g_pGrassDiffuse = NULL;
 GrassFieldState                      g_GrassInitState;
 GrassFieldManager                   *g_pGrassField;
 Mesh                                *g_pMeshes[MAX_NUM_MESHES];
+int                                  g_fNumOfMeshes = 0;
 
 // Output textures to screen
 DebugWindow                         *g_dbgWin;
@@ -64,6 +65,24 @@ SnowParticleSystem* g_ParticleSystem = nullptr;
 
 
 XMFLOAT3                            g_MeshVels[MAX_NUM_MESHES];
+
+float                               g_fCarLength     = 10.0f;//3.0;
+float                               g_fCarHeight     = 3.f;
+float                               g_fCarFrontWidth = 3.7f;
+
+float                               g_fCarRotVel;
+float                               g_fCarRotAccel;
+const float                         g_fCarRotMaxVel = 0.01f;
+const float                         g_fCarRotMinVel = -0.01f;
+const float                         g_fCarRotForce = 2.5f;
+
+const float                         g_fCarMinVelocity = 0.001f;
+const float                         g_fCarMaxVelocity = 1.50f;
+const float                         g_fCarForce = 0.005f;
+float                               g_fCarVelocity = 0.1f;;
+float                               g_fCarAccel;
+float3                              g_vCarDir = create(0.0f, 0.0f, 1.0f);
+
 
 /* Grass global variables */
 float                               g_fGrassLodBias = 0.0f;//0.02f;//0.35f;//0.1f;
@@ -81,9 +100,8 @@ float                               g_fWindScale = 4.96f;
 
 float                               g_fMaxFlowStrength = 0.0562;
 float                               g_fFanRadius = 20;
-float                               g_fDeltaSlices = 0.005;
 float                               g_fAngleSpeed = 100;
-float                               g_fShift = 0.005;
+float                               g_fCopterScale = 1.0f;
 XMFLOAT3                            g_vDir = XMFLOAT3(0.0f, -1.0f, 0.0f);
 //phys
 
@@ -92,7 +110,7 @@ float                               g_fWindTexSpeed = 2.5f;//3.78f;
 float                               g_fWindTexTile = 4.f;//4.f;//5.2f;
 float                               g_fCameraSpeed = 30.0f;
 float                               g_fTime = 0.0f;
-float                               g_fHeightScale = 40;//120;//0;//40.0f;
+float                               g_fHeightScale = 40;//40;//120;//0;//40.0f;
 float                               g_fQuality = 1.0f;
 XMFLOAT4                            g_vFogColor = XMFLOAT4(0.2f, 0.3f, 0.25f, 1.0f);
 XMFLOAT3                            g_vTerrRGB = XMFLOAT3(0.5f, 0.5f, 0.0f);
@@ -107,8 +125,8 @@ float                               g_fCameraMeshDistMax;
 float                               g_fCameraHeight = 5.0f;
 float                               g_fCameraHeightMax;
 float                               g_fCameraHeightMin;
-XMFLOAT3                            g_vCameraEyeStart(69.79, 20.20, -75.06);
-XMFLOAT3                            g_vCameraAtStart(70.33, 19.97, -75.87);
+XMFLOAT3                            g_vCameraEyeStart(-1.52, 12.73, 46.10);
+XMFLOAT3                            g_vCameraAtStart(-0.24 - 1.52, -0.18+ 12.73, -0.954+ 46.10);
 
 
 ID3D11Texture2D*                    g_pRenderTarget = NULL;
@@ -157,8 +175,8 @@ enum IDC_HUD
 
    IDC_FIX_CAMERA,
 
-   IDC_GRASS_SHIFT_LABEL,
-   IDC_GRASS_SHIFT_SLYDER,
+   IDC_COPTER_SCALE_LABEL,
+   IDC_COPTER_SCALE_SLYDER,
 
    IDC_TERR_RGB_LABEL,
    IDC_TERR_R_SLYDER,
@@ -177,6 +195,8 @@ enum IDC_HUD
    IDC_TOGGLE_RENDERING_GRASS,
    IDC_TOGGLE_RENDERING_DBG_WIN,
    IDC_TOGGLE_DBG_WIN_SLICE,
+   
+   IDC_CAMERA_TYPE,
 
    IDC_SAMPLE_COUNT
 };

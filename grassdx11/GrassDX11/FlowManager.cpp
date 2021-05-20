@@ -9,30 +9,31 @@ FlowManager::FlowManager (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3
    , m_NoiseSRV(a_NoiseSRV)
 {
    m_pAxesFanFlow = new AxesFanFlow(m_pD3DDevice, m_pD3DDeviceCtx, FLOW_TEX_SIZE, FLOW_TEX_SIZE, m_fTerrRadius);
-   m_pAxesFanFlow->SetRingsNumber(16);
+   m_pAxesFanFlow->SetRingsNumber(6);
 }
 
 
 FlowManager::~FlowManager(void)
 {
-   for (auto& fan : fans)
-      SAFE_DELETE(fan.pAxesFan);
-   SAFE_DELETE(m_pAxesFanFlow);
+   if (fans.size() > 0) {
+      SAFE_DELETE(fans[0].pAxesFanFlow);
+      for (auto& fan : fans) {
+         SAFE_DELETE(fan.pAxesFan);
+      }
+   }
 }
 
 
-int FlowManager::CreateAxesFan (const XMMATRIX& initialTransform_)
+int FlowManager::CreateAxesFan (void)
 {
    const float bladeSize = 10.0f;
    const int   bladesNum = 2;
-
  
    AxesFanDesc fan;
    fan.pFlowManager = this;
    fan.pAxesFanFlow = m_pAxesFanFlow;
    fan.pAxesFan = new AxesFan(m_pD3DDevice, m_pD3DDeviceCtx, m_Effect, &fan);
-   XMStoreFloat4x4(&fan.initialTransform, initialTransform_);
-
+   
    fans.push_back(fan);
    return fans.size() - 1;
 }
@@ -57,11 +58,11 @@ void FlowManager::Update (float a_fElapsedTime, float a_fTime)
 }
 
 
-void FlowManager::RenderFans (bool isVelPass)
+void FlowManager::RenderFans (bool isVelPass, bool isBlured)
 {
    for (auto& fan : fans) {
       fan.Setup();
-      fan.pAxesFan->Render(isVelPass);
+      fan.pAxesFan->Render(isVelPass, isBlured);
    }
 }
 
@@ -125,12 +126,14 @@ void AxesFanDesc::UpdateFromTransform (const XMMATRIX& transform)
    tr *= transform;
 
    XMVECTOR scale, pos, quatr;
-   XMMatrixDecompose(&scale, &quatr, &pos, tr);
-   
+   XMMatrixDecompose(&scale, &quatr, &pos, transform);
    XMMATRIX rot = XMMatrixRotationQuaternion(quatr);
-   XMVECTOR down = create(0, -1, 0);
    
-   XMVECTOR dir = XMVector3Transform(down, rot);
+   XMVECTOR down = create(0, -1, 0);
+   XMVECTOR dir = normalize(XMVector3Transform(down, rot));
+
+   XMMatrixDecompose(&scale, &quatr, &pos, tr);
+
    XMStoreFloat3(&direction, dir);
    XMStoreFloat3(&position, pos);
 

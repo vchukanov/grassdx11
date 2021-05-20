@@ -3,6 +3,7 @@
 
 #include "camera.h"
 
+class Copter;
 
 class CopterController {
 public:
@@ -25,7 +26,9 @@ public:
 public:
    CopterController (void);
 
-   void SetupCamera (CFirstPersonCamera *cam_) { cam = cam_; };
+   void InitHeightCtrl (Terrain* const terr, float grassRadius, float heightScale);
+   void SetupCamera    (CFirstPersonCamera *cam_) { cam = cam_; };
+   void SetOwner       (Copter* copter_) { copter = copter_; }
 
    // controls roll (x) and pitch (y)
    void OnForward  (void) { forward = FORWARD; }
@@ -56,6 +59,8 @@ public:
    void UpdateCamera  (void);
 
    void ToggleFixCam (void) { fixCam = !fixCam; }
+   void UnfixCam     (void) { fixCam = false; }
+   void FixCam       (void) { fixCam = true; }
 
    XMFLOAT3 GetPos() { return XMFLOAT3(getx(position), gety(position), getz(position)); }
 
@@ -85,9 +90,13 @@ public:
    float pitch = 0;
    float yaw = 0;
 
-   bool fixCam = true;
+   bool fixCam = false;
 
 public:
    float4x4            transform;
    CFirstPersonCamera *cam;
+   Terrain*            terrain;
+   float               grassRadius;
+   float               heightScale;
+   Copter*             copter;
 };

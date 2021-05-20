@@ -8,12 +8,12 @@ struct GrassPatchExt
 {
    bool inFirstLod;
 
-    PhysPatch  Patch;
-    XMMATRIX   Transform;
-    float      fLifeTime;
-    bool       bIsDead;
-    UINT       uMeshIndex;
-   bool       isVisible;
+    PhysPatch      Patch;
+    XMFLOAT4X4     Transform;
+    float          fLifeTime;
+    bool           bIsDead;
+    UINT           uMeshIndex;
+    bool           isVisible;
     GrassPatchExt *pNext;
     GrassPatchExt *pPrev;
     GrassPatchExt ( GrassPatch *a_pPatch );
@@ -46,7 +46,10 @@ private:
     ID3DX11EffectPass           *m_pRenderPhysPass;
     ID3DX11EffectPass           *m_pLowGrassAnimPass;
     ID3DX11EffectPass           *m_pLowGrassPhysPass;
-    ID3DX11EffectPass           *m_pShadowPass;
+    ID3DX11EffectPass           *m_pShadowPassPhys;
+    ID3DX11EffectPass           *m_pShadowPassAnim;
+    ID3DX11EffectPass           *m_pShadowLowGrassAnimPass;
+    ID3DX11EffectPass           *m_pShadowLowGrassPhysPass;
     ID3D11Device                *m_pD3DDevice;
    ID3D11DeviceContext         *m_pD3DDeviceCtx;
     bool                         m_bUseLowGrass;

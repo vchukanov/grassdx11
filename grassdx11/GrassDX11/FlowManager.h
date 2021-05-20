@@ -39,10 +39,10 @@ public:
    FlowManager  (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3DX11Effect* a_Effect, float a_fTerrRadius, ID3D11ShaderResourceView* a_NoiseSRV);
    ~FlowManager (void);
 
-   int CreateAxesFan (const XMMATRIX& initialTransform);
+   int CreateAxesFan (void);
 
    void Update          (float a_fElapsedTime, float a_fTime);
-   void RenderFans      (bool isVelPass = false);
+   void RenderFans      (bool isVelPass = false, bool isBlured = false);
  
    ID3D11ShaderResourceView* GetFlowSRV (void);
 

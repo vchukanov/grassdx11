@@ -3,6 +3,7 @@
 #define __AXES_FAN_H__
 
 #include "includes.h"
+#include "ModelLoader.h"
 
 struct AxesFanDesc;
 
@@ -20,7 +21,7 @@ public:
 
    ~AxesFan (void);
 
-   void Render (bool isVelPass);
+   void Render (bool isVelPass, bool isBlured);
    void Update (float a_fElapsedTime);
    
    void SetPosition    (const float3& a_vPosition);
@@ -30,7 +31,6 @@ public:
 
 private:
    void CreateInputLayout (void);
-   void CreateVertexBuffer (void);
 
 public:
    ID3D11Device        *m_pD3DDevice;
@@ -46,9 +46,11 @@ public:
    ID3DX11EffectShaderResourceVariable* m_pTexESRV;
 
    ID3D11InputLayout *m_pInputLayout;
+   ID3D11InputLayout* m_pInputLayout1;
 
    ID3DX11Effect     *m_pEffect;
    ID3DX11EffectPass *m_pPass;
+   ID3DX11EffectPass* m_pPass1;
    ID3DX11EffectPass* m_pVelPass;
 
    ID3D11Buffer      *m_pVertexBuffer = nullptr;
@@ -65,6 +67,8 @@ public:
    XMFLOAT4X4 m_mPrevRot;
 
    ID3DX11EffectScalarVariable* m_fScaleESV;
+
+   ModelLoader* wingModel;
 };
 
 #endif

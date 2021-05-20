@@ -104,12 +104,14 @@ void TerrainHeightData::ConvertFrom(const ScratchImage* a_image, const TexMetada
    uWidth = a_info->width;
    fHeight = (float)uHeight;
    fWidth = (float)uWidth;
+
+   int size = a_image->GetPixelsSize();
    for (UINT row = 0; row < a_info->height; row++)
    {
       UINT rowStart = row * a_image->GetImage(0, 0, 0)->rowPitch;
       for (UINT col = 0; col < a_info->width; col++)
       {
-         UINT colStart = col;// * 4;//RGBA
+         UINT colStart = col * 4;//RGBA
          pData[row * a_info->width + col] = ((float)pTexels[rowStart + colStart + 0]) / 255.0f;
       }
    }
@@ -183,12 +185,13 @@ void TerrainHeightData::CalcNormals(float a_fHeightScale, float a_fDistBtwVertic
 }
 
 
-Terrain::Terrain(ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3DX11Effect* a_pEffect, float a_fSize)
+Terrain::Terrain(ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx, ID3DX11Effect* a_pEffect, float a_fSize, float heightScale)
 {
    m_pD3DDevice = a_pD3DDevice;
    m_pD3DDeviceCtx = a_pD3DDeviceCtx;
    m_uVertexStride = sizeof(TerrainVertex);
    m_uVertexOffset = 0;
+   m_fHeightScale = heightScale;
 
    /* just one technique in effect */
    ID3DX11EffectTechnique* pTechnique = a_pEffect->GetTechniqueByIndex(0);
@@ -198,8 +201,6 @@ Terrain::Terrain(ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCt
 
    ID3DX11EffectShaderResourceVariable* pESRV;
    pESRV = a_pEffect->GetVariableByName("g_txGrassDiffuse")->AsShaderResource();
-   HRESULT hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Grass.dds", nullptr, &m_pGrassSRV);
-   pESRV->SetResource(m_pGrassSRV);
 
    pESRV = a_pEffect->GetVariableByName("g_txSandDiffuse")->AsShaderResource();
    hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Sand.dds", nullptr, &m_pSandSRV);
@@ -207,13 +208,34 @@ Terrain::Terrain(ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCt
    pESRV = a_pEffect->GetVariableByName("g_txSandSnowedDiffuse")->AsShaderResource();
    hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/SandSnowed.dds", nullptr, &m_pSandSnowedSRV);
    pESRV->SetResource(m_pSandSnowedSRV);
+   ID3D11ShaderResourceView* pSRV;
+   
+   HRESULT hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Grass.dds", nullptr, &pSRV);
+   pESRV->SetResource(pSRV);
 
-   m_fCellSize = 0.0f;
-   CreateInputLayout();
-   CreateBuffers(a_fSize);  //initializing m_fCellSize
+   pESRV = a_pEffect->GetVariableByName("g_txTerrDiffuse")->AsShaderResource();
+   hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Terrain/Terrain_diffuse.dds", nullptr, &pSRV);
+   pESRV->SetResource(pSRV);
+
+   pESRV = a_pEffect->GetVariableByName("g_txTerrHeight")->AsShaderResource();
+   hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Terrain/Terrain_height.dds", nullptr, &pSRV);
+   pESRV->SetResource(pSRV);
+
+   pESRV = a_pEffect->GetVariableByName("g_txTerrNormal")->AsShaderResource();
+   hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Terrain/Terrain_normal.dds", nullptr, &pSRV);
+   pESRV->SetResource(pSRV);
+
+   
+   UINT  m_uSideCount = 256 + 1;
+   m_fCellSize = 2.0f * a_fSize / (float)(m_uSideCount - 1);
 
    m_pHeightMapESRV = a_pEffect->GetVariableByName("g_txHeightMap")->AsShaderResource();
    m_pHeightMapSRV = NULL;
+
+   BuildHeightMap(heightScale);
+
+   CreateInputLayout();
+   CreateBuffers(a_fSize);  //initializing m_fCellSize
 }
 
 Terrain::~Terrain(void)
@@ -221,7 +243,6 @@ Terrain::~Terrain(void)
    SAFE_RELEASE(m_pInputLayout);
    SAFE_RELEASE(m_pVertexBuffer);
    SAFE_RELEASE(m_pIndexBuffer);
-   SAFE_RELEASE(m_pGrassSRV);
    SAFE_RELEASE(m_pHeightMapSRV);
    SAFE_RELEASE(m_pSandSRV);
    SAFE_RELEASE(m_pSandSnowedSRV);
@@ -352,6 +373,8 @@ void Terrain::BuildHeightMap(float a_fHeightScale)
    m_pD3DDevice->CreateShaderResourceView(m_pLightMap, &LightMapSRVDesc, &m_pLightMapSRV);
    SAFE_RELEASE(m_pLightMap);
 #pragma endregion   
+
+
 }
 
 void Terrain::UpdateLightMap(void)
@@ -388,46 +411,167 @@ void Terrain::UpdateLightMap(void)
    m_pLightMapESRV->SetResource(m_pLightMapSRV);
 }
 
+void Terrain::CreateInputLayout(void)
+{
+   D3D11_INPUT_ELEMENT_DESC InputDesc[] =
+   {
+       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+       { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+       { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT,  0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+      { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT,  0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+      { "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
+   };
+   D3DX11_PASS_DESC PassDesc;
+   m_pPass->GetDesc(&PassDesc);
+   int InputElementsCount = sizeof(InputDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC);
+   m_pD3DDevice->CreateInputLayout(InputDesc, InputElementsCount,
+      PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize,
+      &m_pInputLayout);
+}
+
+
+void Terrain::SetTNB(std::vector<TerrainVertex*> verts)
+{
+   XMFLOAT3 pos1(verts[0]->vPos);
+   XMFLOAT3 pos2(verts[1]->vPos);
+   XMFLOAT3 pos3(verts[2]->vPos);
+   XMFLOAT3 pos4(verts[3]->vPos);
+
+   XMFLOAT2 uv1(verts[0]->vTexCoord.x * 64, verts[0]->vTexCoord.y * 64);
+   XMFLOAT2 uv2(verts[1]->vTexCoord.x * 64, verts[1]->vTexCoord.y * 64);
+   XMFLOAT2 uv3(verts[2]->vTexCoord.x * 64, verts[2]->vTexCoord.y * 64);
+   XMFLOAT2 uv4(verts[3]->vTexCoord.x * 64, verts[3]->vTexCoord.y * 64);
+
+   pos1.y = m_HeightData.GetHeight(uv1.x / 64, uv1.y / 64) * m_fHeightScale;
+   pos2.y = m_HeightData.GetHeight(uv2.x / 64, uv2.y / 64) * m_fHeightScale;
+   pos3.y = m_HeightData.GetHeight(uv3.x / 64, uv3.y / 64) * m_fHeightScale;
+   pos4.y = m_HeightData.GetHeight(uv4.x / 64, uv4.y / 64) * m_fHeightScale;
+
+   XMFLOAT3 normal(
+      (verts[0]->normal.x + verts[1]->normal.x + verts[2]->normal.x) / 3,
+      (verts[0]->normal.y + verts[1]->normal.y + verts[2]->normal.y) / 3,
+      (verts[0]->normal.z + verts[1]->normal.z + verts[2]->normal.z) / 3
+   );
+
+   XMFLOAT3 edge1 = 
+   {
+      pos2.x - pos1.x,
+      pos2.y - pos1.y,
+      pos2.z - pos1.z,
+   };
+
+   XMFLOAT3 edge2 = 
+   {
+      pos3.x - pos1.x,
+      pos3.y - pos1.y,
+      pos3.z - pos1.z,
+   };
+
+   XMFLOAT2 deltaUV1 =
+   {
+      uv2.x - uv1.x,
+      uv2.y - uv1.y
+   };
+   
+   XMFLOAT2 deltaUV2 =
+   {
+      uv3.x - uv1.x,
+      uv3.y - uv1.y
+   };
+
+   float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+   XMFLOAT3 tangent, bitangent;
+
+   tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+   tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+   tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+   
+   XMVECTOR tan = XMLoadFloat3(&tangent);
+   tan = normalize(tan);
+   XMStoreFloat3(&tangent, tan);
+
+   bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+   bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+   bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+   
+   XMVECTOR bitan = XMLoadFloat3(&bitangent);
+   bitan = normalize(bitan);
+   XMStoreFloat3(&bitangent, bitan);
+   
+   for (int i = 0; i < 4; i++) {
+      verts.at(i)->bitangent  = bitangent;
+      verts.at(i)->tangent    = tangent;
+   }
+}
+
+
+
 void Terrain::CreateBuffers(float a_fSize)
 {
    /* Initializing vertices; HeightMap dimension equal to 256 */
    // a number of vertices on one side
-   UINT  uSideCount = 256 + 1;
-   UINT  uVerticesCount = uSideCount * uSideCount;
-   m_uIndicesCount = (uSideCount - 1) * (uSideCount - 1) * 6;
-   m_fCellSize = 2.0f * a_fSize / (float)(uSideCount - 1);
+   UINT  uVerticesCount = m_uSideCount * m_uSideCount;
+   m_uIndicesCount = (m_uSideCount - 1) * (m_uSideCount - 1) * 6;
    UINT i, j;
 
    XMVECTOR vStartPos = create(-a_fSize, 0.0f, -a_fSize);;
 
    TerrainVertex* pVertices = new TerrainVertex[uVerticesCount];
    UINT* pIndices = new UINT[m_uIndicesCount];
+  
+   
    UINT uStartInd = 0;
-   for (i = 0; i < uSideCount; i++)
-      for (j = 0; j < uSideCount; j++)
+   for (i = 0; i < m_uSideCount; i++)
+      for (j = 0; j < m_uSideCount; j++)
       {
          XMVECTOR res = vStartPos + create(m_fCellSize * i, 0.0f, m_fCellSize * j);
-         XMStoreFloat3(&pVertices[i * uSideCount + j].vPos, res);
+         XMStoreFloat3(&pVertices[i * m_uSideCount + j].vPos, res);
 
-         pVertices[i * uSideCount + j].vTexCoord = XMFLOAT2((float)i / (float)(uSideCount - 1), (float)j / (float)(uSideCount - 1));
+         XMFLOAT2 textCoord = {(float)i / (float)(m_uSideCount - 1), (float)j / (float)(m_uSideCount - 1) };
+         pVertices[i * m_uSideCount + j].vTexCoord = XMFLOAT2(textCoord.x, textCoord.y);
+         pVertices[i * m_uSideCount + j].normal = m_HeightData.GetNormal(textCoord.x, textCoord.y);
       }
 
-   for (i = 0; i < uSideCount - 1; i++)
-      for (j = 0; j < uSideCount - 1; j++)
+   for (i = 0; i < m_uSideCount - 1; i++)
+      for (j = 0; j < m_uSideCount - 1; j++)
       {
-         pIndices[uStartInd] = i * uSideCount + j;
+         // process triangle 1
+         std::vector<UINT> ind = {
+            i * m_uSideCount + j,
+            i * m_uSideCount + j + 1,
+            (i + 1) * m_uSideCount + j
+         };
+
+         pIndices[uStartInd] = ind[0];
          uStartInd++;
-         pIndices[uStartInd] = i * uSideCount + j + 1;
+         pIndices[uStartInd] = ind[1];
          uStartInd++;
-         pIndices[uStartInd] = (i + 1) * uSideCount + j;
+         pIndices[uStartInd] = ind[2];
          uStartInd++;
 
-         pIndices[uStartInd] = (i + 1) * uSideCount + j;
+         std::vector<TerrainVertex*> verts;
+         verts.push_back(&pVertices[ind[0]]);
+         verts.push_back(&pVertices[ind[1]]);
+         verts.push_back(&pVertices[ind[2]]);
+
+         // process triangle 2
+         ind = {
+            (i + 1) * m_uSideCount + j,
+            i * m_uSideCount + j + 1,
+            (i + 1) * m_uSideCount + j + 1
+         };
+
+         pIndices[uStartInd] = ind[0];
          uStartInd++;
-         pIndices[uStartInd] = i * uSideCount + j + 1;
+         pIndices[uStartInd] = ind[1];
          uStartInd++;
-         pIndices[uStartInd] = (i + 1) * uSideCount + j + 1;
+         pIndices[uStartInd] = ind[2];
          uStartInd++;
+         
+         verts.push_back(&pVertices[ind[2]]);
+
+         SetTNB(verts);
       }
 
    /* Initializing vertex buffer */
@@ -457,6 +601,7 @@ void Terrain::CreateBuffers(float a_fSize)
 
    /* Initializing vertices */
    TerrainVertex Vertices[4];
+   ZeroMemory(Vertices, sizeof(TerrainVertex) * 4);
    Vertices[0].vPos = XMFLOAT3(-1.0f, -1.0f, 0.1f);
    Vertices[0].vTexCoord = XMFLOAT2(0.0f, 1.0f);
 
@@ -468,6 +613,7 @@ void Terrain::CreateBuffers(float a_fSize)
 
    Vertices[3].vPos = XMFLOAT3(1.0f, 1.0f, 0.1f);
    Vertices[3].vTexCoord = XMFLOAT2(1.0f, 0.0f);
+
    /* Initializing buffer */
    D3D11_BUFFER_DESC BufferDesc =
    {
@@ -480,21 +626,6 @@ void Terrain::CreateBuffers(float a_fSize)
    BufferInitData.pSysMem = Vertices;
    m_pD3DDevice->CreateBuffer(&BufferDesc, &BufferInitData, &m_pQuadVertexBuffer);
 
-}
-
-void Terrain::CreateInputLayout(void)
-{
-   D3D11_INPUT_ELEMENT_DESC InputDesc[] =
-   {
-       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0 , D3D11_INPUT_PER_VERTEX_DATA, 0},
-       { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
-   };
-   D3DX11_PASS_DESC PassDesc;
-   m_pPass->GetDesc(&PassDesc);
-   int InputElementsCount = sizeof(InputDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC);
-   m_pD3DDevice->CreateInputLayout(InputDesc, InputElementsCount,
-      PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize,
-      &m_pInputLayout);
 }
 
 ID3D11ShaderResourceView* Terrain::HeightMapSRV(void)

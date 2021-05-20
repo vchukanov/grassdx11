@@ -18,6 +18,11 @@
 #include "VelocityMap.h"
 #include "Copter.h"
 
+#include "TexturesMixer.h"
+#include "AirData.h"
+
+class Car;
+
 enum
 {
    GrassTypeNum = 3
@@ -53,7 +58,10 @@ public:
 
    FlowManager                   *m_pFlowManager;
    std::vector<int>               fansIds;
-   ID3DX11Effect*                 m_pSceneEffect;
+   ID3DX11Effect                 *m_pSceneEffect;
+
+   TexturesMixer *m_pMixer;
+   AirData       *m_pAirData;
 
 private:
    GrassManager               *m_pGrassTypes[GrassTypeNum];
@@ -77,6 +85,7 @@ private:
    ID3DX11EffectShaderResourceVariable *m_pShadowMapESRV[GrassTypeNum + 1];
    ID3DX11EffectShaderResourceVariable* m_pVelocityMapESRV[GrassTypeNum + 1];
    ID3DX11EffectShaderResourceVariable* m_pSceneTxESRV[GrassTypeNum + 1];
+   ID3DX11EffectShaderResourceVariable* m_pAirTxESRV[GrassTypeNum + 1];
 
    ID3DX11EffectVectorVariable *m_pLightDirEVV[GrassTypeNum + 1];
    ID3DX11EffectVectorVariable *m_pTerrRGBEVV[3];
@@ -145,7 +154,7 @@ public:
 
    FlowManager* const GetFlowManager (void) { return m_pFlowManager; }
 
-   void Render  (Copter* copter);
+   void Render  (Copter* copter, Car* car);
    void Update  (float3 a_vCamDir, float3 a_vCamPos, Mesh *a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime, float a_fTime);
     
    ID3DX11Effect *SceneEffect (void);

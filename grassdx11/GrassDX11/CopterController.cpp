@@ -1,7 +1,7 @@
 #include "CopterController.h"
+#include "Copter.h"
 
-
-CopterController::CopterController(void)
+CopterController::CopterController (void)
 {
    transform = XMMatrixIdentity();
 
@@ -13,9 +13,17 @@ CopterController::CopterController(void)
 }
 
 
+void CopterController::InitHeightCtrl (Terrain* terr, float grassR, float heightSc)
+{
+   terrain = terr;
+   grassRadius = grassR;
+   heightScale = heightSc;
+}
+
+
 void CopterController::UpdatePhysics(void)
 {
-   const float dt = 0.5;
+   const float dt = 0.35;
 
    UpdateInput();
 
@@ -39,6 +47,17 @@ void CopterController::UpdatePhysics(void)
    velocity += acceleration * dt;
    position += velocity * dt;
 
+   // correct height
+   TerrainHeightData* pHD = terrain->HeightDataPtr();
+   float2 vTexCoord = create(getx(position) / grassRadius * 0.5f + 0.5f, getz(position) / grassRadius * 0.5f + 0.5f);
+
+   float terrain_height = pHD->GetHeight(getx(vTexCoord), gety(vTexCoord)) * heightScale;
+
+   if (gety(position) < terrain_height + copter->scale * 2.5) {
+      sety(position, terrain_height + copter->scale * 2.5);
+   }
+
+   // calc transform
    transform *= XMMatrixTranslationFromVector(position);
 
    // Dumps
@@ -46,10 +65,6 @@ void CopterController::UpdatePhysics(void)
    roll *= 0.9;
    velocity *= 0.9;
    torque = 0;
-
-   if (gety(position) < 10) {
-      sety(position, 10);
-   }
 }
 
 
@@ -59,7 +74,7 @@ void CopterController::UpdateCamera (void)
    XMMATRIX rot = XMMatrixRotationY(yaw);
    toCam = XMVector3Transform(toCam, rot);
 
-   if (!fixCam)
+   if (fixCam)
       cam->SetViewParams(position + toCam, position);
 }
 

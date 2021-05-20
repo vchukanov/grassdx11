@@ -35,6 +35,12 @@
     <Filter Include="Wind">
       <UniqueIdentifier>{2240997f-a0af-459c-b787-a77a75a46022}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assimp">
+      <UniqueIdentifier>{d06192bd-7088-430d-b600-efcf8e0a6d9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Grass\Render\ShadowMath">
+      <UniqueIdentifier>{48e9d22b-2950-4ef9-b8cc-b7fef2252dec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -124,6 +130,24 @@
     <ClCompile Include="Copter.cpp">
       <Filter>Grass\Render\C++</Filter>
     </ClCompile>
+    <ClCompile Include="ModelLoader.cpp">
+      <Filter>Assimp</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureLoader.cpp">
+      <Filter>Assimp</Filter>
+    </ClCompile>
+    <ClCompile Include="Car.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="TexturesMixer.cpp">
+      <Filter>Grass\Render\C++</Filter>
+    </ClCompile>
+    <ClCompile Include="DataTypes.cpp">
+      <Filter>Grass\Render\ShadowMath</Filter>
+    </ClCompile>
+    <ClCompile Include="MathStuff.cpp">
+      <Filter>Grass\Render\ShadowMath</Filter>
+    </ClCompile>
     <ClCompile Include="SnowParticleSystem.cpp">
       <Filter>Snow</Filter>
     </ClCompile>
@@ -136,9 +160,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="includes.h" />
-    <ClInclude Include="mesh.h">
-      <Filter>Mesh</Filter>
-    </ClInclude>
     <ClInclude Include="plane.h">
       <Filter>Mesh</Filter>
     </ClInclude>
@@ -252,6 +273,33 @@
     </ClInclude>
     <ClInclude Include="SnowParticleTypes.h">
       <Filter>Snow</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelLoader.h">
+      <Filter>Assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureLoader.h">
+      <Filter>Assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshAssimp.h">
+      <Filter>Assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Car.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="TexturesMixer.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="AirData.h">
+      <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTypes.h">
+      <Filter>Grass\Render\ShadowMath</Filter>
+    </ClInclude>
+    <ClInclude Include="MathStuff.h">
+      <Filter>Grass\Render\ShadowMath</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

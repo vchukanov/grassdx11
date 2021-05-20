@@ -20,4 +20,6 @@ struct AABB
    void Set (const CVec3& vmin, const CVec3& vmax);
 
    void Calculate (int numPoints, const CVec3* pPoints, int stride);
+
+   void Get (CVec3& vmin, CVec3& vmax);
 };
