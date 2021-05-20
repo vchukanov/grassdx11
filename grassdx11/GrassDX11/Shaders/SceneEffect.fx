@@ -620,7 +620,7 @@ float4 TerrainPSMain( TerrPSIn Input ): SV_Target
     float3 vGrassColor = g_txTerrGrass.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
     vGrassColor.xyz *= float3(0.22, 0.25, 0);
     float3 vGrassSnowedColor = g_txTerrGrassSnowed.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
-    float alphaValue = clamp(length(g_txSnowCover.Sample(g_samLinear, Input.vTexCoord.xy).r), 0.0, 1.0);
+    alphaValue = clamp(length(g_txSnowCover.Sample(g_samLinear, Input.vTexCoord.xy).r), 0.0, 1.0);
     float3 vGrassBlendColor = (alphaValue * vGrassSnowedColor) + ((1.0 - alphaValue) * vGrassColor);
 
     float3 vSandColor = g_txSandDiffuse.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;

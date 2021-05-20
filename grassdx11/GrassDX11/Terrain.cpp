@@ -200,22 +200,17 @@ Terrain::Terrain(ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCt
    m_pLightMapESRV = a_pEffect->GetVariableByName("g_txLightMap")->AsShaderResource();
 
    ID3DX11EffectShaderResourceVariable* pESRV;
+   ID3D11ShaderResourceView* pSRV;
    pESRV = a_pEffect->GetVariableByName("g_txGrassDiffuse")->AsShaderResource();
+   HRESULT hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Grass.dds", nullptr, &pSRV);
+   pESRV->SetResource(pSRV);
 
    pESRV = a_pEffect->GetVariableByName("g_txSandDiffuse")->AsShaderResource();
-   hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Sand.dds", nullptr, &m_pSandSRV);
+   hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Terrain/Terrain_diffuse.dds", nullptr, &m_pSandSRV);
    pESRV->SetResource(m_pSandSRV);
    pESRV = a_pEffect->GetVariableByName("g_txSandSnowedDiffuse")->AsShaderResource();
    hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/SandSnowed.dds", nullptr, &m_pSandSnowedSRV);
    pESRV->SetResource(m_pSandSnowedSRV);
-   ID3D11ShaderResourceView* pSRV;
-   
-   HRESULT hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Grass.dds", nullptr, &pSRV);
-   pESRV->SetResource(pSRV);
-
-   pESRV = a_pEffect->GetVariableByName("g_txTerrDiffuse")->AsShaderResource();
-   hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Terrain/Terrain_diffuse.dds", nullptr, &pSRV);
-   pESRV->SetResource(pSRV);
 
    pESRV = a_pEffect->GetVariableByName("g_txTerrHeight")->AsShaderResource();
    hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Terrain/Terrain_height.dds", nullptr, &pSRV);
