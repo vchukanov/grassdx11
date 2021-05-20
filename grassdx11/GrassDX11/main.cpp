@@ -409,6 +409,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    V_RETURN(pd3dDevice->CreateInputLayout(SkyBoxLayout, iNumElements, PassDesc.pIAInputSignature,
       PassDesc.IAInputSignatureSize, &g_pSkyVertexLayout));
    g_MeshSkybox.Create(pd3dDevice, L"resources\\skysphere.sdkmesh");
+   g_pSkyBoxESRV->SetResource(nullptr);
 
    /*Loading colors*/
    InFile.open("config/colors.ini");
@@ -692,6 +693,7 @@ void RenderGrass(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dDeviceCtx, X
    pd3dDeviceCtx->IASetInputLayout(g_pSkyVertexLayout);
    g_pSkyboxPass->Apply(0, pd3dDeviceCtx);
    g_MeshSkybox.Render(pd3dDeviceCtx, 0);
+   g_pSkyBoxESRV->SetResource(g_MeshSkybox.GetMaterial(0)->pDiffuseRV11);
 }
 
 

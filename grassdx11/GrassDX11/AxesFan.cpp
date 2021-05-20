@@ -21,27 +21,16 @@ AxesFan::AxesFan(ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCt
    m_pPass1 = pTechnique->GetPassByName("RenderMeshPass");
 
    m_pVelPass = pTechnique->GetPassByName("RenderVelocityPass");
-   m_pPass = pTechnique->GetPassByName("RenderMeshPassBlured");
+  // m_pPass = pTechnique->GetPassByName("RenderMeshPassBlured");
    
    m_pTransformEMV = a_pEffect->GetVariableByName("g_mWorld")->AsMatrix();
    m_pPrevTransformEMV = a_pEffect->GetVariableByName("g_mPrevWorld")->AsMatrix();
+   m_pTexESRV = a_pEffect->GetVariableByName("g_txMeshDiffuse")->AsShaderResource();
 
    CreateInputLayout();
 
    XMStoreFloat4x4(&m_mRotation, XMMatrixIdentity());
    XMStoreFloat4x4(&m_mRot,XMMatrixIdentity());
-
-   /*
-      !!! IF SOME ONE WOULD WORK WITH THIS CODE!!!
-      Look at ModelLoader.cpp code
-      113 line: str = "Texture.png";
-
-      I use online expoter of model (to get wing.fbx). Online exporter export model, and frite to fbx bad texture 
-      I don't know why. So I hardcode this texture (because i load 2 models with 1 texture).
-      If you want to load other models, clean this code frome this. 
-      Sorry, i havn't enougth time to make it works :)
-
-   */
 
    wingModel = new ModelLoader;
    if (!wingModel->Load(0, m_pD3DDevice, m_pD3DDeviceCtx, "resources/Copter/wing.fbx"))
@@ -51,8 +40,8 @@ AxesFan::AxesFan(ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCt
 AxesFan::~AxesFan()
 {
    wingModel->Close();
-   SAFE_RELEASE(m_pInputLayout);
-   SAFE_RELEASE(m_pVertexBuffer);
+   //SAFE_RELEASE(m_pInputLayout);
+   SAFE_RELEASE(m_pInputLayout1);
 }
 
 
@@ -61,17 +50,17 @@ void AxesFan::CreateInputLayout (void)
    D3D11_INPUT_ELEMENT_DESC InputDesc[] =
    {
       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0 , D3D11_INPUT_PER_VERTEX_DATA, 0},
-      { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+      { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+      { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
    };
    D3DX11_PASS_DESC PassDesc;
-   m_pPass->GetDesc(&PassDesc);
+  // m_pPass->GetDesc(&PassDesc);
    int InputElementsCount = sizeof(InputDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC);
-   m_pD3DDevice->CreateInputLayout(InputDesc, InputElementsCount,
-      PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize,
-      &m_pInputLayout);
+  // m_pD3DDevice->CreateInputLayout(InputDesc, InputElementsCount,
+  //    PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize,
+  //    &m_pInputLayout);
 
    m_pPass1->GetDesc(&PassDesc);
-   InputElementsCount = sizeof(InputDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC);
    m_pD3DDevice->CreateInputLayout(InputDesc, InputElementsCount,
       PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize,
       &m_pInputLayout1);
@@ -107,14 +96,14 @@ void AxesFan::Render(bool isVelPass, bool isBlured)
    if (isVelPass) {
       m_pVelPass->Apply(0, m_pD3DDeviceCtx);
    } else if (isBlured) {
-      m_pD3DDeviceCtx->IASetInputLayout(m_pInputLayout);
-      m_pPass->Apply(0, m_pD3DDeviceCtx);
+      //m_pD3DDeviceCtx->IASetInputLayout(m_pInputLayout);
+      //m_pPass->Apply(0, m_pD3DDeviceCtx);
+      wingModel->Draw(m_pD3DDeviceCtx, m_pPass, m_pTexESRV);
    } else {
       m_pD3DDeviceCtx->IASetInputLayout(m_pInputLayout1);
-      m_pPass1->Apply(0, m_pD3DDeviceCtx);
+      //m_pPass1->Apply(0, m_pD3DDeviceCtx);
+      wingModel->Draw(m_pD3DDeviceCtx, m_pPass1, m_pTexESRV);
    }
-
-   wingModel->Draw(m_pD3DDeviceCtx);
 }
 
 
