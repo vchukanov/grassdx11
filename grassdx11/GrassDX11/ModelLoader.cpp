@@ -129,7 +129,7 @@ vector<Texture> ModelLoader::loadMaterialTextures(aiMaterial * mat, aiTextureTyp
 			else
 			{
 				string filename = string(str.C_Str());
-				filename = directory + '/' + filename;
+				//filename = directory + '/' + filename;
 				wstring filenamews = wstring(filename.begin(), filename.end());
 				hr = CreateWICTextureFromFile(dev, devcon, filenamews.c_str(), nullptr, &texture.texture);
             if (FAILED(hr))
