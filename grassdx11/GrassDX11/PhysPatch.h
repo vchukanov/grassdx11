@@ -7,7 +7,6 @@
 #include "PhysMath.h"
 #include "GrassProperties.h"
 #include "Terrain.h"
-#include "AirData.h"
 
 #include <omp.h>
 
@@ -57,9 +56,10 @@ public:
    void Reinit(void);
 
 
-   void SetTransform (const XMFLOAT4X4* a_pMtx);
+   void SetTransform (const XMMATRIX* a_pMtx);
                      
    float3 PosToWorld (const float3& v);
+   float3 DirToWorld (const float3& v);
 
    void  IASetPhysVertexBuffer0(void);
    void  IASetAnimVertexBuffer0(void);
@@ -86,7 +86,6 @@ public:
 
    static float fTerrRadius;
    static const WindData* pWindData;
-   static const AirData* pAirData;
    static float fHeightScale;
    static const TerrainHeightData* pHeightData;
 
@@ -151,8 +150,9 @@ private:
    PhysPatch::BladePhysData* bladePhysData;
 
    //static Perlin perlin;
-   const XMFLOAT4X4  *m_pTransform;
-   bool              animationPass;
+   const XMMATRIX* m_pTransform;
+   XMMATRIX        m_InvTransform;
+   bool            animationPass;
 
    /* directx11 variables */
    ID3D11Buffer* m_pPhysVertexBuffer;

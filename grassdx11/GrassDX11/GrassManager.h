@@ -81,7 +81,6 @@ private:
    ID3DX11Effect                       *m_pEffect;
    ID3DX11EffectPass                   *m_pRenderPass;
    ID3DX11EffectPass                   *m_pLowGrassPass;
-   ID3DX11EffectPass                   *m_pShadowLowGrassPass;
    bool                                 m_bUseLowGrass;
    ID3DX11EffectPass                   *m_pShadowPass;
    ID3D11Texture2D                     *m_pDiffuseTex;
@@ -139,6 +138,8 @@ public:
    void SetGrassLodBias    (float a_fGrassLodBias);
    void SetSubScatterGamma (float a_fGrassSubScatterGamma);
    void SetGrassAmbient    (float a_fGrassAmbient);
+   void SetWindStrength    (float a_fWindStrength);
+   void SetWindSpeed       (float a_fWindSpeed);
    void SetQuality         (float a_fQuality);
    void SetLowGrassDiffuse (float4 &a_vValue);
 
@@ -146,6 +147,7 @@ public:
 
    void AddSubType         (const GrassPropsUnified &a_SubTypeData);
    void ClearSubTypes      (void);
+
 
    void ApplyRenderPass (void) { m_pRenderPass->Apply(0, m_GrassState.pD3DDeviceCtx); }
 

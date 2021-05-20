@@ -121,16 +121,16 @@ GrassManager::GrassManager(GrassInitState& a_pInitState, GrassTracker* a_pGrassT
 
    const D3D11_INPUT_ELEMENT_DESC TransformLayout[] =
    {
-      { "POSITION"     , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA  , 0 },
-      { "TEXCOORD"     , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
-      { "TEXCOORD"     , 1, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
-      { "TEXCOORD"     , 2, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
-      { "TRANSPARENCY" , 0, DXGI_FORMAT_R32_FLOAT         , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
-      { "mTransform"   , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-      { "mTransform"   , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-      { "mTransform"   , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-      { "mTransform"   , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-      //{ "uOnEdge"      , 0, DXGI_FORMAT_R32_UINT          , 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+      { "POSITION"     , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, 0 , D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+      { "TEXCOORD"     , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, 12, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+      { "TEXCOORD"     , 1, DXGI_FORMAT_R32G32B32_FLOAT   , 0, 24, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+      { "TEXCOORD"     , 2, DXGI_FORMAT_R32G32B32_FLOAT   , 0, 36, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+      { "TRANSPARENCY" , 0, DXGI_FORMAT_R32_FLOAT         , 0, 48, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+      { "mTransform"   , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0 , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+      { "mTransform"   , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+      { "mTransform"   , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+      { "mTransform"   , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+      //{ "uOnEdge"      , 0, DXGI_FORMAT_R32_UINT          , 1, 64, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
    };
    int iNumElements = sizeof(TransformLayout) / sizeof(D3D11_INPUT_ELEMENT_DESC);
 
@@ -142,13 +142,11 @@ GrassManager::GrassManager(GrassInitState& a_pInitState, GrassTracker* a_pGrassT
       m_pLowGrassDiffuseEVV = NULL;
    if (m_bUseLowGrass)
    {
-      m_pLowGrassPass = m_pEffect->GetTechniqueByName("RenderLowGrass")->GetPassByName("RenderLowGrass");
-      m_pShadowLowGrassPass = m_pEffect->GetTechniqueByName("RenderLowGrass")->GetPassByName("ShadowLowGrass");
+      m_pLowGrassPass = m_pEffect->GetTechniqueByName("RenderLowGrass")->GetPassByIndex(0);
       m_pLowGrassDiffuseEVV = m_pEffect->GetVariableByName("g_vLowGrassDiffuse")->AsVector();
-   } else {
-      m_pLowGrassPass = NULL;
-      m_pShadowLowGrassPass = NULL;
    }
+   else
+      m_pLowGrassPass = NULL;
 
    D3DX11_PASS_DESC RenderLod0PassDesc;
    m_pRenderPass->GetDesc(&RenderLod0PassDesc);
@@ -288,6 +286,13 @@ void GrassManager::SetLowGrassDiffuse(float4& a_vValue)
       m_pLowGrassDiffuseEVV->SetFloatVector((float*)& a_vValue);
 }
 
+void GrassManager::SetWindStrength(float a_fWindStrength)
+{
+   m_fWindStrength = a_fWindStrength;
+   PhysPatch::windStrength = a_fWindStrength;
+   m_pWindStrengthESV->SetFloat(m_fWindStrength);
+}
+
 void GrassManager::SetHeightDataPtr(const TerrainHeightData* a_pHeightData)
 {
    m_pHeightData = a_pHeightData;
@@ -325,10 +330,10 @@ void GrassManager::Render(bool a_bShadowPass)
       m_GrassState.pD3DDeviceCtx->DrawInstanced(m_GrassLod[0]->VerticesCount(), m_GrassLod[0]->GetTransformsCount(), 0, 0);
       if (m_bUseLowGrass)
       {
-         m_pShadowLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
+         m_pLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
          m_GrassState.pD3DDeviceCtx->DrawInstanced(m_GrassLod[0]->VerticesCount(), m_GrassLod[0]->GetTransformsCount(), 0, 0);
          m_pAxesFanFlowESRV->SetResource(NULL);
-         m_pShadowLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
+         m_pLowGrassPass->Apply(0, m_GrassState.pD3DDeviceCtx);
       }
 
       m_pAxesFanFlowESRV->SetResource(NULL);
@@ -413,7 +418,7 @@ float GrassManager::LodAlphaOffset(const XMVECTOR& a_vCamPos, const XMVECTOR& a_
 
 void GrassManager::Update(float4x4& a_mViewProj, float3 a_vCamPos, Mesh* a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime)
 {
-   float physLodDst = m_GrassState.fGrassRadius * 0.5f;
+   float physLodDst = m_GrassState.fGrassRadius * 0.2f;
    float fMaxDist = m_GrassState.fGrassRadius;
    static ConvexVolume cvFrustum;
    cvFrustum.BuildFrustum(a_mViewProj);

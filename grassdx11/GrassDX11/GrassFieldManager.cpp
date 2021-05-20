@@ -2,7 +2,6 @@
 
 #include "GrassFieldManager.h"
 #include "GrassTrack.h"
-#include "Car.h"
 
 #include <DDSTextureLoader.h>
 
@@ -65,7 +64,8 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
    }
 
    /* Terrain and wind */
-   m_pTerrain = new Terrain(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx, m_pSceneEffect, a_InitState.fTerrRadius, a_InitState.fHeightScale);
+   m_pTerrain = new Terrain(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx, m_pSceneEffect, a_InitState.fTerrRadius);
+   m_pTerrain->BuildHeightMap(a_InitState.fHeightScale);
    m_fTerrRadius = a_InitState.fTerrRadius;
 
    m_pWind = new Wind(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx);
@@ -75,20 +75,15 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
    m_pGrassTypes[2]->SetHeightDataPtr(m_pTerrain->HeightDataPtr());
    m_pGrassTypes[2]->SetWindDataPtr(m_pWind->WindDataPtr());
 
-   m_pShadowMapping = new LiSPSM(4096 * 2 , 4096 * 2 , a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx);
+   m_pShadowMapping = new LiSPSM(4096 * 4, 4096 * 4, a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx);
 
    m_pVelocityMap = new VelocityMap(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx);
-   m_pSceneTex    = new VelocityMap(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx);
-
-   // TODO: Remove magic consts
-   m_pMixer = new TexturesMixer(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx, 32, 32, 512, 512);
-   m_pAirData = new AirData(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx);
-   PhysPatch::pAirData = m_pAirData;
+   m_pSceneTex = new VelocityMap(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[0].pD3DDeviceCtx);
 
    /* ...and lots of variables... */
    ID3DX11EffectShaderResourceVariable* pESRV;
    ID3D11ShaderResourceView* pHeightMapSRV = m_pTerrain->HeightMapSRV();
-   XMVECTOR vLightDir = create(-0.5f, -0.5f, 0.f);
+   XMVECTOR vLightDir = create(-1.0f, -1.0f, 0.f);
    m_pShadowMapping->UpdateLightDir(vLightDir);
 
    for (int i = 0; i < GrassTypeNum; i++)
@@ -113,8 +108,9 @@ GrassFieldManager::GrassFieldManager (GrassFieldState& a_InitState)
       m_pVelocityMapESRV[i] = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_txVelocityMap")->AsShaderResource();
 
       m_pLightViewProjEMV[i] = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_mLightViewProj")->AsMatrix();
-      m_pAirTxESRV[i] = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_txAirTex")->AsShaderResource();
-      
+      pESRV = m_pGrassTypes[i]->GetEffect()->GetVariableByName("g_txWindTex")->AsShaderResource();
+      pESRV->SetResource(m_pWind->GetMap());
+
       /* Seating maps */
       CreateDDSTextureFromFile(a_InitState.InitState[0].pD3DDevice, a_InitState.InitState[i].sSeatingTexPath.c_str(), nullptr, &m_pSeatingMapESV[i]);
 
@@ -278,8 +274,7 @@ void GrassFieldManager::Reinit(GrassFieldState& a_InitState)
       a_InitState.InitState[0].pD3DDevice,
       a_InitState.InitState[0].pD3DDeviceCtx,
       m_pSceneEffect,
-      a_InitState.fTerrRadius,
-      a_InitState.fHeightScale
+      a_InitState.fTerrRadius
    );
 }
 
@@ -355,7 +350,13 @@ void GrassFieldManager::SetSubScatterGamma(float a_fGrassSubScatterGamma)
 
 void GrassFieldManager::SetWindStrength(float a_fWindStrength)
 {
-   m_pMixer->SetWindStrength(a_fWindStrength);
+   UINT i;
+   for (i = 0; i < GrassTypeNum; i++)
+   {
+      if (i == 1)
+         continue;
+      m_pGrassTypes[i]->SetWindStrength(a_fWindStrength);
+   }
 }
 
 void GrassFieldManager::SetWindSpeed(float a_fWindSpeed)
@@ -497,72 +498,60 @@ Terrain* const GrassFieldManager::GetTerrain(float* a_fHeightScale, float* a_fGr
    return m_pTerrain;
 }
 
-void GrassFieldManager::Render(Copter* copter, Car* car)
+void GrassFieldManager::Render(Copter* copter)
 {
-   bool shadows = true;
-
-   m_pAirTxESRV[0]->SetResource(m_pMixer->GetShaderResourceView());
-   m_pAirTxESRV[2]->SetResource(m_pMixer->GetShaderResourceView());
-
    int i;
    HRESULT hr;
 
    float *pLightVP;
-   ID3D11ShaderResourceView* pSRV = NULL;
+   m_pShadowMapping->UpdateMtx(*m_pView, *m_pProj, m_vCamPos, m_vCamDir );
+   XMMATRIX m = m_pShadowMapping->GetViewProjMtx();
+   XMMATRIX minverse = inverse(m);
+   pLightVP = (float*)& m;
 
-   //m_pPrevInvView[0]->SetMatrix((float*)& m_mPrevInvView);
-   //m_pPrevInvView[1]->SetMatrix((float*)& m_mPrevInvView);
-   //m_pPrevInvView[2]->SetMatrix((float*)& m_mPrevInvView);
 
    m_pInvView[0]->SetMatrix((float*)& m_mInvView);
    m_pInvView[1]->SetMatrix((float*)& m_mInvView);
    m_pInvView[2]->SetMatrix((float*)& m_mInvView);
 
-   if (shadows) {
-      //m_pShadowMapping->m_bUseUniformSM = true;
-      m_pShadowMapping->UpdateMtx(*m_pView, *m_pProj, m_vCamPos, m_vCamDir );
-      XMMATRIX m = m_pShadowMapping->GetViewProjMtx();
-      pLightVP = (float*)& m;
+   m_pPrevInvView[0]->SetMatrix((float*)& m_mPrevInvView);
+   m_pPrevInvView[1]->SetMatrix((float*)& m_mPrevInvView);
+   m_pPrevInvView[2]->SetMatrix((float*)& m_mPrevInvView);
+
+    //Current camera (lightsrc) viewproj and lightviewproj (for future stream output) */
+    for (i = 0; i <= GrassTypeNum; i++)
+    {
+        if (i == 1) {
+          continue;
+        }
+        m_pViewProjEMV[i]->SetMatrix( pLightVP );
+        m_pLightViewProjEMV[i]->SetMatrix( pLightVP );
+        m_pShadowMapESRV[i]->SetResource(NULL);
+        if (i == 0 && i == 2)
+           m_pGrassTypes[i]->ApplyRenderPass();
+    }
+    m_pTerrain->ApplyPass();
+
+    /* Shadow map pass */
+    m_pShadowMapping->BeginShadowMapPass( );
+
+    XMMATRIX tmp = *m_pView;
+    SetViewMtx(m);
+    for (i = 0; i < GrassTypeNum; i++)
+    {
+        if (i == 1) {
+          continue;
+        }
+        m_pGrassTypes[i]->Render(true);
+    }
+    copter->Render();
+    m_pFlowManager->RenderFans();
+    SetViewMtx(tmp);
 
 
-       //Current camera (lightsrc) viewproj and lightviewproj (for future stream output) */
-       for (i = 0; i <= GrassTypeNum; i++)
-       {
-           if (i == 1) {
-             continue;
-           }
-           m_pViewProjEMV[i]->SetMatrix( pLightVP );
-           m_pLightViewProjEMV[i]->SetMatrix( pLightVP );
-           m_pShadowMapESRV[i]->SetResource(NULL);
-           if (i == 0 && i == 2)
-              m_pGrassTypes[i]->ApplyRenderPass();
-       }
-       m_pTerrain->ApplyPass();
-
-       /* Shadow map pass */
-       m_pShadowMapping->BeginShadowMapPass( );
-
-       XMMATRIX tmp = *m_pView;
-       //SetViewMtx(m);
-       for (i = 0; i < GrassTypeNum; i++)
-       {
-           if (i == 1) {
-             continue;
-           }
-           m_pGrassTypes[i]->Render(true);
-       }
-       copter->Render();
-       m_pFlowManager->RenderFans();
-       if (car != NULL) {
-          car->Render();
-       }
-
-       SetViewMtx(tmp);
-
-       m_pTerrain->Render();
-       pSRV = m_pShadowMapping->EndShadowMapPass( );
-   }
-
+    //m_pTerrain->Render();
+    ID3D11ShaderResourceView *pSRV = m_pShadowMapping->EndShadowMapPass( );
+ 
     /* Camera viewproj */
     for (i = 0; i <= GrassTypeNum; i++)
     {
@@ -573,11 +562,8 @@ void GrassFieldManager::Render(Copter* copter, Car* car)
           m_pPrevViewProjEMV[i]->SetMatrix((float*)m_pPrevViewProj);
        }
        m_pViewProjEMV[i]->SetMatrix( ( float* )m_pViewProj );
-       //m_pLightViewProjEMV[i]->SetMatrix( pLightVP );
-       
-       if (shadows) {
-          m_pShadowMapESRV[i]->SetResource(pSRV);
-       }
+        //m_pLightViewProjEMV[i]->SetMatrix( pLightVP );
+        m_pShadowMapESRV[i]->SetResource(pSRV);
     }
 
 
@@ -588,41 +574,32 @@ void GrassFieldManager::Render(Copter* copter, Car* car)
       m_pGrassTypes[2]->Render(false);
    }
 
-   //ID3D11ShaderResourceView* pVelSRV = NULL;
-   //ID3D11ShaderResourceView* pSceneSRV = NULL;
-   //{
-   //   m_pSceneTex->BeginVelocityMap();
-   //
-   //   m_pTerrain->Render();
-   //   m_pGrassTypes[0]->Render(false);
-   //   m_pGrassTypes[2]->Render(false);
-   //   copter->Render();
-   //   m_pFlowManager->RenderFans(false, false);
-   //   
-   //   pSceneSRV = m_pSceneTex->EndVelocityMap();
-   //
-   //   m_pVelocityMap->BeginVelocityMap();
-   //   m_pFlowManager->RenderFans(true);
-   //   pVelSRV = m_pVelocityMap->EndVelocityMap();
-   //}
+   ID3D11ShaderResourceView* pVelSRV = NULL;
+   ID3D11ShaderResourceView* pSceneSRV = NULL;
+   {
+      m_pSceneTex->BeginVelocityMap();
 
-   //m_pSceneTxESRV[GrassTypeNum]->SetResource(pSceneSRV);
-   //m_pVelocityMapESRV[GrassTypeNum]->SetResource(pVelSRV);
+      m_pTerrain->Render();
+      m_pGrassTypes[0]->Render(false);
+      m_pGrassTypes[2]->Render(false);
+      copter->Render();
+      m_pFlowManager->RenderFans();
+      
+      pSceneSRV = m_pSceneTex->EndVelocityMap();
+      m_pSceneTxESRV[GrassTypeNum]->SetResource(pSceneSRV);
 
-   copter->Render();
-   m_pFlowManager->RenderFans(false, false);
-   if (car != NULL) {
-      car->Render();
+      m_pVelocityMap->BeginVelocityMap();
+      m_pFlowManager->RenderFans(true);
+      pVelSRV = m_pVelocityMap->EndVelocityMap();
+      m_pVelocityMapESRV[GrassTypeNum]->SetResource(pVelSRV);
    }
 
-   //m_pVelocityMapESRV[GrassTypeNum]->SetResource(NULL);
-   //m_pSceneTxESRV[GrassTypeNum]->SetResource(NULL);
-   m_pShadowMapESRV[GrassTypeNum]->SetResource(NULL);
+   copter->Render();
+   m_pFlowManager->RenderFans();
 
-   m_pAirTxESRV[0]->SetResource(NULL);
-   m_pAirTxESRV[2]->SetResource(NULL);
-   m_pGrassTypes[0]->ApplyRenderPass();
-   m_pGrassTypes[2]->ApplyRenderPass();
+   m_pVelocityMapESRV[GrassTypeNum]->SetResource(NULL);
+   m_pShadowMapESRV[GrassTypeNum]->SetResource(NULL);
+   m_pSceneTxESRV[GrassTypeNum]->SetResource(NULL);
 }
 
 void GrassFieldManager::Update (float3 a_vCamDir, float3 a_vCamPos, Mesh* a_pMeshes[], UINT a_uNumMeshes, float a_fElapsedTime, float a_fTime)
@@ -634,8 +611,6 @@ void GrassFieldManager::Update (float3 a_vCamDir, float3 a_vCamPos, Mesh* a_pMes
    m_pTerrain->UpdateLightMap();
 
    m_pFlowManager->Update(a_fElapsedTime, a_fTime);
-   m_pMixer->MixTextures(m_pWind->GetMap(), m_pFlowManager->GetFlowSRV());
-   m_pAirData->Update(m_pMixer->m_renderTargetsTexture);
 
    m_pGrassTypes[0]->Update(*m_pViewProj, a_vCamPos, a_pMeshes, a_uNumMeshes, a_fElapsedTime);
    m_pGrassTypes[2]->Update(*m_pViewProj, a_vCamPos, a_pMeshes, a_uNumMeshes, a_fElapsedTime);
@@ -649,6 +624,6 @@ ID3DX11Effect* GrassFieldManager::SceneEffect(void)
 void GrassFieldManager::ClearGrassPools(void)
 {
    for (int i = 0; i < GrassTypeNum; i++)
-      if (m_pGrassTypes[i] != NULL && i != 1)
+      if (m_pGrassTypes[i] != NULL)
          m_pGrassTypes[i]->ClearGrassPools();
 }

@@ -19,34 +19,30 @@ GrassPool::GrassPool (ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDev
    m_bUseLowGrass = a_bUseLowGrass;
    m_pRenderAnimPass = a_pEffect->GetTechniqueByName("RenderGrass")->GetPassByName("RenderAnimPass");
    m_pRenderPhysPass = a_pEffect->GetTechniqueByName("RenderGrass")->GetPassByName("RenderPhysPass");
-   m_pShadowPassPhys = a_pEffect->GetTechniqueByName("RenderGrass")->GetPassByName("ShadowPhysicsPass");
-   m_pShadowPassAnim = a_pEffect->GetTechniqueByName("RenderGrass")->GetPassByName("ShadowAnimPass");
-
+   m_pShadowPass = a_pEffect->GetTechniqueByName("RenderGrass")->GetPassByName("ShadowPhysicsPass");
    if (m_bUseLowGrass)
    {
       m_pLowGrassPhysPass = a_pEffect->GetTechniqueByName("RenderLowGrass")->GetPassByName("PhysLowGrass");
       m_pLowGrassAnimPass = a_pEffect->GetTechniqueByName("RenderLowGrass")->GetPassByName("AnimLowGrass");
-      m_pShadowLowGrassPhysPass = a_pEffect->GetTechniqueByName("RenderLowGrass")->GetPassByName("ShadowLowPhysGrass");
-      m_pShadowLowGrassAnimPass = a_pEffect->GetTechniqueByName("RenderLowGrass")->GetPassByName("ShadowLowAnimGrass");
    }
 
    const D3D11_INPUT_ELEMENT_DESC InputLayoutDesc[] =
    {
-      { "R0MTX"         , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      { "R0MTX"         , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      { "R0MTX"         , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      { "R0MTX"         , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      { "R1MTX"         , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      { "R1MTX"         , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      { "R1MTX"         , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      { "R1MTX"         , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      { "R2MTX"         , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      { "R2MTX"         , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      { "R2MTX"         , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      { "R2MTX"         , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      { "POSITION"      , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      { "TRANSPARENCY"  , 0, DXGI_FORMAT_R32_FLOAT         , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      { "BLADECOLOR"    , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "R0MTX"         , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0 ,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "R0MTX"         , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 16,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "R0MTX"         , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 32,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "R0MTX"         , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 48,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "R1MTX"         , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 64,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "R1MTX"         , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 80,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "R1MTX"         , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 96,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "R1MTX"         , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 112, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "R2MTX"         , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 128, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "R2MTX"         , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 144, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "R2MTX"         , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 160, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "R2MTX"         , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 176, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "POSITION"      , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, 192, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "TRANSPARENCY"  , 0, DXGI_FORMAT_R32_FLOAT         , 0, 204, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "BLADECOLOR"    , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, 208, D3D11_INPUT_PER_VERTEX_DATA, 0 },
    };
    int iNumElements = sizeof(InputLayoutDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC);
 
@@ -103,9 +99,9 @@ int GrassPool::GetPatchCount (void)
 
 XMVECTOR GrassPool::GetPatchPos (int a_iPatchIndex)
 {
-   return create(m_pPatches[a_iPatchIndex]->Transform._41,
-                 m_pPatches[a_iPatchIndex]->Transform._42,
-                 m_pPatches[a_iPatchIndex]->Transform._43);
+   return create(getx(m_pPatches[a_iPatchIndex]->Transform.r[4]),
+              gety(m_pPatches[a_iPatchIndex]->Transform.r[4]),
+              getz(m_pPatches[a_iPatchIndex]->Transform.r[4]));
 }
 
 const PhysPatch& GrassPool::GetPatch (int a_iPatchIndex)
@@ -181,9 +177,9 @@ UINT GrassPool::GetMeshIndex (int a_iPatchIndex)
 
 bool GrassPool::TakePatch (XMMATRIX a_mTransform, float a_fLifeTime, UINT a_uMeshIndex)
 {
-   float3 vNewPos = create(getx(a_mTransform.r[3]),
-      gety(a_mTransform.r[3]),
-      getz(a_mTransform.r[3]));
+   float3 vNewPos = create(getx(a_mTransform.r[4]),
+      gety(a_mTransform.r[4]),
+      getz(a_mTransform.r[4]));
 
    /* looking for a match */
    int i;
@@ -205,7 +201,7 @@ bool GrassPool::TakePatch (XMMATRIX a_mTransform, float a_fLifeTime, UINT a_uMes
 
    if (pPatch)
    {
-      XMStoreFloat4x4(&pPatch->Transform, a_mTransform);
+      pPatch->Transform = a_mTransform;
       pPatch->Patch.SetTransform(&pPatch->Transform);
       pPatch->fLifeTime = a_fLifeTime;
       pPatch->uMeshIndex = a_uMeshIndex;
@@ -223,9 +219,9 @@ bool GrassPool::TakePatch (XMMATRIX a_mTransform, float a_fLifeTime, UINT a_uMes
 
 bool GrassPool::TakePatch (XMMATRIX a_mTransform, bool a_bInFirstLod)
 {
-   float3 vNewPos = create(getx(a_mTransform.r[3]),
-      gety(a_mTransform.r[3]),
-      getz(a_mTransform.r[3]));
+   float3 vNewPos = create(getx(a_mTransform.r[4]),
+      gety(a_mTransform.r[4]),
+      getz(a_mTransform.r[4]));
 
    /* looking for a match */
    int i;
@@ -256,7 +252,7 @@ bool GrassPool::TakePatch (XMMATRIX a_mTransform, bool a_bInFirstLod)
 
    if (pPatch)
    {
-      XMStoreFloat4x4(&pPatch->Transform, a_mTransform);
+      pPatch->Transform = a_mTransform;
       pPatch->Patch.SetTransform(&pPatch->Transform);
       pPatch->fLifeTime = 0.0f;
       pPatch->uMeshIndex = -1;
@@ -420,34 +416,23 @@ void GrassPool::Render(bool a_bShadowPass)
    m_pD3DDeviceCtx->IASetInputLayout(m_pPhysInputLayout);
    if (m_bUseLowGrass)
    {
-      if (a_bShadowPass) {
-         return;
-         //m_pShadowLowGrassPhysPass->Apply(0, m_pD3DDeviceCtx);
-      } else {
-         m_pLowGrassPhysPass->Apply(0, m_pD3DDeviceCtx);
-      }
+      m_pLowGrassPhysPass->Apply(0, m_pD3DDeviceCtx);
       for (i = 0; i < m_iPatchCount; i++)
       {
          if (!m_pPatches[i]->bIsDead)
          {
-             m_pPatches[i]->Patch.IASetPhysVertexBuffer0();
-             m_pD3DDeviceCtx->Draw(m_pPatches[i]->Patch.PhysVerticesCount(), 0);
+            m_pPatches[i]->Patch.IASetPhysVertexBuffer0();
+            m_pD3DDeviceCtx->Draw(m_pPatches[i]->Patch.PhysVerticesCount(), 0);
          }
       }
    }
-   
-   if (a_bShadowPass) {
-      m_pShadowPassPhys->Apply(0, m_pD3DDeviceCtx);
-   } else {
-      m_pRenderPhysPass->Apply(0, m_pD3DDeviceCtx);
-   }
-
+   m_pRenderPhysPass->Apply(0, m_pD3DDeviceCtx);
    for (i = 0; i < m_iPatchCount; i++)
    {
       if (!m_pPatches[i]->bIsDead)
       {
-          m_pPatches[i]->Patch.IASetPhysVertexBuffer0();
-          m_pD3DDeviceCtx->Draw(m_pPatches[i]->Patch.PhysVerticesCount(), 0);
+         m_pPatches[i]->Patch.IASetPhysVertexBuffer0();
+         m_pD3DDeviceCtx->Draw(m_pPatches[i]->Patch.PhysVerticesCount(), 0);
       }
    }
    /* Only animations */
@@ -455,13 +440,7 @@ void GrassPool::Render(bool a_bShadowPass)
    m_pD3DDeviceCtx->IASetInputLayout(m_pAnimInputLayout);
    if (m_bUseLowGrass)
    {
-      if (a_bShadowPass) {
-         return; 
-         //m_pShadowLowGrassAnimPass->Apply(0, m_pD3DDeviceCtx);
-      } else {
-         m_pLowGrassAnimPass->Apply(0, m_pD3DDeviceCtx);
-      }
-
+      m_pLowGrassAnimPass->Apply(0, m_pD3DDeviceCtx);
       for (i = 0; i < m_iPatchCount; i++)
       {
          if (!m_pPatches[i]->bIsDead)
@@ -472,18 +451,13 @@ void GrassPool::Render(bool a_bShadowPass)
       }
    }
 
-   if (a_bShadowPass) {
-      m_pShadowPassAnim->Apply(0, m_pD3DDeviceCtx);
-   } else {
-      m_pRenderAnimPass->Apply(0, m_pD3DDeviceCtx);
-   }
-
+   m_pRenderAnimPass->Apply(0, m_pD3DDeviceCtx);
    for (i = 0; i < m_iPatchCount; i++)
    {
       if (!m_pPatches[i]->bIsDead)
       {
-          m_pPatches[i]->Patch.IASetAnimVertexBuffer0();
-          m_pD3DDeviceCtx->Draw(m_pPatches[i]->Patch.AnimVerticesCount(), 0);
+         m_pPatches[i]->Patch.IASetAnimVertexBuffer0();
+         m_pD3DDeviceCtx->Draw(m_pPatches[i]->Patch.AnimVerticesCount(), 0);
       }
    }
 }

@@ -39,6 +39,7 @@ cbuffer cUserControlled
     float g_fGrassDiffuse;
     float g_fGrassLodBias;
     float g_fGrassSubScatterGamma;
+    float g_fWindStrength;
     float g_fWindTexTile;
     float g_fMass;
     float g_fHeightScale;
@@ -77,7 +78,8 @@ cbuffer cGrassSubTypes
 // Texture and samplers
 //--------------------------------------------------------------------------------------
 Texture2DArray   g_txGrassDiffuseArray;
-Texture2DArray   g_txAirTex;
+Texture2DArray   g_txWindTex;
+Texture2DArray   g_txAxesFanFlow;
 Texture2D        g_txIndexMap;
 Texture2D        g_txSeatingMap;
 Texture2D        g_txSnowCover;
@@ -445,7 +447,7 @@ float4 InstPSMain( PSIn Input ) : SV_Target
     float3 vColor2 = float3(1.5, 1.5, 1.0);
     float fNoiseScale = lerp(vColor1, vColor2, Input.fNoise);
     float3 vA = Input.vBladeColor;
-    float3 vD = g_vLowGrassDiffuse.xyz;
+    float3 vD = vDiffuseTexel.xyz;//g_vLowGrassDiffuse.xyz;
     float3 vT = Input.vColor * max(0.8, (2.0 + 5.0f* Input.vTerrSpec.y)*0.5);
     float fDot = Input.vTerrSpec.x;
     float fT = 1.0 - abs(Input.fLightParam);
@@ -477,9 +479,9 @@ float4 ShadowPSMain( PSIn Input, out float fDepth: SV_Depth ) : SV_Target
 {   
     uint uTexIndex = SubTypes[Input.uIndex].uTexIndex;
     float fAlpha = g_txGrassDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, uTexIndex)).a;
-    clip(fAlpha - 0.1);
+    clip(fAlpha - 0.001);
     fDepth = Input.vShadowPos.z / Input.vShadowPos.w * 0.5 + 0.5;
-    return float4(0.0, 0.0, 0.0, fAlpha);
+    return float4(0.0, 0.0, 0.0, 1.0);
 }
 
 
@@ -528,13 +530,6 @@ technique10 RenderGrass
     pass ShadowPhysicsPass
     {
         SetVertexShader( CompileShader( vs_4_0, PhysVSMain() ) );
-        SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
-        SetPixelShader( CompileShader( ps_4_0, ShadowPSMain() ) );
-    }
-
-    pass ShadowAnimPass
-    {
-        SetVertexShader( CompileShader( vs_4_0, AnimVSMain() ) );
         SetGeometryShader( CompileShader( gs_4_0, GSGrassMain() ) );
         SetPixelShader( CompileShader( ps_4_0, ShadowPSMain() ) );
     }

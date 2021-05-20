@@ -8,6 +8,7 @@ cbuffer cAxesFanSettings
     float  g_fMaxFlowStrength; // unused
 
     float  g_fFanRadius; 
+    float  g_fDeltaSlices;
     float  g_fShift;
 
     float  g_fAngleSpeed; // 0.f .. 100.f
@@ -168,7 +169,7 @@ float GetLandscapeDamping (float3 queryPoint, float3 fanCenter)
     float fY = 0;
     float3 landNormal = float3(0, 0, 0);
   
-    [unroll(32)]
+    [loop]
     for (int i = 0; i < stepsCount; i++) {
         landPoint = queryPoint + i * step;
         vHeightData = g_txHeightMap.Sample(g_samLinear, landPoint.xy * 0.5 + 0.5);
@@ -200,7 +201,7 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
    
    float3 fanNormal_m = normalize(getReflectedVec(fanNormal));
    float3 fanPoint_m = getReflectedVec(fanPoint);
-   fanPoint_m.z += 2 * fY;
+   fanPoint_m.z += fY;
    
    float  z = fY + 0.015;
    
@@ -274,7 +275,7 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
    float3 radialFlow_m = vm_k * radial_m;
 
    radial = normalize(queryPoint - fanPoint);
-   float time = g_fTime * 2;
+   float time = g_fTime;
    
    float randRadialMagn = fbm((time + 20145) + In.vsPos.xy * 100) - 0.1; 
    float randDistMagn = fbm((time + 2144) - In.vsPos.xy * 100) - 0.1;
@@ -301,20 +302,20 @@ float4 PSRingSourcePotentialFlowModel( AxesFanFlowPSIn In ) : SV_Target
    
    float3 randComp = normalize(cross(normalFlow, radialFlow));
    randComp *= sqrt(length(normalFlow) * length(radialFlow));
-   randComp *= 2;
+   randComp *= 4;
    float3 randComp_m = normalize(cross(normalFlow_m, radialFlow_m));
    randComp_m *= sqrt(length(normalFlow) * length(radialFlow));
-   randComp *= 2;
+   randComp *= 4;
    
    float3 staticFlow = normalFlow * randMagn + normalFlow_m * randMagn
-      + radialFlow * randMagn1 * 2 + radialFlow_m * randMagn1 * 2
+      + radialFlow * randMagn1 + radialFlow_m * randMagn1
       + randComp * randCompMagn + randComp_m * randCompMagn1;
    
    float3 flow = staticFlow;
    
    flow = clamp(flow, -0.0275, 0.0275);
+   flow /= GetLandscapeDamping(queryPoint, fanPoint);
    
-   flow /= GetLandscapeDamping(queryPoint, fanPoint);  // Eat fps then scene has several propellers   
    
    Out.xz = flow.yx;
    Out.z = -Out.z;

@@ -33,7 +33,7 @@ public:
     maths::PointArray         m_ShadowOcclAndCasters;
 
     /* constructs m_ShadowOcclAndCasters */
-    void UpdatePointSet                         (const XMMATRIX&a_mCamMV, const XMMATRIX&a_mCamProj, const XMVECTOR& cpos);
+    void UpdatePointSet                         (const XMMATRIX&a_mCamMV, const XMMATRIX&a_mCamProj);
     void GenLiSPSMMtx                           (void);
     void GenUniformMtx                          (void);
 

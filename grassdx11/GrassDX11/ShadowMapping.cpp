@@ -1,7 +1,6 @@
 #include "ShadowMapping.h"
 #include "mtxfrustum.h"
 #include "maths.h"
-#include "MathStuff.h"
 
 LiSPSM::LiSPSM(UINT a_uWidth, UINT a_uHeight, ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCtx)
 {
@@ -90,56 +89,28 @@ LiSPSM::~LiSPSM()
    SAFE_RELEASE(m_pTexture);
 }
 
-void LiSPSM::UpdatePointSet(const XMMATRIX& a_mCamMV, const XMMATRIX& a_mCamProj, const XMVECTOR& cam)
+void LiSPSM::UpdatePointSet(const XMMATRIX& a_mCamMV, const XMMATRIX& a_mCamProj)
 {
    //int i;
-   //XMVECTOR vIsect;
-   //XMVECTOR cubeMin = create(-1.0f, -1.0f, -1.0f);
-   //XMVECTOR cubeMax = create(1.0f, 1.0f, 1.0f);
-   //
-   //V_TO_XM(cubeMin, cmin, 3);
-   //V_TO_XM(cubeMax, cmax, 3);
-   //
-   //maths::AABox FrustumBBox(cmin, cmax);
-   //
+   XMVECTOR vIsect;
+   XMVECTOR cubeMin = create(-1.0f, -1.0f, -1.0f);
+   XMVECTOR cubeMax = create(1.0f, 1.0f, 1.0f);
+
+   V_TO_XM(cubeMin, cmin, 3);
+   V_TO_XM(cubeMax, cmax, 3);
+
+   maths::AABox FrustumBBox(cmin, cmax);
+  
    XMMATRIX M;
    XMMATRIX InvEyeProjView;// = !(CamMvMtx * CamPjMtx);
-
+   
    M = XMMatrixMultiply(a_mCamMV, a_mCamProj);
    InvEyeProjView = XMMatrixInverse(NULL, M);
-   M_TO_XM(InvEyeProjView, inv);
 
-   Matrix4x4 invEyeProjView;
-   AABox sceneBox;
-   
 
-   sceneBox.min[0] = -100 + getx(cam);
-   sceneBox.min[1] = -10 + gety(cam);
-   sceneBox.min[2] = -100 + getz(cam);
-
-   sceneBox.max[0] = 100 + getx(cam);
-   sceneBox.max[1] = 100 + gety(cam);
-   sceneBox.max[2] = 100 + getz(cam);
-
-   Vector3 lightDir;
-   lightDir[0] = m_vLightDir.x;
-   lightDir[1] = m_vLightDir.y;
-   lightDir[2] = m_vLightDir.z;
-
-   for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-         invEyeProjView[i + 4 * j] = inv(j, i);
-      }
-   }
-   struct VecPoint B = VECPOINT_NULL;
-   calcFocusedLightVolumePoints(&B, invEyeProjView, lightDir, sceneBox);
-
-   m_ShadowOcclAndCasters.SetSize(B.size);
-   for (int i = 0; i < B.size; i++) {
-      m_ShadowOcclAndCasters[i].x = B.points[i][0];
-      m_ShadowOcclAndCasters[i].y = B.points[i][1];
-      m_ShadowOcclAndCasters[i].z = B.points[i][2];
-   }
+   m_ShadowOcclAndCasters.SetSize(8);
+   FrustumBBox.GetPoints(&m_ShadowOcclAndCasters);
+   m_ShadowOcclAndCasters.Transform(InvEyeProjView);
 }
 
 void LiSPSM::GenUniformMtx()
@@ -285,8 +256,6 @@ void LiSPSM::UpdateLightDir(const XMVECTOR& a_vLightDir)
 void LiSPSM::UpdateMtx(const XMMATRIX& a_mCamMV, const XMMATRIX& a_mCamProj,
    const XMVECTOR& a_vCamPos, const XMVECTOR& a_vCamDir)
 {
-   m_bUseUniformSM = true;
-
    XM_TO_V(m_vCamDir, cdir, 3);
    XM_TO_V(m_vCamPos, cpos, 3);
   
@@ -302,7 +271,7 @@ void LiSPSM::UpdateMtx(const XMMATRIX& a_mCamMV, const XMMATRIX& a_mCamProj,
    setz(mProj.r[2], fProjElement33);
    setz(mProj.r[3], fProjElement43);
    
-   UpdatePointSet(a_mCamMV, mProj, cpos);
+   UpdatePointSet(a_mCamMV, mProj);
    //m_bUseUniformSM = (D3DXVec3Dot(&m_vCamDir, &m_vLightDir) > 0.9f) ? true : false;
 
    XMStoreFloat3(&m_vCamDir, cdir);

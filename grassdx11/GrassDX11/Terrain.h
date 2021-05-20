@@ -8,10 +8,6 @@ struct TerrainVertex
 {
     XMFLOAT3 vPos;
     XMFLOAT2 vTexCoord;
-
-    XMFLOAT3 tangent;
-    XMFLOAT3 normal;
-    XMFLOAT3 bitangent;
 };
 
 struct TerrainHeightData
@@ -26,7 +22,7 @@ struct TerrainHeightData
     void     ConvertFrom        (const ScratchImage* a_image, const TexMetadata* a_info);
     void     CalcNormals        (float a_fHeightScale, float a_fDistBtwVertices);
     float    GetHeight          (float a_fX, float a_fY) const;
-   XMFLOAT3  GetNormal          (float a_fX, float a_fY) const;
+   XMFLOAT3 GetNormal          (float a_fX, float a_fY) const;
     float    GetHeight3x3       (float a_fX, float a_fY) const;
     
    TerrainHeightData        (void);
@@ -62,15 +58,12 @@ private:
     UINT                                 m_uIndicesCount;
     TerrainHeightData                    m_HeightData;
     float                                m_fCellSize;   //distance between neighbour vertices
-    UINT                                 m_uSideCount = 257;
-    float                                m_fHeightScale;
 
-    void CreateBuffers                       (float a_fSize );
-    void CreateInputLayout                   (void);
-    void SetTNB                              (std::vector<TerrainVertex*> verts);
+    void CreateBuffers                       ( float a_fSize );
+    void CreateInputLayout                   ( );
 
 public:
-    Terrain                                  (ID3D11Device *a_pD3DDevice, ID3D11DeviceContext * a_pD3DDeviceCtx, ID3DX11Effect *a_pEffect, float a_fSize, float heightScale);
+    Terrain                                  (ID3D11Device *a_pD3DDevice, ID3D11DeviceContext * a_pD3DDeviceCtx, ID3DX11Effect *a_pEffect, float a_fSize);
     ~Terrain                                 (void);
                                    
     void  BuildHeightMap                     (float a_fHeightScale );
