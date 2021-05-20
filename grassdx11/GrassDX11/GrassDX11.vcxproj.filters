@@ -35,6 +35,9 @@
     <Filter Include="Wind">
       <UniqueIdentifier>{2240997f-a0af-459c-b787-a77a75a46022}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assimp">
+      <UniqueIdentifier>{d06192bd-7088-430d-b600-efcf8e0a6d9a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -124,6 +127,12 @@
     <ClCompile Include="Copter.cpp">
       <Filter>Grass\Render\C++</Filter>
     </ClCompile>
+    <ClCompile Include="ModelLoader.cpp">
+      <Filter>Assimp</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureLoader.cpp">
+      <Filter>Assimp</Filter>
+    </ClCompile>
     <ClCompile Include="SnowParticleSystem.cpp">
       <Filter>Snow</Filter>
     </ClCompile>
@@ -136,9 +145,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="includes.h" />
-    <ClInclude Include="mesh.h">
-      <Filter>Mesh</Filter>
-    </ClInclude>
     <ClInclude Include="plane.h">
       <Filter>Mesh</Filter>
     </ClInclude>
@@ -240,6 +246,18 @@
     </ClInclude>
     <ClInclude Include="Copter.h">
       <Filter>Grass\Render\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelLoader.h">
+      <Filter>Assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureLoader.h">
+      <Filter>Assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshAssimp.h">
+      <Filter>Assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>Mesh</Filter>
     </ClInclude>
     <ClInclude Include="SnowParticleSystem.h">
       <Filter>Snow</Filter>

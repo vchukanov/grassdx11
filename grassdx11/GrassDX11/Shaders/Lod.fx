@@ -109,12 +109,7 @@ inline float3 CalcWind( float3 a_vPos, int a_iSegmentIndex )
     
     float3 vAxesFlow = float3(0.0, 0.0, 0.0);
 
-    //return g_txAxesFanFlow.SampleLevel(g_samLinear, float3(vTexCoordForFlow, 0), 0).rgb;
-
-    for (int i = 0; i < 30; i++) {
-       vAxesFlow += 1.0 / (4.5 * (30 - i)) * g_txAxesFanFlow.SampleLevel(g_samLinear, float3(vTexCoordForFlow, i), 0).rgb;
-    }
-    return vAxesFlow + vWind;
+    return g_txAxesFanFlow.SampleLevel(g_samLinear, float3(vTexCoordForFlow, 0), 0).rgb + vWind / (length(vAxesFlow + 1));
 }
 
 #endif

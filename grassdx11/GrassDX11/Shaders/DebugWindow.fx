@@ -46,7 +46,7 @@ float4 PS( DebugWindowPSIn In ): SV_Target
   
     return g_texture.SampleLevel(g_samPoint, float3(screenTexCoords, 0), 0);
    */
-   return g_texture.SampleLevel(g_samLinear, float3(In.vTexCoord, g_iArraySlice), 0) * 10;
+   return g_texture.SampleLevel(g_samLinear, float3(In.vTexCoord, g_iArraySlice), 0) ;
 }
 
 technique10 Render

@@ -57,11 +57,11 @@ void FlowManager::Update (float a_fElapsedTime, float a_fTime)
 }
 
 
-void FlowManager::RenderFans (bool isVelPass)
+void FlowManager::RenderFans (bool isVelPass, bool isBlured)
 {
    for (auto& fan : fans) {
       fan.Setup();
-      fan.pAxesFan->Render(isVelPass);
+      fan.pAxesFan->Render(isVelPass, isBlured);
    }
 }
 

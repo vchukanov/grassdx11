@@ -1,0 +1,4 @@
+Memory Leak Detected!
+    C:\Program Stuff\Diploma\grassdx11-1\grassdx11\GrassDX11\GrassFieldManager.cpp
+    at line 79
+    with block size 76
