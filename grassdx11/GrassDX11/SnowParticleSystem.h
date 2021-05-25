@@ -101,6 +101,7 @@ private:
 	float** m_snowCover = nullptr;
 	bool isSnowCoverActive = false;
 	bool isCloudMovementActive = false;
+	long m_frame = 0;
 
 	std::vector<std::thread> m_threads;
 };

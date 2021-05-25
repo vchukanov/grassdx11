@@ -42,6 +42,8 @@ grassdx11/GrassDX11/.vs/GrassDX11/v16/.suo
 *.db-wal
 *.ilk
 *.cso
+grassdx11/GrassDX11/x64/
+grassdx11/GrassDX11/Release/
 grassdx11/GrassDX11/Debug/
 grassdx11/GrassDX11/Release/
 grassdx11/GrassDX11/x64/

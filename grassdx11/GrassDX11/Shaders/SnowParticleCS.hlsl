@@ -67,7 +67,7 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	float4 color;
 	bool inTornado;
 	float copterFieldRadius = 25.f;
-	float x, y, z, yAmplitude = -0.5f, yVelocity = -10.5f;
+	float x, y, z, yAmplitude = -0.5f, yVelocity = -8.5f;
 	float age = inputConstantParticleData[index].age;
 	float offset = inputConstantParticleData[index].offset;
 	float3 initialPos = inputConstantParticleData[index].initPos;
@@ -99,11 +99,11 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	if (tornadoActive && IsInTornado(GetRadiusOnHeight(curPos.y), curPos))
 	{
 		inTornado = true;
-		yVelocity = -0.6f;		
+		yVelocity = -0.25f;		
 		float radV = 65.f;
 
 		float radius = sqrt((curPos.z - tornadoPos.z) * (curPos.z - tornadoPos.z) + (curPos.x - tornadoPos.x) * (curPos.x - tornadoPos.x) + 0.00000001f);
-		radius = radius + 0.05f * radius * snoise(float4(curPos, age)); 
+		radius = radius + 0.03f * radius * snoise(float4(curPos, age)); 
 		float alpha1 = atan((curPos.z - tornadoPos.z) / (curPos.x - tornadoPos.x + 0.00000001f));
 		if (curPos.x < tornadoPos.x)
 			alpha1 = alpha1 + PI;
@@ -114,16 +114,17 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 		z = tornadoPos.z + radius * sin(alpha2) + fanVz * dt;
 
 		y = curPos.y;
-		y += dt * yVelocity /*+ fanVy * dt*/;
+		y += dt * yVelocity + fanVy * dt;
 		/*if (y < 0)
 			y = 0.1f;*/
 
-		color = float4(0.5f, 0.5f, 0.5f, 1);
+		color = float4(0.5f, 0.5f, 0.8f, 1);
+		//color = float4(0.f, 0.f, 1.f, 1.f);
 	}
 	else {
 		inTornado = false;
 
-		float angle = turbulence(float4(curPos.x / 50, curPos.z / 50, curPos.y, age), 2) * PI * 2;
+		float angle = turbulence(float4(curPos.x / 50, curPos.z / 50, curPos.y, age), 3) * PI * 2;
 		float value = turbulence(float4(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, age), 1);
 		value = value * windScaleFactor;
 
@@ -133,7 +134,7 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 
 		y = yAmplitude * sin(age * 0.5f * offset);
 		y += yAmplitude * sin(age * 0.66f * offset);
-		y += age * yVelocity + initialPos.y /*+ fanVy * dt*/;
+		y += age * yVelocity + initialPos.y + fanVy * dt;
 		color = float4(1, 1, 1, 1);
 		//color = float4(0, 0, 0, 0);
 	}

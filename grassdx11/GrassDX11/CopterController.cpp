@@ -5,7 +5,9 @@ CopterController::CopterController(void)
 {
    transform = XMMatrixIdentity();
 
-   position = create(0, 20, 0);
+   position = create(-20, 20, 200);
+   //position = create(-500, 20, -500);
+   //position = create(0, 20, 0);
    velocity = create(0, 0, 0);
    acceleration = create(0, 0, 0);
 
