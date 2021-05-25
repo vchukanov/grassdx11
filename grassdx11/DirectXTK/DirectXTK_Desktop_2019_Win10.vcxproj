@@ -455,6 +455,7 @@
   <ItemGroup>
     <None Include="Src\Shaders\AlphaTestEffect.fx">
       <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </None>
     <None Include="Src\Shaders\DualTextureEffect.fx">
       <FileType>Document</FileType>

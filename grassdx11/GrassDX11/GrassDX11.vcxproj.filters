@@ -273,33 +273,97 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\GrassType1.fx">
+    <None Include="Shaders\Noises.hlsli">
       <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\States.fx">
+    </None>
+    <None Include="Shaders\SceneEffect.fx">
       <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\SceneEffect.fx">
+    </None>
+    <None Include="Shaders\States.fx">
       <Filter>Shaders</Filter>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="Shaders\SnowParticleGS.hlsl">
+    </None>
+    <None Include="Shaders\AxesFanFlow.fx">
       <Filter>Shaders</Filter>
-    </Text>
-    <Text Include="Shaders\SnowParticlePS.hlsl">
+    </None>
+    <None Include="Shaders\DebugWindow.fx">
       <Filter>Shaders</Filter>
-    </Text>
-    <Text Include="Shaders\SnowParticleVS.hlsl">
+    </None>
+    <None Include="Shaders\DisableSeating.fx">
       <Filter>Shaders</Filter>
-    </Text>
-    <Text Include="Shaders\SnowParticleCS.hlsl">
+    </None>
+    <None Include="Shaders\DisableSubTypes.fx">
       <Filter>Shaders</Filter>
-    </Text>
+    </None>
+    <None Include="Shaders\EnableSeating.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\EnableSubTypes.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\Fog.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\GrassType2.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\GrassType3.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\GSFunc.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\GST1.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\Lod.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\Lod_Old.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\LowGrass.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\Samplers.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\SceneEffect_Old.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\SimpleEffect.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\TrackEffect.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\VSIn.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\WindEffect.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\SnowParticleCS.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\SnowParticleGS.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\SnowParticlePS.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\SnowParticleVS.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\mm\GST1.fx">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Noises.hlsli">
       <Filter>Shaders</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\GrassType1.fx" />
   </ItemGroup>
 </Project>

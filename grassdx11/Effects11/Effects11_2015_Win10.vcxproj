@@ -88,12 +88,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>Bin\Desktop_2015_Win10\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Bin\Desktop_2015_Win10\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>Effects11d</TargetName>
+    <TargetName>Effects11</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">
     <OutDir>Bin\Desktop_2015_Win10\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Bin\Desktop_2015_Win10\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>Effects11d</TargetName>
+    <TargetName>Effects11</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>Bin\Desktop_2015_Win10\$(Platform)\$(Configuration)\</OutDir>

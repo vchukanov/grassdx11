@@ -43,6 +43,8 @@ grassdx11/GrassDX11/.vs/GrassDX11/v16/.suo
 *.ilk
 *.cso
 grassdx11/GrassDX11/Debug/
+grassdx11/GrassDX11/Release/
+grassdx11/GrassDX11/x64/
 grassdx11/DirectXTex/Bin/
 grassdx11/DirectXTK/Bin/
 grassdx11/DirectXTK/DirectXTK_Desktop_2019_Win10.vcxproj.user
