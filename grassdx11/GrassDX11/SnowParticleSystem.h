@@ -20,7 +20,7 @@ public:
 	};
 
 public:
-	SnowParticleSystem();
+	SnowParticleSystem(float fGrassRadius);
 	SnowParticleSystem(const SnowParticleSystem&);
 	~SnowParticleSystem();
 
@@ -98,7 +98,9 @@ private:
 	InstanceType* m_instance;
 	ID3D11Buffer* m_vertexBuffer, * m_indexBuffer, * m_instanceBuffer;
 	long _reachGround = 1;
+	float _fTerrRadius = 0.f;
 	float** m_snowCover = nullptr;
+	int _snowCoverTextureSize = 1024;
 	bool isSnowCoverActive = false;
 	bool isCloudMovementActive = false;
 	long m_frame = 0;

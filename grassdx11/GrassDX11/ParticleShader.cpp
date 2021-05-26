@@ -246,8 +246,8 @@ bool ParticleShader::InitializeShader(ID3D11Device* device, ID3D11DeviceContext*
 	/* NEW */
 	CD3D11_TEXTURE2D_DESC dstTexDesc;
 
-	dstTexDesc.Width = 256;
-	dstTexDesc.Height = 256;
+	dstTexDesc.Width = 1024;
+	dstTexDesc.Height = 1024;
 	dstTexDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	dstTexDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	dstTexDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -490,10 +490,10 @@ void ParticleShader::SetSnowCoverTexture(ID3D11DeviceContext* deviceContext)
 	deviceContext->Map(m_pSnowCoverMap, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &MappedTexture);
 
 	float* pTexels = (float*)MappedTexture.pData;
-	for (UINT row = 0; row < 256; row++)
+	for (UINT row = 0; row < 1024; row++)
 	{
 		UINT rowStart = row * MappedTexture.RowPitch / sizeof(float);
-		for (UINT col = 0; col < 256; col++)
+		for (UINT col = 0; col < 1024; col++)
 		{
 			UINT colStart = col * 4;
 			pTexels[rowStart + colStart] = snowCover[row][col];

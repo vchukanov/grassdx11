@@ -4,7 +4,7 @@
 #include "ParticleShader.h"
 #include "SimplexNoise.h"
 
-SnowParticleSystem::SnowParticleSystem()
+SnowParticleSystem::SnowParticleSystem(float fTerrRadius)
 {
 	m_Texture = nullptr;
 	m_TextureView = nullptr;
@@ -15,11 +15,12 @@ SnowParticleSystem::SnowParticleSystem()
 	m_instanceBuffer = nullptr;
 	m_uav = nullptr;
 	m_uavTex = nullptr;
-	m_snowCover = new float* [256];
-	for (int i = 0; i < 256; ++i)
-		m_snowCover[i] = new float[256];
-	for (int i = 0; i < 256; ++i)
-		for (int j = 0; j < 256; ++j)
+	_fTerrRadius = fTerrRadius;
+	m_snowCover = new float* [_snowCoverTextureSize];
+	for (int i = 0; i < _snowCoverTextureSize; ++i)
+		m_snowCover[i] = new float[_snowCoverTextureSize];
+	for (int i = 0; i < _snowCoverTextureSize; ++i)
+		for (int j = 0; j < _snowCoverTextureSize; ++j)
 			m_snowCover[i][j] = 0.f;
 }
 
@@ -29,7 +30,7 @@ SnowParticleSystem::SnowParticleSystem(const SnowParticleSystem& other)
 
 SnowParticleSystem::~SnowParticleSystem()
 {
-	for (int i = 0; i < 256; ++i) {
+	for (int i = 0; i < _snowCoverTextureSize; ++i) {
 		delete[] m_snowCover[i];
 	}
 	delete[] m_snowCover;
@@ -292,8 +293,9 @@ void SnowParticleSystem::UpdateParticles(float delta)
 				//find least way
 				float least = 1.f;
 				int indY = 0, indX = 0;
-				for (int j = intCoord.y - 1 < 0 ? 0 : intCoord.y - 1; j <= (intCoord.y + 1 > 255 ? 255 : intCoord.y + 1); ++j) {
-					for (int k = intCoord.x - 1 < 0 ? 0 : intCoord.x - 1; k <= (intCoord.x + 1 > 255 ? 255 : intCoord.x + 1); ++k) {
+				int max = _snowCoverTextureSize - 1;
+				for (int j = intCoord.y - 1 < 0 ? 0 : intCoord.y - 1; j <= (intCoord.y + 1 > max ? max : intCoord.y + 1); ++j) {
+					for (int k = intCoord.x - 1 < 0 ? 0 : intCoord.x - 1; k <= (intCoord.x + 1 > max ? max : intCoord.x + 1); ++k) {
 						if (m_snowCover[j][k] < least) {
 							least = m_snowCover[j][k];
 							indY = j;
@@ -388,12 +390,16 @@ void SnowParticleSystem::UpdateCloudPosition()
 
 XMUINT2 SnowParticleSystem::GetIntCoord(XMFLOAT2 pos)
 {
-	static const float scaleFactor = 3.125f;
-	static const XMINT2 shift = {128, 128};
-	XMFLOAT2 scaledPos = { pos.x / scaleFactor, pos.y / scaleFactor };
-	XMINT2 intPos = { (int)roundf(scaledPos.x), (int)roundf(scaledPos.y) };
-	auto ans = XMUINT2(iclamp(intPos.x + shift.x, 0, 255), iclamp(intPos.y + shift.y, 0, 255));
-	return ans;
+	//static const float scaleFactor = _fTerrRadius / _snowCoverTextureSize;
+	//static const XMINT2 shift = { _snowCoverTextureSize / 2, _snowCoverTextureSize / 2};
+	//XMFLOAT2 scaledPos = { pos.x / scaleFactor, pos.y / scaleFactor };
+	//XMINT2 intPos = { (int)roundf(scaledPos.x), (int)roundf(scaledPos.y) };
+	//int max = _snowCoverTextureSize - 1;
+	//auto ans = XMUINT2(iclamp(intPos.x + shift.x, 0, max), iclamp(intPos.y + shift.y, 0, max));
+
+	int thres = _snowCoverTextureSize - 1;
+	XMUINT2 intPos = { (UINT)((pos.x + _fTerrRadius) / 2 / _fTerrRadius * _snowCoverTextureSize), (UINT)((pos.y + _fTerrRadius) / 2 / _fTerrRadius * _snowCoverTextureSize) };
+	return XMUINT2(iclamp(intPos.x, 0, thres), iclamp(intPos.y, 0, thres));
 }
 
 bool SnowParticleSystem::UpdateBuffers(ID3D11DeviceContext* deviceContext)

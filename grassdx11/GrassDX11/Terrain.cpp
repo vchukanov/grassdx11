@@ -410,6 +410,7 @@ void Terrain::CreateBuffers(float a_fSize)
          XMStoreFloat3(&pVertices[i * uSideCount + j].vPos, res);
 
          pVertices[i * uSideCount + j].vTexCoord = XMFLOAT2((float)i / (float)(uSideCount - 1), (float)j / (float)(uSideCount - 1));
+         pVertices[i * uSideCount + j].vSnowTexCoord = XMFLOAT2((float)i / 1024.f, (float)j / 1024.f);
       }
 
    for (i = 0; i < uSideCount - 1; i++)
@@ -487,7 +488,8 @@ void Terrain::CreateInputLayout(void)
    D3D11_INPUT_ELEMENT_DESC InputDesc[] =
    {
        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0 , D3D11_INPUT_PER_VERTEX_DATA, 0},
-       { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+       { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+       { "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
    };
    D3DX11_PASS_DESC PassDesc;
    m_pPass->GetDesc(&PassDesc);

@@ -8,6 +8,7 @@ struct TerrainVertex
 {
     XMFLOAT3 vPos;
     XMFLOAT2 vTexCoord;
+    XMFLOAT2 vSnowTexCoord;
 };
 
 struct TerrainHeightData
