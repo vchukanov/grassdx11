@@ -61,6 +61,7 @@ private:
 	void CalculateInstancePositions(int, int);
 	void UpdateCloudPosition();
 	XMUINT2 GetIntCoord(XMFLOAT2 pos);
+	void SnowNeighbors(int x, int y, int num, float addMax, float thres);
 
 	// Particle methods
 	void EmitParticles(float);
