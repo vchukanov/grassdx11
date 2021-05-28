@@ -1,5 +1,6 @@
 #include "SnowParticleSystem.h"
 #include <iostream>
+#include <random>
 #include <WICTextureLoader.h>
 #include "ParticleShader.h"
 #include "SimplexNoise.h"
@@ -261,34 +262,16 @@ void SnowParticleSystem::UpdateParticles(float delta)
 		if (m_instance[i].position.y <= 0.0f)
 		//if (m_particleList[i].age > 80.0f)
 		{
-			if (isSnowCoverActive) {
-				auto intCoord = GetIntCoord(XMFLOAT2(m_instance[i].position.x, m_instance[i].position.z));
-				/*auto value = m_snowCover[intCoord.y][intCoord.x];
-				if (value < 0.6f) {
-					//absolute uniform
-					float kernel = 0.f;
-					kernel += 0.002f * 0.001f / (value > 0.001f ? value : 0.001f);
-					kernel += m_snowCover[intCoord.y - 1 < 0 ? 0 : intCoord.y - 1][intCoord.x - 1 < 0 ? 0 : intCoord.x - 1];
-					kernel += m_snowCover[intCoord.y - 1 < 0 ? 0 : intCoord.y - 1][intCoord.x];
-					kernel += m_snowCover[intCoord.y - 1 < 0 ? 0 : intCoord.y - 1][intCoord.x + 1 > 255 ? 255 : intCoord.x + 1];
-					kernel += m_snowCover[intCoord.y][intCoord.x + 1 > 255 ? 255 : intCoord.x + 1];
-					kernel += m_snowCover[intCoord.y + 1 > 255 ? 255 : intCoord.y + 1][intCoord.x + 1 > 255 ? 255 : intCoord.x + 1];
-					kernel += m_snowCover[intCoord.y + 1 > 255 ? 255 : intCoord.y + 1][intCoord.x];
-					kernel += m_snowCover[intCoord.y + 1 > 255 ? 255 : intCoord.y + 1][intCoord.x - 1 < 0 ? 0 : intCoord.x - 1];
-					kernel += m_snowCover[intCoord.y][intCoord.x - 1 < 0 ? 0 : intCoord.x - 1];
+			auto curSnowFlake = m_instance[i];
+			++_reachGround;
+			m_particlePerSecond = floorf((_reachGround * m_particlePerSecond + m_particleList[i].age) / _reachGround);
 
-					float averageVal = kernel / 9.f;
-				
-					m_snowCover[intCoord.y - 1 < 0 ? 0 : intCoord.y - 1][intCoord.x - 1 < 0 ? 0 : intCoord.x - 1] = averageVal;
-					m_snowCover[intCoord.y - 1 < 0 ? 0 : intCoord.y - 1][intCoord.x] = averageVal;
-					m_snowCover[intCoord.y - 1 < 0 ? 0 : intCoord.y - 1][intCoord.x + 1 > 255 ? 255 : intCoord.x + 1] = averageVal;
-					m_snowCover[intCoord.y][intCoord.x + 1 > 255 ? 255 : intCoord.x + 1] = averageVal;
-					m_snowCover[intCoord.y + 1 > 255 ? 255 : intCoord.y + 1][intCoord.x + 1 > 255 ? 255 : intCoord.x + 1] = averageVal;
-					m_snowCover[intCoord.y + 1 > 255 ? 255 : intCoord.y + 1][intCoord.x] = averageVal;
-					m_snowCover[intCoord.y + 1 > 255 ? 255 : intCoord.y + 1][intCoord.x - 1 < 0 ? 0 : intCoord.x - 1] = averageVal;
-					m_snowCover[intCoord.y][intCoord.x - 1 < 0 ? 0 : intCoord.x - 1] = averageVal;
-					m_snowCover[intCoord.y][intCoord.x] = averageVal;\
-			}*/
+			std::swap(m_particleList[i], m_particleList[m_currentParticleCount - 1]);
+			std::swap(m_instance[i], m_instance[m_currentParticleCount - 1]);
+			--m_currentParticleCount;
+
+			if (isSnowCoverActive) {
+				auto intCoord = GetIntCoord(XMFLOAT2(curSnowFlake.position.x, curSnowFlake.position.z));
 
 				//find least way
 				float least = 1.f;
@@ -304,23 +287,24 @@ void SnowParticleSystem::UpdateParticles(float delta)
 					}
 				}
 					
+				std::random_device rd;
+				std::mt19937 gen(rd());
+				std::uniform_real_distribution<> distrib(0.9, 1.f);
+				float thres = 0.3f;
+
 				float value = m_snowCover[indY][indX];
-				if (value < 0.8f && m_instance[i].inTornado) {
-					float addValue = 0.12f * 0.3f / (value > 0.3f ? value : 0.3f);
-					m_snowCover[indY][indX] += addValue;
+				float addValue = 0.f;
+				if ((value < 2.5 * (thres + float(thres /** 0.1 * SimplexNoise::noise(indY, indX)*/))) && curSnowFlake.inTornado) {
+					addValue = 0.1f * 0.2f / (value > 0.2f ? value : 0.2f);
 				}
-				else if (value < 0.30f) {
-					float addValue = 0.012f * 0.04f / (value > 0.04f ? value : 0.04f);
-					m_snowCover[indY][indX] += addValue;
+				else if (value < (thres + float(thres /** 0.1 * SimplexNoise::noise(indY, indX)*/))) {
+					addValue = 0.01f * 0.01f / (value > 0.01f ? value : 0.01f);
 				}
+
+				m_snowCover[indY][indX] += addValue;
+				SnowNeighbors(indY, indX, 6, addValue, thres);
 			}
 
-			++_reachGround;
-			m_particlePerSecond = floorf((_reachGround * m_particlePerSecond + m_particleList[i].age) / _reachGround);
-
-			std::swap(m_particleList[i], m_particleList[m_currentParticleCount - 1]);
-			std::swap(m_instance[i], m_instance[m_currentParticleCount - 1]);
-			--m_currentParticleCount;
 		}
 	}
 	m_deltaTorandoPos = { 0.f,0.f,0.f };
@@ -400,6 +384,29 @@ XMUINT2 SnowParticleSystem::GetIntCoord(XMFLOAT2 pos)
 	int thres = _snowCoverTextureSize - 1;
 	XMUINT2 intPos = { (UINT)((pos.x + _fTerrRadius) / 2 / _fTerrRadius * _snowCoverTextureSize), (UINT)((pos.y + _fTerrRadius) / 2 / _fTerrRadius * _snowCoverTextureSize) };
 	return XMUINT2(iclamp(intPos.x, 0, thres), iclamp(intPos.y, 0, thres));
+}
+
+void SnowParticleSystem::SnowNeighbors(int x, int y, int num, float addMax, float thres)
+{
+	float delta = addMax / (num + 1);
+	float val = delta;
+	for (int k = num; k != 0; --k) {
+		for (int j = y - k; j < y + k + 1; j++) {
+			int x1 = max(x - k, 0);
+			int x2 = min(x + k, _snowCoverTextureSize - 1);
+			int _y = min(j, _snowCoverTextureSize - 1);
+			m_snowCover[x1][_y] = min(m_snowCover[x1][_y] + val, float(thres /*+ thres * 0.1 * SimplexNoise::noise(x1, _y)*/));
+			m_snowCover[x2][_y] = min(m_snowCover[x2][_y] + val, float(thres /*+ thres * 0.1 * SimplexNoise::noise(x2, _y)*/));
+		}
+		for (int i = x - k + 1; i < x + k; i++) {
+			int y1 = max(y - k, 0);
+			int y2 = min(y + k, _snowCoverTextureSize - 1);
+			int _x = max(i, 0);
+			m_snowCover[_x][y1] = min(m_snowCover[_x][y1] + val, float(thres /*+ thres * 0.1 * SimplexNoise::noise(y1, _x)*/));
+			m_snowCover[_x][y2] = min(m_snowCover[_x][y2] + val, float(thres /*+ thres * 0.1 * SimplexNoise::noise(y2, _x)*/));
+		}
+		val += delta;
+	}
 }
 
 bool SnowParticleSystem::UpdateBuffers(ID3D11DeviceContext* deviceContext)

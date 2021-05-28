@@ -20,6 +20,10 @@ namespace com
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #endif
 
+#ifndef min
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
 
 template <typename scalar>
 inline scalar sqr(const scalar & t) { return t * t; };
