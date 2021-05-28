@@ -432,6 +432,7 @@ bool ParticleShader::SetShaderParameters(ID3D11DeviceContext* deviceContext
 	, XMFLOAT3 tornadoPos
 	, float dt)
 {
+	time += dt;
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 
@@ -471,6 +472,7 @@ bool ParticleShader::SetShaderParameters(ID3D11DeviceContext* deviceContext
 	dataPtr3->tornadoActive = tornadoActive;
 	dataPtr3->copterPos = m_pCopterController->GetPos();
 	dataPtr3->dt = dt;
+	dataPtr3->time = time;
 	deviceContext->Unmap(m_CSConstantBuffer, 0);
 
 	deviceContext->GSSetConstantBuffers(0, 1, &m_matrixBuffer);
