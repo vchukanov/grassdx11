@@ -17,12 +17,14 @@
 //	MIPLODBIAS = -1.0;
 //};
 
-cbuffer TornadoBuffer : register(b0)
+cbuffer CSConstantBuffer : register(b0)
 {
 	float3 tornadoPos;
 	bool tornadoActive;
 	float3 copterPos;
 	float dt;
+	float time;
+	float3 padding;
 };
 
 struct ParticleType
@@ -124,8 +126,8 @@ void CS_main(int3 dispatchThreadID : SV_DispatchThreadID)
 	else {
 		inTornado = false;
 
-		float angle = turbulence(float4(curPos.x / 50, curPos.z / 50, curPos.y, age), 3) * PI * 2;
-		float value = turbulence(float4(curPos.x / 10 + 4000, curPos.z / 10 + 4000, curPos.y, age), 1);
+		float angle = turbulence(float4(curPos.x, curPos.z, curPos.y, time * age), 3) * PI * 2;
+		float value = turbulence(float4(curPos.x + 4000, curPos.z + 4000, curPos.y, time * age), 1);
 		value = value * windScaleFactor;
 
 		x = curPos.x + (value * cos(angle) + fanVx) * dt;

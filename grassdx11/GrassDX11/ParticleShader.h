@@ -33,6 +33,9 @@ private:
 		bool tornadoActive;
 		XMFLOAT3 copterPos;
 		float dt;
+		float time;
+		XMFLOAT3 padding;
+
 	};
 
 public:
@@ -78,6 +81,7 @@ private:
 	ID3D11Buffer* m_CSConstantBuffer;
 	ID3D11SamplerState* m_sampleState;	
 	UINT m_frame = 0;
+	float time = 0.f;
 
 	//===== Compute Shader Components =====
 	ID3D11ComputeShader* mComputeShader;

@@ -274,35 +274,40 @@ void SnowParticleSystem::UpdateParticles(float delta)
 				auto intCoord = GetIntCoord(XMFLOAT2(curSnowFlake.position.x, curSnowFlake.position.z));
 
 				//find least way
-				float least = 1.f;
+				/*float least = 1.f;
 				int indY = 0, indX = 0;
 				int max = _snowCoverTextureSize - 1;
-				for (int j = intCoord.y - 1 < 0 ? 0 : intCoord.y - 1; j <= (intCoord.y + 1 > max ? max : intCoord.y + 1); ++j) {
-					for (int k = intCoord.x - 1 < 0 ? 0 : intCoord.x - 1; k <= (intCoord.x + 1 > max ? max : intCoord.x + 1); ++k) {
+				int step = 1;
+				for (int j = intCoord.y - step < 0 ? 0 : intCoord.y - step; j <= (intCoord.y + step > max ? max : intCoord.y + step); ++j) {
+					for (int k = intCoord.x - step < 0 ? 0 : intCoord.x - step; k <= (intCoord.x + step > max ? max : intCoord.x + step); ++k) {
 						if (m_snowCover[j][k] < least) {
 							least = m_snowCover[j][k];
 							indY = j;
 							indX = k;
 						}
 					}
-				}
+				}*/
+
+				int indY = intCoord.y, indX = intCoord.x;
 					
 				std::random_device rd;
 				std::mt19937 gen(rd());
-				std::uniform_real_distribution<> distrib(0.9, 1.f);
-				float thres = 0.3f;
+				std::uniform_real_distribution<> distrib(0.5f, 1.5f);
+				float const thresUsual = 0.4f;
+				float const thresTornado = 0.75f;
 
 				float value = m_snowCover[indY][indX];
 				float addValue = 0.f;
-				if ((value < 2.5 * (thres + float(thres /** 0.1 * SimplexNoise::noise(indY, indX)*/))) && curSnowFlake.inTornado) {
-					addValue = 0.1f * 0.2f / (value > 0.2f ? value : 0.2f);
+				if (curSnowFlake.inTornado && (value < (thresTornado /*+ float(0.2 * SimplexNoise::noise(indY/ 10, indX / 10))*/))) {
+					addValue = 0.1f * 0.2f / (value > 0.2f ? value : 0.2f) * distrib(gen);
+					m_snowCover[indY][indX] += addValue;
+					SnowNeighbors(indY, indX, 5, addValue, thresTornado);
 				}
-				else if (value < (thres + float(thres /** 0.1 * SimplexNoise::noise(indY, indX)*/))) {
-					addValue = 0.01f * 0.01f / (value > 0.01f ? value : 0.01f);
+				else if (value < (thresUsual /*+ float(0.2 * SimplexNoise::noise(indY / 10, indX /10))*/)) {
+					addValue = 0.005f * 0.05f / (value > 0.05f ? value : 0.05f) * distrib(gen);
+					m_snowCover[indY][indX] += addValue;
+					SnowNeighbors(indY, indX, 4, addValue, thresUsual);
 				}
-
-				m_snowCover[indY][indX] += addValue;
-				SnowNeighbors(indY, indX, 6, addValue, thres);
 			}
 
 		}
@@ -394,16 +399,16 @@ void SnowParticleSystem::SnowNeighbors(int x, int y, int num, float addMax, floa
 		for (int j = y - k; j < y + k + 1; j++) {
 			int x1 = max(x - k, 0);
 			int x2 = min(x + k, _snowCoverTextureSize - 1);
-			int _y = min(j, _snowCoverTextureSize - 1);
-			m_snowCover[x1][_y] = min(m_snowCover[x1][_y] + val, float(thres /*+ thres * 0.1 * SimplexNoise::noise(x1, _y)*/));
-			m_snowCover[x2][_y] = min(m_snowCover[x2][_y] + val, float(thres /*+ thres * 0.1 * SimplexNoise::noise(x2, _y)*/));
+			int _y = max(min(j, _snowCoverTextureSize - 1), 0);
+			m_snowCover[x1][_y] = min(m_snowCover[x1][_y] + val, thres /*+ float(0.2 * SimplexNoise::noise(x1 / 10, _y / 10))*/);
+			m_snowCover[x2][_y] = min(m_snowCover[x2][_y] + val, thres /*+ float(0.2 * SimplexNoise::noise(x2 / 10, _y / 10))*/);
 		}
 		for (int i = x - k + 1; i < x + k; i++) {
 			int y1 = max(y - k, 0);
 			int y2 = min(y + k, _snowCoverTextureSize - 1);
-			int _x = max(i, 0);
-			m_snowCover[_x][y1] = min(m_snowCover[_x][y1] + val, float(thres /*+ thres * 0.1 * SimplexNoise::noise(y1, _x)*/));
-			m_snowCover[_x][y2] = min(m_snowCover[_x][y2] + val, float(thres /*+ thres * 0.1 * SimplexNoise::noise(y2, _x)*/));
+			int _x = min(max(i, 0), _snowCoverTextureSize - 1);
+			m_snowCover[_x][y1] = min(m_snowCover[_x][y1] + val, thres /*+ float(0.2 * SimplexNoise::noise(y1 / 10, _x / 10))*/);
+			m_snowCover[_x][y2] = min(m_snowCover[_x][y2] + val, thres /*+ float(0.2 * SimplexNoise::noise(y2 / 10, _x / 10))*/);
 		}
 		val += delta;
 	}
