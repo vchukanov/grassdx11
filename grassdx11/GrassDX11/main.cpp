@@ -887,7 +887,6 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
    
    // Render grass
    RenderGrass(pd3dDevice, pd3dImmediateContext, mView, mProj, fElapsedTime);
-   TurnZBufferOff(pd3dImmediateContext);
 
    // Render snow
    g_ParticleSystem->Frame(fElapsedTime, pd3dImmediateContext);
@@ -895,6 +894,8 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
    g_ParticleSystem->Render(pd3dImmediateContext);
    g_ParticleShader->Render(pd3dImmediateContext, g_ParticleSystem, g_Camera, fElapsedTime);
    TurnOffAlphaBlending();
+
+   TurnZBufferOff(pd3dImmediateContext);
 
    XMMATRIX mViewProj;
    mViewProj = mul(mView, mProj);
