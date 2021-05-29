@@ -1002,6 +1002,12 @@ void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserC
       case VK_NUMPAD1:
           g_ParticleSystem->ToggleCloudMovement();
           break;
+      case VK_NUMPAD2:
+          g_ParticleSystem->SaveState();
+          break;
+      case VK_NUMPAD3:
+          g_ParticleSystem->RestoreState();
+          break;
       }
    }
    else

@@ -10,7 +10,9 @@ SnowParticleSystem::SnowParticleSystem(float fTerrRadius)
 	m_Texture = nullptr;
 	m_TextureView = nullptr;
 	m_particleList = nullptr;
+	m_particleListSaved = nullptr;
 	m_instance = nullptr;
+	m_instanceSaved = nullptr;
 	m_vertexBuffer = nullptr;
 	m_indexBuffer = nullptr;
 	m_instanceBuffer = nullptr;
@@ -37,10 +39,12 @@ SnowParticleSystem::~SnowParticleSystem()
 	delete[] m_snowCover;
 
 	SAFE_DELETE(m_instance);
+	SAFE_DELETE(m_instanceSaved);
 	SAFE_RELEASE(m_indexBuffer);
 	SAFE_RELEASE(m_vertexBuffer);
 
 	SAFE_DELETE_ARRAY(m_particleList);
+	SAFE_DELETE_ARRAY(m_particleListSaved);
 	SAFE_RELEASE(m_Texture);
 	SAFE_RELEASE(m_TextureView);
 
@@ -111,7 +115,8 @@ bool SnowParticleSystem::InitializeParticleSystem(int maxParticles)
 	m_maxParticles = m_instanceCount = maxParticles; // 5000 instances of one particle
 
 	m_particleList = new ParticleType[m_maxParticles];
-	if (!m_particleList)
+	m_particleListSaved = new ParticleType[m_maxParticles];
+	if (!m_particleList || !m_particleListSaved)
 		return false;
 
 	m_currentParticleCount = 0;
@@ -185,7 +190,8 @@ bool SnowParticleSystem::InitializeBuffers(ID3D11Device* device, ID3D11DeviceCon
 	//Begining of instanceing
 
 	m_instance = new InstanceType[m_instanceCount];
-	if (!m_instance)
+	m_instanceSaved = new InstanceType[m_instanceCount];
+	if (!m_instance || !m_instanceSaved)
 		return false;
 
 	instanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -294,17 +300,17 @@ void SnowParticleSystem::UpdateParticles(float delta)
 				std::mt19937 gen(rd());
 				std::uniform_real_distribution<> distrib(0.5f, 1.5f);
 				float const thresUsual = 0.4f;
-				float const thresTornado = 0.75f;
+				float const thresTornado = 0.7f;
 
 				float value = m_snowCover[indY][indX];
 				float addValue = 0.f;
 				if (curSnowFlake.inTornado && (value < (thresTornado /*+ float(0.2 * SimplexNoise::noise(indY/ 10, indX / 10))*/))) {
-					addValue = 0.1f * 0.2f / (value > 0.2f ? value : 0.2f) * distrib(gen);
+					addValue = 0.02f * 0.1f / (value > 0.1f ? value : 0.1f) * distrib(gen);
 					m_snowCover[indY][indX] += addValue;
-					SnowNeighbors(indY, indX, 5, addValue, thresTornado);
+					SnowNeighbors(indY, indX, 12, addValue, thresTornado);
 				}
 				else if (value < (thresUsual /*+ float(0.2 * SimplexNoise::noise(indY / 10, indX /10))*/)) {
-					addValue = 0.005f * 0.05f / (value > 0.05f ? value : 0.05f) * distrib(gen);
+					addValue = 0.003f * 0.06f / (value > 0.06f ? value : 0.06f) * distrib(gen);
 					m_snowCover[indY][indX] += addValue;
 					SnowNeighbors(indY, indX, 4, addValue, thresUsual);
 				}
