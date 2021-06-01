@@ -103,7 +103,7 @@
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <LibraryPath>C:\Program Stuff\Diploma\grassdx11-1\grassdx11\GrassDX11\Libs;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64$(SolutionDir)\Libs;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64$(SolutionDir)\Libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -203,7 +203,7 @@
       <TargetMachine>MachineX64</TargetMachine>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
-      <AdditionalLibraryDirectories>..\DirectXTex\Bin\Desktop_2019_Win10\x64\Debug;..\DXUT\Optional\Bin\Desktop_2017_Win10\x64\Debug;..\DirectXTK\Bin\Desktop_2019_Win10\x64\Debug;..\Effects11\Bin\Desktop_2019_Win10\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>assimp\Lib;..\DirectXTex\Bin\Desktop_2019_Win10\x64\Debug;..\DXUT\Optional\Bin\Desktop_2017_Win10\x64\Debug;..\DirectXTK\Bin\Desktop_2019_Win10\x64\Debug;..\Effects11\Bin\Desktop_2019_Win10\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDPIAwareness>PerMonitorHighDPIAware</EnableDPIAwareness>
