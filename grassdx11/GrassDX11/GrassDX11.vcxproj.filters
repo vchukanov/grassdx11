@@ -364,6 +364,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\GrassType1.fx" />
+    <FxCompile Include="Shaders\GrassType1.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

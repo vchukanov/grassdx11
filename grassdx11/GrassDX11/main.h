@@ -34,6 +34,8 @@
 //--------------------------------------------------------------------------------------
 int g_windowWidth = 1920;
 int g_windowHeight = 1080;
+//int g_windowWidth = 1600;
+//int g_windowHeight = 900;
 
 
 //
@@ -58,7 +60,7 @@ Mesh                                *g_pMeshes[MAX_NUM_MESHES];
 DebugWindow                         *g_dbgWin;
 
 // Snow Particle System
-int g_totalParticles = 250000;
+int g_totalParticles = 10000;
 ParticleShader* g_ParticleShader = nullptr;
 SnowParticleSystem* g_ParticleSystem = nullptr;
 
