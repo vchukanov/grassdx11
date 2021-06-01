@@ -93,10 +93,10 @@ bool SnowParticleSystem::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* 
 bool SnowParticleSystem::InitializeParticleSystem(int maxParticles)
 {
 	//������� ����
-	//m_particleDeviationX = 400.0f;
-	//m_particleDeviationZ = 400.0f;
-	m_particleDeviationX = 100.0f;
-	m_particleDeviationZ = 100.0f;
+	m_particleDeviationX = 80.f;
+	m_particleDeviationZ = 80.f;
+	//m_particleDeviationX = 100.0f;
+	//m_particleDeviationZ = 100.0f;
 	m_particleDeviationY = 0.0f;
 
 	m_particleVeclocity = 1.0f;
@@ -303,11 +303,14 @@ void SnowParticleSystem::UpdateParticles(float delta)
 				}
 					
 				float value = m_snowCover[indY][indX];
-				if (value < 0.30f) {
-					float addValue = 0.015f * 0.06f / (value > 0.06f ? value : 0.06f);
+				if (value < 0.8f && m_instance[i].inTornado) {
+					float addValue = 0.12f * 0.3f / (value > 0.3f ? value : 0.3f);
 					m_snowCover[indY][indX] += addValue;
 				}
-				
+				else if (value < 0.30f) {
+					float addValue = 0.012f * 0.04f / (value > 0.04f ? value : 0.04f);
+					m_snowCover[indY][indX] += addValue;
+				}
 			}
 
 			++_reachGround;
@@ -373,11 +376,13 @@ void SnowParticleSystem::UpdateCloudPosition()
 	if (isCloudMovementActive) {
 		m_cloudPos.x = meanX / countParticle;
 		m_cloudPos.z = meanZ / countParticle;
+		//m_deltaTorandoPos.x += (m_cloudPos.x - m_tornadoPos.x);
+		//m_deltaTorandoPos.z += (m_cloudPos.z - m_tornadoPos.z);
 	}
 
 	if (!_tornadoActive || !_manualTornadoContral) {
-		m_tornadoPos.x = m_cloudPos.x;
-		m_tornadoPos.z = m_cloudPos.z;
+		m_tornadoPos.x = meanX / countParticle;
+		m_tornadoPos.z = meanZ / countParticle;
 	}
 }
 

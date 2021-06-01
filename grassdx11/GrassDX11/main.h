@@ -32,8 +32,8 @@
 //--------------------------------------------------------------------------------------
 // Global variables
 //--------------------------------------------------------------------------------------
-int g_windowWidth = 1600;
-int g_windowHeight = 900;
+int g_windowWidth = 1920;
+int g_windowHeight = 1080;
 
 
 //
@@ -59,7 +59,7 @@ int                                  g_fNumOfMeshes = 0;
 DebugWindow                         *g_dbgWin;
 
 // Snow Particle System
-int g_totalParticles = 150000;
+int g_totalParticles = 250000;
 ParticleShader* g_ParticleShader = nullptr;
 SnowParticleSystem* g_ParticleSystem = nullptr;
 
