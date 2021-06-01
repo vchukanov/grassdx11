@@ -44,15 +44,25 @@ public:
 	void SetParticlesPerSecond(int value) { m_particlePerSecond = value; }
 	void ToggleSnowCover() { isSnowCoverActive = !isSnowCoverActive; }
 	void ToggleCloudMovement() { isCloudMovementActive = !isCloudMovementActive; }
+	void SaveState() { 
+		memcpy(m_particleListSaved, m_particleList, m_maxParticles * sizeof(ParticleType)); 
+		memcpy(m_instanceSaved, m_instance, m_maxParticles * sizeof(InstanceType));
+		m_currentParticleCountSaved = m_currentParticleCount;
+	};
+	void RestoreState() { 
+		memcpy(m_particleList, m_particleListSaved, m_maxParticles * sizeof(ParticleType));
+		memcpy(m_instance, m_instanceSaved, m_maxParticles * sizeof(InstanceType));
+		m_currentParticleCount = m_currentParticleCountSaved;
+	}
 
 	/*TORNADO*/
 	XMFLOAT3 GetTornadoPos() { return m_tornadoPos; }
 	void ToggleTornado() { _tornadoActive = !_tornadoActive; }
 	bool IsTornadoActive() { return _tornadoActive; }
-	void MoveTornadoForward() { m_tornadoPos.z += 0.5f; m_deltaTorandoPos.z += 0.5f; _manualTornadoContral = true; }
-	void MoveTornadoBack() { m_tornadoPos.z -= 0.5f; m_deltaTorandoPos.z -= 0.5f; _manualTornadoContral = true;}
-	void MoveTornadoLeft() { m_tornadoPos.x -= 0.5f; m_deltaTorandoPos.x -= 0.5f; _manualTornadoContral = true;}
-	void MoveTornadoRight() { m_tornadoPos.x += 0.5f; m_deltaTorandoPos.x += 0.5f; _manualTornadoContral = true;}
+	void MoveTornadoForward() { m_tornadoPos.z += 0.3f; m_deltaTorandoPos.z += 0.3f; _manualTornadoContral = true; }
+	void MoveTornadoBack() { m_tornadoPos.z -= 0.3f; m_deltaTorandoPos.z -= 0.3f; _manualTornadoContral = true;}
+	void MoveTornadoLeft() { m_tornadoPos.x -= 0.3f; m_deltaTorandoPos.x -= 0.3f; _manualTornadoContral = true;}
+	void MoveTornadoRight() { m_tornadoPos.x += 0.3f; m_deltaTorandoPos.x += 0.3f; _manualTornadoContral = true;}
 private:
 	// Initialize
 	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, const WCHAR*);
@@ -85,6 +95,7 @@ private:
 	int m_maxParticles;
 
 	int m_currentParticleCount;
+	int m_currentParticleCountSaved;
 	float m_accumulatedTime;
 
 	ID3D11UnorderedAccessView* m_uav;
@@ -94,9 +105,11 @@ private:
 	ID3D11ShaderResourceView* m_TextureView;
 
 	ParticleType* m_particleList;
+	ParticleType* m_particleListSaved;
 
 	int m_vertexCount, m_indexCount, m_instanceCount;
 	InstanceType* m_instance;
+	InstanceType* m_instanceSaved;
 	ID3D11Buffer* m_vertexBuffer, * m_indexBuffer, * m_instanceBuffer;
 	long _reachGround = 1;
 	float _fTerrRadius = 0.f;
