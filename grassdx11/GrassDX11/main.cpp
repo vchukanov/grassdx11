@@ -535,7 +535,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 
 
    // Create the particle system object.
-   g_ParticleSystem = new SnowParticleSystem;
+   g_ParticleSystem = new SnowParticleSystem(g_GrassInitState.fTerrRadius);
    if (!g_ParticleSystem)
    {
        return false;

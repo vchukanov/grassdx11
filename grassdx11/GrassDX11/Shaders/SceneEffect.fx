@@ -90,6 +90,7 @@ struct TerrVSIn
 {
     float3 vPos      : POSITION;
     float2 vTexCoord : TEXCOORD0;
+    float2 vSnowTexCoord : TEXCOORD1;
 
     float3 tangent  : TANGENT;
     float3 normal   : NORMAL;
@@ -103,6 +104,7 @@ struct TerrPSIn
     float4 vShadowPos : TEXCOORD0;
     float4 vTexCoord  : TEXCOORD1;
 
+    float2 vSnowTexCoord  : TEXCOORD2;
     float3 tanLightDir  : POSITION0;
     float3 tanViewPos   : POSITION1;
     float3 tanFragPos   : POSITION2;
@@ -374,6 +376,7 @@ TerrPSIn TerrainVSMain( TerrVSIn Input )
     Output.vTexCoord.xy  = Input.vTexCoord;
     Output.vTexCoord.z   = FogValue(length(vWorldPos - g_mInvCamView[3].xyz));
     Output.vTexCoord.w   = length(vWorldPos - g_mInvCamView[3].xyz);
+    Output.vSnowTexCoord = Input.vSnowTexCoord;
     Output.vShadowPos   = mul( vWorldPos, g_mLightViewProj);    
 
     //float3 T = normalize(float3(model * vec4(aTangent,   0.0)));
@@ -620,7 +623,7 @@ float4 TerrainPSMain( TerrPSIn Input ): SV_Target
     float3 vGrassColor = g_txTerrGrass.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
     vGrassColor.xyz *= float3(0.22, 0.25, 0);
     float3 vGrassSnowedColor = g_txTerrGrassSnowed.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
-    alphaValue = clamp(length(g_txSnowCover.Sample(g_samLinear, Input.vTexCoord.xy).r), 0.0, 1.0);
+    float alphaValue = clamp(length(g_txSnowCover.Sample(g_samLinear, Input.vSnowTexCoord.xy).r), 0.0, 1.0);
     float3 vGrassBlendColor = (alphaValue * vGrassSnowedColor) + ((1.0 - alphaValue) * vGrassColor);
 
     float3 vSandColor = g_txSandDiffuse.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;

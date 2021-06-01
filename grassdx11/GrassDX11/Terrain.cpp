@@ -412,6 +412,7 @@ void Terrain::CreateInputLayout(void)
    {
        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+       { "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
        { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT,  0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
       { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT,  0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
       { "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
@@ -525,6 +526,7 @@ void Terrain::CreateBuffers(float a_fSize)
 
          XMFLOAT2 textCoord = {(float)i / (float)(m_uSideCount - 1), (float)j / (float)(m_uSideCount - 1) };
          pVertices[i * m_uSideCount + j].vTexCoord = XMFLOAT2(textCoord.x, textCoord.y);
+         pVertices[i * uSideCount + j].vSnowTexCoord = XMFLOAT2((float)i / 1024.f, (float)j / 1024.f);
          pVertices[i * m_uSideCount + j].normal = m_HeightData.GetNormal(textCoord.x, textCoord.y);
       }
 
