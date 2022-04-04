@@ -103,7 +103,7 @@
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <LibraryPath>C:\Program Stuff\Diploma\grassdx11-1\grassdx11\GrassDX11\Libs;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64$(SolutionDir)\Libs;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64$(SolutionDir)\Libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -156,7 +156,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
-      <AdditionalLibraryDirectories>..\DirectXTex\Bin\Desktop_2019_Win10\Win32\Debug;..\DXUT\Optional\Bin\Desktop_2017_Win10\Win32\Debug;..\DirectXTK\Bin\Desktop_2019_Win10\Win32\Debug;..\Effects11\Bin\Desktop_2019_Win10\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\..\..\Program Files\Assimp\lib\x64;..\DirectXTex\Bin\Desktop_2019_Win10\Win32\Debug;..\DXUT\Optional\Bin\Desktop_2017_Win10\Win32\Debug;..\DirectXTK\Bin\Desktop_2019_Win10\Win32\Debug;..\Effects11\Bin\Desktop_2019_Win10\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDPIAwareness>PerMonitorHighDPIAware</EnableDPIAwareness>
@@ -172,7 +172,7 @@
     <FxCompile>
       <ShaderType>Effect</ShaderType>
       <EntryPointName />
-      <ShaderModel>4.0</ShaderModel>
+      <ShaderModel>5.0</ShaderModel>
       <EnableDebuggingInformation>true</EnableDebuggingInformation>
     </FxCompile>
   </ItemDefinitionGroup>
@@ -203,7 +203,7 @@
       <TargetMachine>MachineX64</TargetMachine>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
-      <AdditionalLibraryDirectories>..\DirectXTex\Bin\Desktop_2019_Win10\x64\Debug;..\DXUT\Optional\Bin\Desktop_2017_Win10\x64\Debug;..\DirectXTK\Bin\Desktop_2019_Win10\x64\Debug;..\Effects11\Bin\Desktop_2019_Win10\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>assimp\Lib;..\DirectXTex\Bin\Desktop_2019_Win10\x64\Debug;..\DXUT\Optional\Bin\Desktop_2017_Win10\x64\Debug;..\DirectXTK\Bin\Desktop_2019_Win10\x64\Debug;..\Effects11\Bin\Desktop_2019_Win10\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDPIAwareness>PerMonitorHighDPIAware</EnableDPIAwareness>
@@ -302,7 +302,7 @@
       <TargetMachine>MachineX64</TargetMachine>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
-      <AdditionalLibraryDirectories>..\DirectXTex\Bin\Desktop_2019_Win10\x64\Release;..\DXUT\Optional\Bin\Desktop_2017_Win10\x64\Release;..\DirectXTK\Bin\Desktop_2019_Win10\x64\Release;..\Effects11\Bin\Desktop_2019_Win10\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>assimp\Lib;..\DirectXTex\Bin\Desktop_2019_Win10\x64\Release;..\DXUT\Optional\Bin\Desktop_2017_Win10\x64\Release;..\DirectXTK\Bin\Desktop_2019_Win10\x64\Release;..\Effects11\Bin\Desktop_2019_Win10\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDPIAwareness>PerMonitorHighDPIAware</EnableDPIAwareness>
@@ -456,10 +456,13 @@
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="ModelLoader.cpp" />
     <ClCompile Include="NewDel.cpp" />
+    <ClCompile Include="ParticleShader.cpp" />
     <ClCompile Include="PhysMath.cpp" />
     <ClCompile Include="PhysPatch.cpp" />
     <ClCompile Include="plane.cpp" />
     <ClCompile Include="ShadowMapping.cpp" />
+    <ClCompile Include="SimplexNoise.cpp" />
+    <ClCompile Include="SnowParticleSystem.cpp" />
     <ClCompile Include="StateManager.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
@@ -509,11 +512,15 @@
     <ClInclude Include="mtxfrustum.h" />
     <ClInclude Include="NewDel.h" />
     <ClInclude Include="ObjArray.h" />
+    <ClInclude Include="ParticleShader.h" />
     <ClInclude Include="PhysMath.h" />
     <ClInclude Include="PhysPatch.h" />
     <ClInclude Include="plane.h" />
     <ClInclude Include="ShadowMapping.h" />
+    <ClInclude Include="SimplexNoise.h" />
+    <ClInclude Include="SnowParticleSystem.h" />
     <ClInclude Include="StateManager.h" />
+    <ClInclude Include="SnowParticleTypes.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="TexturesMixer.h" />
@@ -525,9 +532,25 @@
     <FxCompile Include="Shaders\GrassType1.fx">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
     </FxCompile>
+    <FxCompile Include="Shaders\SceneEffect.fx" />
+    <Text Include="Shaders\SnowParticleGS.hlsl">
+      <FileType>Document</FileType>
+    </Text>
+    <Text Include="Shaders\SnowParticlePS.hlsl">
+      <FileType>Document</FileType>
+    </Text>
+    <Text Include="Shaders\SnowParticleVS.hlsl">
+      <FileType>Document</FileType>
+    </Text>
+    <Text Include="Shaders\SnowParticleCS.hlsl">
+      <FileType>Document</FileType>
+    </Text>
     <FxCompile Include="Shaders\States.fx">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\Noises.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -34,6 +34,7 @@ public:
    void SetDeltaSlices      (float a_fValue);
    void SetShift            (float a_fValue);
    void SetAngleSpeed       (float a_fValue);
+   ID3D11ShaderResourceView* GetAxesFanFlowTexture() { return m_shaderResourceViewPre; }
 
 private:
    void SetRenderTarget   (ID3D11DepthStencilView* pRT);

@@ -62,6 +62,8 @@ public:
    void UnfixCam     (void) { fixCam = false; }
    void FixCam       (void) { fixCam = true; }
 
+   XMFLOAT3 GetPos() { return XMFLOAT3(getx(position), gety(position), getz(position)); }
+
 private:
    void UpdateInput (void);
 

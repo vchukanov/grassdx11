@@ -200,16 +200,17 @@ Terrain::Terrain(ID3D11Device* a_pD3DDevice, ID3D11DeviceContext* a_pD3DDeviceCt
    m_pLightMapESRV = a_pEffect->GetVariableByName("g_txLightMap")->AsShaderResource();
 
    ID3DX11EffectShaderResourceVariable* pESRV;
-   pESRV = a_pEffect->GetVariableByName("g_txGrassDiffuse")->AsShaderResource();
-
    ID3D11ShaderResourceView* pSRV;
-   
+   pESRV = a_pEffect->GetVariableByName("g_txGrassDiffuse")->AsShaderResource();
    HRESULT hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Grass.dds", nullptr, &pSRV);
    pESRV->SetResource(pSRV);
 
-   pESRV = a_pEffect->GetVariableByName("g_txTerrDiffuse")->AsShaderResource();
-   hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Terrain/Terrain_diffuse.dds", nullptr, &pSRV);
-   pESRV->SetResource(pSRV);
+   pESRV = a_pEffect->GetVariableByName("g_txSandDiffuse")->AsShaderResource();
+   hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Terrain/Terrain_diffuse.dds", nullptr, &m_pSandSRV);
+   pESRV->SetResource(m_pSandSRV);
+   pESRV = a_pEffect->GetVariableByName("g_txSandSnowedDiffuse")->AsShaderResource();
+   hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/SandSnowed.dds", nullptr, &m_pSandSnowedSRV);
+   pESRV->SetResource(m_pSandSnowedSRV);
 
    pESRV = a_pEffect->GetVariableByName("g_txTerrHeight")->AsShaderResource();
    hr = CreateDDSTextureFromFile(m_pD3DDevice, L"resources/Terrain/Terrain_height.dds", nullptr, &pSRV);
@@ -238,6 +239,8 @@ Terrain::~Terrain(void)
    SAFE_RELEASE(m_pVertexBuffer);
    SAFE_RELEASE(m_pIndexBuffer);
    SAFE_RELEASE(m_pHeightMapSRV);
+   SAFE_RELEASE(m_pSandSRV);
+   SAFE_RELEASE(m_pSandSnowedSRV);
    SAFE_RELEASE(m_pLightMapSRV);
    SAFE_RELEASE(m_pLightMapRTV);
    SAFE_RELEASE(m_pLightMap);
@@ -407,8 +410,9 @@ void Terrain::CreateInputLayout(void)
 {
    D3D11_INPUT_ELEMENT_DESC InputDesc[] =
    {
-       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-       { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+       { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+       { "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
        { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT,  0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
       { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT,  0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
       { "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
@@ -522,6 +526,7 @@ void Terrain::CreateBuffers(float a_fSize)
 
          XMFLOAT2 textCoord = {(float)i / (float)(m_uSideCount - 1), (float)j / (float)(m_uSideCount - 1) };
          pVertices[i * m_uSideCount + j].vTexCoord = XMFLOAT2(textCoord.x, textCoord.y);
+         pVertices[i * m_uSideCount + j].vSnowTexCoord = XMFLOAT2((float)i / 1024.f, (float)j / 1024.f);
          pVertices[i * m_uSideCount + j].normal = m_HeightData.GetNormal(textCoord.x, textCoord.y);
       }
 

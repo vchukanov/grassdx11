@@ -57,19 +57,19 @@ Texture2D g_txShadowMap;
 Texture2D g_txSeatingT1;
 Texture2D g_txSeatingT2;
 Texture2D g_txSeatingT3;
+Texture2D g_txSnowCover;
 Texture2D g_txHeightMap;
 Texture2D g_txLightMap;
 Texture2D g_txSkyBox;
 Texture2D g_txTerrGrass;
+Texture2D g_txTerrGrassSnowed;
+Texture2D g_txSandDiffuse;
+Texture2D g_txSandSnowedDiffuse;
 
-Texture2D g_txGrassDiffuse;
-Texture2D g_txGrassHeight;
-Texture2D g_txGrassNormal;
-
-Texture2D g_txTerrDiffuse;
 Texture2D g_txTerrHeight;
 Texture2D g_txTerrNormal;
-
+Texture2D g_txGrassNormal;
+Texture2D g_txGrassHeight;
 
 // Mesh textures
 Texture2D g_txMeshMapKd;
@@ -90,6 +90,7 @@ struct TerrVSIn
 {
     float3 vPos      : POSITION;
     float2 vTexCoord : TEXCOORD0;
+    float2 vSnowTexCoord : TEXCOORD1;
 
     float3 tangent  : TANGENT;
     float3 normal   : NORMAL;
@@ -103,6 +104,7 @@ struct TerrPSIn
     float4 vShadowPos : TEXCOORD0;
     float4 vTexCoord  : TEXCOORD1;
 
+    float2 vSnowTexCoord  : TEXCOORD2;
     float3 tanLightDir  : POSITION0;
     float3 tanViewPos   : POSITION1;
     float3 tanFragPos   : POSITION2;
@@ -374,6 +376,7 @@ TerrPSIn TerrainVSMain( TerrVSIn Input )
     Output.vTexCoord.xy  = Input.vTexCoord;
     Output.vTexCoord.z   = FogValue(length(vWorldPos - g_mInvCamView[3].xyz));
     Output.vTexCoord.w   = length(vWorldPos - g_mInvCamView[3].xyz);
+    Output.vSnowTexCoord = Input.vSnowTexCoord;
     Output.vShadowPos   = mul( vWorldPos, g_mLightViewProj);    
 
     //float3 T = normalize(float3(model * vec4(aTangent,   0.0)));
@@ -618,13 +621,17 @@ float4 TerrainPSMain( TerrPSIn Input ): SV_Target
     float2 fDot = g_txLightMap.Sample(g_samLinear, Input.vTexCoord.xy).rg;
   
     float3 vGrassColor = g_txTerrGrass.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
-    vGrassColor *= float3(0.22, 0.25, 0.00);
-    
-    float3 vSandColor = g_txTerrDiffuse.Sample(g_samLinear, texCoords).xyz;
+    vGrassColor.xyz *= float3(0.22, 0.25, 0);
+    float3 vGrassSnowedColor = g_txTerrGrassSnowed.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
+    float blendSnowAlphaValue = clamp(length(g_txSnowCover.Sample(g_samLinear, Input.vSnowTexCoord.xy).r), 0.0, 1.0);
+    float3 vGrassBlendColor = (blendSnowAlphaValue * vGrassSnowedColor) + ((1.0 - blendSnowAlphaValue) * vGrassColor);
+
+    float3 vSandColor = g_txSandDiffuse.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
     vSandColor *= float3(0.37, 0.37, 0.28);
- 
-    //float3 blendColor = (alphaValue * vGrassColor) + ((1.0 - alphaValue) * vSandColor);
-    float3 blendColor = Blend(float4(vGrassColor, 1), alphaValue, float4(vSandColor, 1), 1 - alphaValue);
+    float3 vSandSnowedColor = g_txSandSnowedDiffuse.Sample(g_samLinear, Input.vTexCoord.xy * 64).xyz;
+    float3 vSandBlendColor = (blendSnowAlphaValue * vSandSnowedColor) + ((1.0 - blendSnowAlphaValue) * vSandColor);
+   
+    float3 blendColor = (alphaValue * vGrassBlendColor) + ((1.0 - alphaValue) * vSandBlendColor);
 
     float3 vL = blendColor * max(0.8, (2.0 + 5.0 * fDot.y) * 0.5);
 	float fLimDist = clamp((Input.vTexCoord.w - 140.0) / 20.0, 0.0, 1.0);
@@ -665,7 +672,7 @@ technique10 Render
 {    
     pass RenderTerrainPass
     {
-        SetVertexShader( CompileShader( vs_5_0, TerrainVSMain() ) );
+        SetVertexShader( CompileShader( vs_4_0, TerrainVSMain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, TerrainPSMain() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );
@@ -675,7 +682,7 @@ technique10 Render
 
     pass RenderMeshPass
     {
-        SetVertexShader( CompileShader( vs_5_0, MeshVSMain() ) );
+        SetVertexShader( CompileShader( vs_4_0, MeshVSMain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, MeshPSMain() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
@@ -684,7 +691,7 @@ technique10 Render
 
     pass RenderMeshPassDbg
     {
-        SetVertexShader( CompileShader( vs_5_0, MeshVSMain() ) );
+        SetVertexShader( CompileShader( vs_4_0, MeshVSMain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, MeshPSMainDbg() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
@@ -702,7 +709,7 @@ technique10 Render
 
     pass RenderLightMapPass
     {
-        SetVertexShader( CompileShader( vs_5_0, LightMapVSMain() ) );
+        SetVertexShader( CompileShader( vs_4_0, LightMapVSMain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, LightMapPSMain() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
@@ -724,7 +731,7 @@ technique10 RenderSkyBox
 {
 	pass RenderPass
     {
-        SetVertexShader( CompileShader( vs_5_0, VSSkymain() ) );
+        SetVertexShader( CompileShader( vs_4_0, VSSkymain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, PSSkymain() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   
@@ -735,7 +742,7 @@ technique10 RenderCar
 {
 	pass RenderPass
     {
-        SetVertexShader( CompileShader( vs_5_0, VSCarmain() ) );
+        SetVertexShader( CompileShader( vs_4_0, VSCarmain() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, PSCarmain0() ) ); 
         SetBlendState( NonAlphaState, float4( 0.0f, 0.0f, 0.0f, 0.0f ), 0xFFFFFFFF );   

@@ -8,6 +8,7 @@ struct TerrainVertex
 {
     XMFLOAT3 vPos;
     XMFLOAT2 vTexCoord;
+    XMFLOAT2 vSnowTexCoord;
 
     XMFLOAT3 tangent;
     XMFLOAT3 normal;
@@ -37,6 +38,9 @@ class Terrain
 {
 private:
     /* Just a simple textured grid */
+    ID3D11ShaderResourceView            *m_pGrassSRV;
+    ID3D11ShaderResourceView            *m_pSandSRV;
+    ID3D11ShaderResourceView            *m_pSandSnowedSRV;
     ID3D11ShaderResourceView            *m_pHeightMapSRV;
     ID3DX11EffectShaderResourceVariable *m_pHeightMapESRV;
     /* Light Map */

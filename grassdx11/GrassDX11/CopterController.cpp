@@ -5,7 +5,9 @@ CopterController::CopterController (void)
 {
    transform = XMMatrixIdentity();
 
-   position = create(0, 20, 0);
+   position = create(-20, 20, 200);
+   //position = create(-500, 20, -500);
+   //position = create(0, 20, 0);
    velocity = create(0, 0, 0);
    acceleration = create(0, 0, 0);
 
@@ -81,7 +83,7 @@ void CopterController::UpdateCamera (void)
 
 void CopterController::UpdateInput (void)
 {
-   const float angleStep = 0.05;
+   const float angleStep = 0.04f;
 
    if (forward == FORWARD) {
       pitch -= angleStep;
@@ -108,10 +110,10 @@ void CopterController::UpdateInput (void)
    }
 
    if (up == UP) {
-      torque += 0.5;
+      torque += 0.4f;
    }
 
    if (down == DOWN) {
-      torque -= 0.5;
+       torque -= 0.4f;
    }
 }

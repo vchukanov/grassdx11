@@ -660,7 +660,7 @@ D3DUtil_CameraKeys CBaseCamera::MapKey( _In_ UINT nKey )
         case 'E':
             return CAM_MOVE_UP;
 
-        case VK_NUMPAD4:
+        /*case VK_NUMPAD4:
             return CAM_STRAFE_LEFT;
         case VK_NUMPAD6:
             return CAM_STRAFE_RIGHT;
@@ -671,7 +671,7 @@ D3DUtil_CameraKeys CBaseCamera::MapKey( _In_ UINT nKey )
         case VK_NUMPAD9:
             return CAM_MOVE_UP;
         case VK_NUMPAD3:
-            return CAM_MOVE_DOWN;
+            return CAM_MOVE_DOWN;*/
 
         case VK_HOME:
             return CAM_RESET;

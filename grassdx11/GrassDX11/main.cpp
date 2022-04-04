@@ -256,6 +256,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    auto pd3dImmediateContext = DXUTGetD3D11DeviceContext();
 
    D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
+   D3D11_BLEND_DESC blendStateDescription;
    D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
    
    // Create an orthographic projection matrix for 2D rendering.
@@ -283,7 +284,32 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    {
       return false;
    }
+
+   ZeroMemory(&blendStateDescription, sizeof(D3D11_BLEND_DESC));
+
+   blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
+   blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+   blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+   blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+   blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+   blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+   blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+   blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
    
+   hr = pd3dDevice->CreateBlendState(&blendStateDescription, &g_alphaEnableBlendingState);
+   if (FAILED(hr))
+   {
+       return false;
+   }
+
+   blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
+
+   hr = pd3dDevice->CreateBlendState(&blendStateDescription, &g_alphaDisableBlendingState);
+   if (FAILED(hr))
+   {
+       return false;
+   }
+
    // Clear the second depth stencil state before setting the parameters.
    ZeroMemory(&depthDisabledStencilDesc, sizeof(depthDisabledStencilDesc));
    
@@ -413,6 +439,8 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    g_GrassInitState.sSceneEffectPath = L"Shaders/SceneEffect.fx";
    g_GrassInitState.sNoiseMapPath = L"resources/Noise.dds";
    g_GrassInitState.sGrassOnTerrainTexturePath = L"resources/g.dds";
+   g_GrassInitState.sGrassSnowedOnTerrainTexturePath = L"resources/gSnowed.dds";
+   //g_GrassInitState.sSnowCoverMapPath = L"resources/SnowCover.dds";
    g_GrassInitState.fHeightScale = g_fHeightScale;
    g_GrassInitState.fTerrRadius = 400.0f;
    g_pGrassField = new GrassFieldManager(g_GrassInitState);
@@ -501,6 +529,45 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
    //g_dbgWin = new DebugWindow(pd3dDevice, g_windowWidth, g_windowHeight, g_pGrassField->GetFlowManager()->m_pAxesFanFlow->m_shaderResourceView, 1);
    //g_dbgWin->ToggleRender();
 
+
+
+   bool result;
+
+
+   // Create the particle system object.
+   g_ParticleSystem = new SnowParticleSystem(g_GrassInitState.fTerrRadius);
+   if (!g_ParticleSystem)
+   {
+       return false;
+   }
+
+   // Initialize the particle system object.
+   result = g_ParticleSystem->Initialize(pd3dDevice, pd3dImmediateContext, L"resources/snow.png", g_totalParticles);
+   if (!result)
+   {
+       return false;
+   }
+
+   //g_ParticleSystem->SetParticlesPerSecond(g_totalParticles / 120);
+   g_ParticleSystem->SetParticlesPerSecond(g_totalParticles / 100); //change when set final y speed
+   //g_ParticleSystem->SetFlowManager(g_pGrassField->GetFlowManager());
+
+   // Create the particle shader object.
+   g_ParticleShader = new ParticleShader();
+   if (!g_ParticleShader)
+   {
+       return false;
+   }
+   g_ParticleShader->SetParticleSystem(g_ParticleSystem);
+   g_ParticleShader->SetCopterController(&copterController);
+   g_ParticleSystem->SetParticleShader(g_ParticleShader);
+
+   // Initialize the particle shader object.
+   result = g_ParticleShader->Initialize(pd3dDevice, pd3dImmediateContext, g_pGrassField);
+   if (!result)
+   {
+       return false;
+   }
 
    return S_OK;
 }
@@ -820,8 +887,16 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
    
    // Render grass
    RenderGrass(pd3dDevice, pd3dImmediateContext, mView, mProj, fElapsedTime);
+
+   // Render snow
+   g_ParticleSystem->Frame(fElapsedTime, pd3dImmediateContext);
+   TurnOnAlphaBlending();
+   g_ParticleSystem->Render(pd3dImmediateContext);
+   g_ParticleShader->Render(pd3dImmediateContext, g_ParticleSystem, g_Camera, fElapsedTime);
+   TurnOffAlphaBlending();
+
    TurnZBufferOff(pd3dImmediateContext);
-   
+
    XMMATRIX mViewProj;
    mViewProj = mul(mView, mProj);
    XMMATRIX mOrtho = XMMatrixTranspose(m_orthoMatrix);
@@ -866,6 +941,32 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
    }
 }
 
+void TurnOnAlphaBlending()
+{
+    auto pd3dImmediateContext = DXUTGetD3D11DeviceContext();
+    float blendFactor[4];
+
+    blendFactor[0] = 0.0f;
+    blendFactor[1] = 0.0f;
+    blendFactor[2] = 0.0f;
+    blendFactor[3] = 0.0f;
+
+    pd3dImmediateContext->OMSetBlendState(g_alphaEnableBlendingState, blendFactor, 0xffffffff);
+}
+
+void TurnOffAlphaBlending()
+{
+    auto pd3dImmediateContext = DXUTGetD3D11DeviceContext();
+    float blendFactor[4];
+
+    blendFactor[0] = 0.0f;
+    blendFactor[1] = 0.0f;
+    blendFactor[2] = 0.0f;
+    blendFactor[3] = 0.0f;
+
+    pd3dImmediateContext->OMSetBlendState(g_alphaDisableBlendingState, blendFactor, 0xffffffff);
+}
+
 
 //--------------------------------------------------------------------------------------
 // Release D3D11 resources created in OnD3D11ResizedSwapChain 
@@ -903,6 +1004,9 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
    SAFE_DELETE(g_Camera);
    SAFE_DELETE(g_dbgWin);
    SAFE_DELETE(g_pGrassField);
+   SAFE_DELETE(g_ParticleShader);
+   SAFE_DELETE(g_ParticleSystem);
+   SAFE_DELETE(copter);
 
 
    SAFE_RELEASE(g_pSkyVertexLayout);
@@ -1023,7 +1127,7 @@ void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserC
       case VK_BACK:
          isDbgUiRendered = !isDbgUiRendered;
          break;
-      case VK_NUMPAD7:
+      case VK_SUBTRACT:
          ToggleToNormalCamera();
          copterController.UnfixCam();
          break;
@@ -1035,6 +1139,33 @@ void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserC
          ToggleToNormalCamera();
          copterController.FixCam();
          break;
+      case VK_NUMPAD8:
+          g_ParticleSystem->MoveTornadoRight();
+          break;
+      case VK_NUMPAD5:
+          g_ParticleSystem->MoveTornadoLeft();
+          break;
+      case VK_NUMPAD6:
+          g_ParticleSystem->MoveTornadoBack();
+          break;
+      case VK_NUMPAD4:
+          g_ParticleSystem->MoveTornadoForward();
+          break;
+      case VK_NUMPAD9:
+          g_ParticleSystem->ToggleTornado();
+          break;
+      case VK_NUMPAD7:
+          g_ParticleSystem->ToggleSnowCover();
+          break;
+      case VK_NUMPAD1:
+          g_ParticleSystem->ToggleCloudMovement();
+          break;
+      case VK_NUMPAD2:
+          g_ParticleSystem->SaveState();
+          break;
+      case VK_NUMPAD3:
+          g_ParticleSystem->RestoreState();
+          break;
       case VK_MULTIPLY:
          ToggleToMeshCamera();
          break;

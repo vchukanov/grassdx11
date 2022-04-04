@@ -80,6 +80,7 @@ Texture2DArray   g_txGrassDiffuseArray;
 Texture2DArray   g_txAirTex;
 Texture2D        g_txIndexMap;
 Texture2D        g_txSeatingMap;
+Texture2D        g_txSnowCover;
 Texture2D        g_txNoise;
 Texture2D        g_txHeightMap;
 Texture2D        g_txShadowMap;
@@ -430,6 +431,8 @@ float4 InstPSMain( PSIn Input ) : SV_Target
     float fL = max(0.17, (1.0 + 5.0 * Input.vTerrSpec.y)*0.6);
     fAlpha = Input.fDissolve;
     float4 vDiffuseTexel = g_txGrassDiffuseArray.Sample(g_samLinear, float3(Input.vTexCoord.xy, uTexIndex));
+    float alphaValue = clamp(length(g_txSnowCover.Sample(g_samLinear, Input.vWorldTC).r), 0.0, 1.0);
+    vDiffuseTexel.xyz = alphaValue / 0.33333f * float3(1.f, 1.f, 1.f) + (1.0 - alphaValue / 0.33333f) * vDiffuseTexel.xyz;
     if (Input.vTexCoord.w < 70.0)
     {
        float fTest = max((Input.vTexCoord.w - 40.0)/30.0, 0.0);
@@ -460,7 +463,12 @@ float4 InstPSMain( PSIn Input ) : SV_Target
     fDd = 1.0 - 3.0*fDd2 +2.0*fDd2*fDd;
    //vC = fDd*vC + (1.0-fDd)*vT;
     float4 color = lerp(float4(vC, fAlpha) , g_vFogColor, Input.vTexCoord.z);
-    color.xyz = color.xyz * shadowCoef;
+    color = color * shadowCoef;
+
+    /*float alphaValue = clamp(length(g_txSnowCover.Sample(g_samLinear, Input.vWorldTC).r), 0.0, 1.0);
+    float3 blendColor = alphaValue * float3(1, 1, 1) + (1.0 - alphaValue) * color.xyz;
+    color.xyz = blendColor;*/
+
     return color;
 }
 
