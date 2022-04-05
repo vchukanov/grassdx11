@@ -10,8 +10,8 @@ TexturesMixer::TexturesMixer (ID3D11Device * pD3DDevice, ID3D11DeviceContext * p
    
    m_pD3DDevice = pD3DDevice;
    m_pD3DDeviceCtx = pD3DDeviceCtx;
-   m_maxW = max(txW1, txW2);
-   m_maxH = max(txH1, txH2);
+   m_maxW = std::max(txW1, txW2);
+   m_maxH = std::max(txH1, txH2);
    
    // Initialize the render target texture description.
    ZeroMemory(&textureDesc, sizeof(textureDesc));

@@ -22,6 +22,38 @@
 
 #pragma warning( disable : 4100 )
 
+namespace
+{
+
+// Set initial working folder for application to make it possible to start it from VS and independently as well
+void SetupWorkingDirectory()
+{
+    // Set current directory to $(ProjectDir), if it is initially executable's directory
+    // This allows standalone executable to work in the same conditions as under VS debugger
+    static const wchar_t* ExePaths[] = { L"\\x64\\Debug", L"\\x64\\Release", L"\\x64\\Profile" };
+
+    size_t size = ::GetCurrentDirectory(0, nullptr);
+
+    std::vector<wchar_t> buffer(size + 1);
+
+    ::GetCurrentDirectory(size + 1, buffer.data());
+
+    std::wstring currentDir = buffer.data();
+
+    for (size_t i = 0; i < sizeof(ExePaths) / sizeof(const wchar_t*); i++)
+    {
+		size_t exePos = currentDir.rfind(ExePaths[i]);
+		if (exePos != std::wstring::npos)
+		{
+			currentDir.resize(exePos);
+			::SetCurrentDirectory(currentDir.c_str());
+            break;
+		}
+    }
+}
+
+}
+
 using namespace DirectX;
 
 /* Camera types */
@@ -63,6 +95,8 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 #ifdef _DEBUG
     _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
+
+    SetupWorkingDirectory();
 
     // DXUT will create and use the best device
     // that is available on the system depending on which D3D callbacks are set below
